@@ -1,13 +1,4 @@
-import json
-
-
-class ParsePostData(object):
-    @staticmethod
-    def parse_raw_type(testcase_dic, post_data):
-        raw_data = json.loads(post_data)
-        testcase_dic["request"]["data"] = raw_data
-        testcase_dic["request"]["headers"].update({"Content-Type": "application/json"})
-
+class ParseFormData(object):
     @staticmethod
     def parse_urlencoded_type(testcase_dic, post_data):
         urlencoded_data = {}
@@ -59,6 +50,14 @@ class ParseParameters(object):
         self.header_param = []
         self.body_param = []
         self.formdata_param = []
+        self.type_default_values = {
+            "integer": 123,
+            "string": '123',
+            "array": [1, 2, 3],
+            "number": 123,
+            "boolean": True
+        }
+
 
     def parse_in_path(self, param):
         '''
@@ -73,7 +72,11 @@ class ParseParameters(object):
         :param param:
         :return:
         '''
-        return param
+        param_type = param["type"]
+        param_name = param["name"]
+        param_value = self.type_default_values[param_type]
+        data = {param_name: param_value}
+        return data
 
     def parse_in_query(self, param):
         '''
@@ -89,7 +92,11 @@ class ParseParameters(object):
         :param param:
         :return:
         '''
-        return param
+        param_type = param["type"]
+        param_name = param["name"]
+        param_value = self.type_default_values[param_type]
+        data = {param_name: param_value}
+        return data
 
     def parse_in_header(self, param):
         '''
@@ -103,7 +110,11 @@ class ParseParameters(object):
         :param param:
         :return:
         '''
-        return param
+        param_type = param["type"]
+        param_name = param["name"]
+        param_value = self.type_default_values[param_type]
+        data = {param_name: param_value}
+        return data
 
     def parse_in_body(self, param):
         '''
@@ -161,6 +172,8 @@ class ParseParameters(object):
         }
         '''
 
+        # Todo: 需要解决defintions 嵌套的问题！！！
+        # 没有type字段，只有$ref， 或"type": "object"， 待确认
         # paramters列表中，可能会存在多个
         schema = param["schema"]
         if "$ref" in schema:
@@ -171,10 +184,16 @@ class ParseParameters(object):
             body = {}
             for key, value in body_format.items():
                 # ToDO: definitions中properties可以让开发配合设置default值
-                body.update({key: value["default"]})
+                # body.update({key: value["default"]})
+                param_type = value["type"]
+                param_value = self.type_default_values[param_type]
+                body.update({key: param_value})
         else:
             # ToDO: Schema Object可以让开发配合设置default值
-            body = schema["default"]
+            # body = schema["default"]
+            param_type = schema["type"]
+            param_value = self.type_default_values[param_type]
+            body = param_value
 
         return body
 
@@ -191,6 +210,9 @@ class ParseParameters(object):
         :return:
         '''
         # TODO: 还没有遇到有Formdata的情况
+        parse_form_data = ParseFormData()
+        # ret = parse_form_data.parse_urlencoded_type(param)
+        # return ret
         key = param["name"]
         value = param["default"]
         return {key: value}
@@ -218,16 +240,10 @@ class ParseParameters(object):
                 data_append[param_type].append(parse_data)
 
 
-class ParseDefinitons(object):
-    def __init__(self, definitons):
-        self.defintions = definitons
-        self.data_schemas = {}
+class ParseResponse(object):
+    def __init__(self, responses):
+        self.responses = responses
+        self.data_schema = {}
 
-    def parse_definitons(self):
+    def parse_responses(self):
         pass
-
-
-
-
-
-
