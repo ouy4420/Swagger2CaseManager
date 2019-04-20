@@ -4,27 +4,16 @@ import logging
 import sys
 import urllib.parse as urlparse
 import re
-from collections import OrderedDict
 from SwaggerToCase import utils
 from SwaggerToCase.encoder import JSONEncoder
 from SwaggerToCase.parse import ParseParameters
 import datetime
 import os
 
-class SwaggerParser(object):
-    def __init__(self, file_or_url=None, filter_str=None, exclude_str=None):
-        if file_or_url.startswith("http"):
-            self.item = utils.load_by_url(file_or_url)
-        else:
-            self.item = utils.load_by_file(file_or_url)
-        self.definitoins = self.item.get("definitions", None)
-        self.user_agent = None
-        self.filter_str = filter_str
-        self.exclude_str = exclude_str or ""
-        self.ordered_dict = False
 
-    def init_dict(self):
-        return OrderedDict() if self.ordered_dict else {}
+class MakeAPI(object):
+    def __init__(self):
+        self.test_api = {"request": {}}
 
     @staticmethod
     def parse_value_from_type(value):
@@ -35,13 +24,13 @@ class SwaggerParser(object):
         else:
             return str(value)
 
-    @staticmethod
-    def _make_request_name(testcase_dic, request_json):
+    # name
+    def make_request_name(self, request_json):
         # TODO : try 机制
-        testcase_dic["name"] = request_json['operationId']
+        self.test_api["name"] = request_json['operationId']
 
-    @staticmethod
-    def _make_request_mothod(testcase_dic, method):
+    # request -> method
+    def make_request_mothod(self, method):
         method = method.upper()
         list_method = ["POST", "GET", "PUT", "DELETE", "PATCH", "OPTIONS"]
         if method is None:
@@ -50,120 +39,115 @@ class SwaggerParser(object):
         if method not in list_method:
             logging.exception("method is not correct.")
             sys.exit(1)
-        testcase_dic["request"]["method"] = method
+        self.test_api["request"]["method"] = method
 
-    def _make_request_url(self, testcase_dic, url, params):
+    # request -> url
+    def make_request_url(self, url):
+        parsed_object = urlparse.urlparse(url)
+        self.test_api["request"]["url"] = parsed_object.geturl()
+        return
+
+    def parse_path_url(self, params):
         # 多个{}的情况也需要考虑， 写个通用的(已完成！)
+        url = self.test_api["request"]["url"]
         path_params = params.path_param
         if "{" in url:
             path_dict = {}
             [path_dict.update(item) for item in path_params]
             url = url.format(**path_dict)
-        parsed_object = urlparse.urlparse(url)
-        testcase_dic["request"]["url"] = parsed_object.geturl()
-        return
+            self.test_api["request"]["url"] = url
 
-    def _make_request_query(self, testcase_dic, params):
+            # request -> querystring
+
+    # request -> params
+    def make_request_query(self, params):
         # Todo: 补充url的querystring(已完成！)
         query_pramas = params.query_param
         query_dict = {}
         [query_dict.update(item) for item in query_pramas]
-        testcase_dic["request"]["params"] = query_dict
+        self.test_api["request"]["params"] = query_dict
 
-    @staticmethod
-    def _make_request_header(testcase_dic, request_json, params):
-        # ToDo： 通过consoums 获取content-type
+    # request -> headers
+    def make_request_header(self, request_json):
+        # ToDo： 通过consoums 获取content-type(已完成！)
         headers = {}
         headers_data = request_json.get("consumes", [])
         # 添加content-type字段
         if headers_data:
             headers["content-type"] = ";".join(headers_data)
+            self.test_api["request"]["headers"] = headers
+
+    def add_header_from_parameters(self, params):
         # 添加parameters中的其它header字段
+        headers = self.test_api["request"]["headers"]
         query_pramas = params.query_param
         [headers.update(item) for item in query_pramas]
-        testcase_dic["request"]["headers"] = headers
 
-
-
-    def _make_request_body(self, testcase_dic, request_json):
+    # request -> data
+    def make_request_body(self, request_json, params):
         try:
-            body = {}
-            parameters = request_json.get("parameters")
-            for param in parameters:
-                if param["in"] == 'body':
-                    body["required"] = param.get("required", None)
-                    body["schema"] = param.get("schema", None)
-                    if body["required"]:
-                        if body["schema"]:
-                            schema = body["schema"]['$ref']
-                            ref = schema.split('/')[-1]
-                            definitons = self.item["definitions"]
-                            body_format = definitons[ref]['properties']
-                            # ToDo
-                            raw_data = {'language': 'c++', 'id': 0}
-                            raw_data_json = json.dumps(raw_data)
-                            testcase_dic["request"]["data"] = raw_data_json
-
-            # if body_content is None:
-            #     return
-            # mode = body_content.get("mode")
-            # post_data = body_content.get(mode)
-            # if not len(post_data): return
-            # data_parse_type = {
-            #     "raw": self.parse_post_data.parse_raw_type,
-            #     "urlencoded": self.parse_post_data.parse_urlencoded_type,
-            #     "formdata": self.parse_post_data.parse_formdata_type,
-            #     "file": self.parse_post_data.parse_file_type,
-            # }
-            # data_parse_type[mode](testcase_dic, post_data)
+            body_params = params.body_param
+            formdata_params = params.formdata_param
+            if body_params:
+                data = json.dumps(body_params[0])
+                self.test_api["request"]["data"] = data
+            else:
+                # ToDo: 待解决！！
+                # ToDo: parameter 是formdata时，要对应设置Header
+                # if form_urlencoded:
+                #     test_api["request"]["headers"].update({"Content-Type": "application/x-www-form-urlencoded"})
+                # elif multipart:
+                #     test_api["request"]["headers"].update({"Content-Type": "multipart/form-data"})
+                # data = formdata_params[0]
+                pass
         except Exception as e:
-            logging.exception("can't convert postman file to json file.")
+            logging.exception(e)
             sys.exit(1)
 
-    def _make_response_schema_validate(self):
+    # validate
+    def make_response_schema_validate(self, test_api):
+        # parse_responses
+        # test_api['validate'] =
         pass
 
+
+class SwaggerParser(object):
+    def __init__(self, file_or_url=None, filter_str=None, exclude_str=None):
+        if file_or_url.startswith("http"):
+            self.item = utils.load_by_url(file_or_url)
+        else:
+            self.item = utils.load_by_file(file_or_url)
+        # TODO: host of swagger file
+        self.definitoins = self.item.get("definitions", None)
+
     def make_testapi(self, url, api_item):
-        testcase_dic = self.init_dict()  # OrderedDict没起作用？
-        testcase_dic["request"] = {}
         method = api_item[0]
         request_data = api_item[1]
-        params = ParseParameters(self.definitoins, request_data['parameters'])
-        params.parse_parameters()
-        self._make_request_name(testcase_dic, request_data)
-        self._make_request_url(testcase_dic, url, params)
-        self._make_request_query(testcase_dic, params)
-        self._make_request_mothod(testcase_dic, method)
-        self._make_request_header(testcase_dic, request_data)
-        self._make_request_body(testcase_dic, request_data)
-        return testcase_dic
+        make_api = MakeAPI()
+        make_api.make_request_url(url)
+        make_api.make_request_header(request_data)
+        make_api.make_request_name(request_data)
+        make_api.make_request_mothod(method)
+        # 有时get方法没有parameters参数
+        if 'parameters' in request_data:
+            params = ParseParameters(self.definitoins, request_data['parameters'])
+            params.parse_parameters()
+            make_api.parse_path_url(params)
+            make_api.make_request_query(params)
+            make_api.make_request_header(request_data)
+            make_api.make_request_body(request_data, params)
+        # self.make_response_schema_validate()
+        return make_api.test_api
 
     def make_testapis(self):
-        def is_exclude(url, exclude_str):
-            exclude_str_list = exclude_str.split("|")
-            for exclude_str in exclude_str_list:
-                if exclude_str and exclude_str in url:
-                    return True
-
-            return False
-
         test_apis = []
-        # TODO 先写死一个URL的restful,后面再扩展到多个URL
-        url = '/language'
-        api_items = self.item["paths"][url]
-        for api_item in api_items.items():
-            # TODO: host of swagger file
-
-            # url = entry_json["request"].get("url")
-            # if self.filter_str and self.filter_str not in url:
-            #     continue
-            #
-            # if is_exclude(url, self.exclude_str):
-            #     continue
-
-            test_apis.append(
-                {"api": self.make_testapi(url, api_item)}
-            )
+        paths = self.item["paths"]
+        for url in paths:
+            api_items = paths[url]
+            for api_item in api_items.items():
+                test_apis.append(
+                    {"api": self.make_testapi(url, api_item)}
+                )
 
         return test_apis
 
@@ -227,12 +211,14 @@ if __name__ == '__main__':
     test_pro_path = os.path.join(cwd, 'TestProject')
     log_level = getattr(logging, 'debug'.upper())
     logging.basicConfig(level=log_level)
-    s2case = SwaggerParser()
+    # s2case = SwaggerParser('http://192.168.1.107:5000/swagger.json')
+    s2case = SwaggerParser(r'C:\Users\Administrator\PycharmProjects\Swagger2Case\json_files\haha.json')
     apifilename = 'mytest' + datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
     apifilepath = os.path.join(test_pro_path, 'api')
     # api_names = s2case.gen_json(r"{}\{}.json".format(apifilepath, apifilename))
     api_names = s2case.gen_yaml("{}\{}.yml".format(apifilepath, apifilename))
     from SwaggerToCase.myrun import run
+
     testcase_obj = [
         {
             "config": {
@@ -253,6 +239,7 @@ if __name__ == '__main__':
         }
     }
     import copy
+
     for name in api_names:
         teststep = copy.deepcopy(teststep)
         teststep["test"]["name"] = name
@@ -269,6 +256,3 @@ if __name__ == '__main__':
         yaml.dump(testcase_obj, outfile, allow_unicode=True, default_flow_style=False, indent=4)
     run(test_pro_path, [testcasename + '.yml'])
     # run(test_pro_path, [testcasename + '.json'])
-
-
-
