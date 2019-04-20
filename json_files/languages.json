@@ -1,0 +1,133 @@
+{
+  "swagger": "2.0",
+  "basePath": "/",
+  "paths": {
+    "/language": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "post_language",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": false,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/language"
+            }
+          }
+        ],
+        "tags": [
+          "default"
+        ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "delete_language",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/language"
+            }
+          }
+        ],
+        "tags": [
+          "default"
+        ]
+      },
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "operationId": "put_language",
+        "parameters": [
+          {
+            "name": "payload",
+            "required": true,
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/language"
+            }
+          }
+        ],
+        "tags": [
+          "default"
+        ]
+      },
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/language"
+            }
+          }
+        },
+        "operationId": "get_language",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "default"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "API",
+    "version": "1.0"
+  },
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "tags": [
+    {
+      "name": "default",
+      "description": "Default namespace"
+    }
+  ],
+  "definitions": {
+    "language": {
+      "properties": {
+        "language": {
+          "type": "string",
+          "default": "TheLanguage"
+        },
+        "id": {
+          "type": "integer",
+          "default": "ID"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "responses": {
+    "ParseError": {
+      "description": "When a mask can't be parsed"
+    },
+    "MaskError": {
+      "description": "When any error occurs on mask"
+    }
+  }
+}

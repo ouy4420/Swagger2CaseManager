@@ -1,0 +1,67 @@
+[
+  {
+    "name": "audit_id",
+    "in": "path",
+    "description": "audit_id",
+    "required": true,
+    "type": "integer",
+    "format": "int64"
+  },
+  {
+    "name": "page",
+    "in": "query",
+    "description": "当前页",
+    "required": true,
+    "type": "integer",
+    "format": "int32",
+    "x-example": 10
+  },
+  {
+    "name": "uid",
+    "in": "header",
+    "description": "会员ID",
+    "required": true,
+    "type": "string"
+  },
+  {
+    "in": "body",
+    "name": "params",
+    "description": "params",
+    "required": true,
+    "schema": {
+      "$ref": "#/definitions/WechatAuthParams"
+    }
+  },
+  {
+    "in": "body",
+    "name": "cookieUuid",
+    "description": "cookieUuid",
+    "required": true,
+    "schema": {
+      "type": "string",
+      "default": "123"
+    }
+  },
+  {
+    "name": "user",
+    "in": "body",
+    "description": "user to add to the system",
+    "required": true,
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [1,2,3]
+
+    }
+  },
+  {
+    "name": "name",
+    "in": "formData",
+    "description": "Updated name of the pet",
+    "required": true,
+    "type": "string",
+    "default": "{1: 1,2: 2}"
+  }
+]

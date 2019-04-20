@@ -1,0 +1,896 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Waykichain Platform's REST API, all the applications could assess the Object model data via JSON.",
+    "version": "1.0",
+    "title": "Waykichain Platform API",
+    "termsOfService": "NO terms of service",
+    "contact": {
+      "name": "Richard Chen",
+      "url": "http://www.waykichain.net",
+      "email": "tigerich at 163 dot com"
+    },
+    "license": {
+      "name": "Commercial License, Version 1.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "allbet-dev.wiccdev.org:8000",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "ops-controller",
+      "description": "Ops Controller"
+    },
+    {
+      "name": "auth-controller",
+      "description": "Auth Controller"
+    }
+  ],
+  "paths": {
+    "/check/loginname/exsit/{loginName}": {
+      "get": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "验证登录名是否已经注册过",
+        "operationId": "registerCheckLonginNameUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "loginName",
+            "in": "path",
+            "description": "用户名",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«boolean»"
+            }
+          }
+        }
+      }
+    },
+    "/check/mobile/exist/{mobile}": {
+      "get": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "验证手机号是否已经注册过",
+        "operationId": "registerCheckCusExistUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "name": "mobile",
+            "in": "path",
+            "description": "手机号",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«boolean»"
+            }
+          }
+        }
+      }
+    },
+    "/check/sms": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "验证smsCode",
+        "operationId": "registerCheckSmsUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "po",
+            "description": "po",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegisterCheckSmsPO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«获取用户短信验证码的VO»"
+            }
+          }
+        }
+      }
+    },
+    "/getsms": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "发送手机认证短信",
+        "operationId": "sendSmsCertifyUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "po",
+            "description": "po",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginPO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«object»"
+            }
+          }
+        }
+      }
+    },
+    "/login/login": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "登录名登录",
+        "operationId": "loginUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "cookieUuid",
+            "description": "cookieUuid",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "body",
+            "name": "po",
+            "description": "po",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginNamePO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«LoginAuthVO»"
+            }
+          }
+        }
+      }
+    },
+    "/login/mobile": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "手机登录第一步",
+        "operationId": "loginMobileUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "cookieUuid",
+            "description": "cookieUuid",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "body",
+            "name": "po",
+            "description": "po",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/LoginMobilePO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«LoginAuthToken»"
+            }
+          }
+        }
+      }
+    },
+    "/login/out": {
+      "get": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "退出登录",
+        "description": "退出登录",
+        "operationId": "loginOutUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«object»"
+            }
+          }
+        }
+      }
+    },
+    "/login/token": {
+      "get": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "用户登录获取accessToken",
+        "description": "用户登录获取accessToken",
+        "operationId": "loginUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«UserToken»"
+            }
+          }
+        }
+      }
+    },
+    "/netease/check": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "网易云易盾验证",
+        "operationId": "netEaseCheckUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«object»"
+            }
+          }
+        }
+      }
+    },
+    "/ops/customerId": {
+      "get": {
+        "tags": [
+          "ops-controller"
+        ],
+        "summary": "getCustomerId",
+        "operationId": "getCustomerIdUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/ops/ver": {
+      "get": {
+        "tags": [
+          "ops-controller"
+        ],
+        "summary": "getVersion",
+        "operationId": "getVersionUsingGET",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/refresh": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "刷新token",
+        "description": "刷新token",
+        "operationId": "refreshTokenUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«UserToken»"
+            }
+          }
+        }
+      }
+    },
+    "/register/loginname": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "登录名注册",
+        "operationId": "registerByLoginNameUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "cookieUuid",
+            "description": "cookieUuid",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "body",
+            "name": "po",
+            "description": "po",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegisterLoginNamePO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«RegisterAuthVO»"
+            }
+          }
+        }
+      }
+    },
+    "/register/mobile": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "手机注册",
+        "operationId": "registerByMobileUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "cookieUuid",
+            "description": "cookieUuid",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "body",
+            "name": "po",
+            "description": "po",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RegisterMobilePO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«UserToken»"
+            }
+          }
+        }
+      }
+    },
+    "/reset/password": {
+      "post": {
+        "tags": [
+          "auth-controller"
+        ],
+        "summary": "重置密码",
+        "operationId": "resetPasswordUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "*/*"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "cookieUuid",
+            "description": "cookieUuid",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "body",
+            "name": "po",
+            "description": "po",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ResetPasswordPO"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«object»"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "LoginNamePO": {
+      "type": "object",
+      "required": [
+        "loginNameOrMobile",
+        "password"
+      ],
+      "properties": {
+        "loginNameOrMobile": {
+          "type": "string",
+          "description": "登录名或者手机号"
+        },
+        "password": {
+          "type": "string",
+          "description": "注册密码"
+        }
+      }
+    },
+    "BizResponse«UserToken»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "data": {
+          "$ref": "#/definitions/UserToken"
+        },
+        "msg": {
+          "type": "string"
+        }
+      }
+    },
+    "获取用户短信验证码的VO": {
+      "type": "object",
+      "properties": {
+        "loginName": {
+          "type": "string",
+          "description": "登录名(当短信验证码类型为100-重置密码时才有值"
+        },
+        "smsCheckedResult": {
+          "type": "boolean",
+          "example": false,
+          "description": "短信验证码验证结果,true:验证通过,false:验证不通过"
+        }
+      }
+    },
+    "BizResponse«LoginAuthVO»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "data": {
+          "$ref": "#/definitions/LoginAuthVO"
+        },
+        "msg": {
+          "type": "string"
+        }
+      }
+    },
+    "LoginPO": {
+      "type": "object",
+      "required": [
+        "countryCode",
+        "mobile",
+        "type"
+      ],
+      "properties": {
+        "countryCode": {
+          "type": "string",
+          "description": "国家/地区英文简称"
+        },
+        "mobile": {
+          "type": "string",
+          "description": "手机号"
+        },
+        "type": {
+          "type": "integer",
+          "format": "int32",
+          "description": "验证的接口类型 :100:重置密码，200， 绑定手机号 "
+        }
+      }
+    },
+    "LoginAuthVO": {
+      "type": "object",
+      "properties": {
+        "customerId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "loginAuthToken": {
+          "$ref": "#/definitions/LoginAuthToken"
+        },
+        "loginName": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "networkBlock": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "registerAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "RegisterMobilePO": {
+      "type": "object",
+      "properties": {
+        "countryCode": {
+          "type": "string",
+          "description": "注册国家简称code"
+        },
+        "inviteCode": {
+          "type": "string",
+          "description": "邀请码"
+        },
+        "mobile": {
+          "type": "string",
+          "description": "手机号"
+        },
+        "password": {
+          "type": "string",
+          "description": "用户密码"
+        },
+        "smsCode": {
+          "type": "string",
+          "description": "短信验证码"
+        }
+      }
+    },
+    "LoginAuthToken": {
+      "type": "object",
+      "properties": {
+        "loginToken": {
+          "type": "string"
+        },
+        "registerAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "RegisterLoginNamePO": {
+      "type": "object",
+      "properties": {
+        "inviteCode": {
+          "type": "string",
+          "description": "邀请码"
+        },
+        "loginName": {
+          "type": "string",
+          "description": "用户名"
+        },
+        "password": {
+          "type": "string",
+          "description": "用户密码"
+        }
+      }
+    },
+    "RegisterCheckSmsPO": {
+      "type": "object",
+      "required": [
+        "countryCode",
+        "mobile",
+        "smsCode"
+      ],
+      "properties": {
+        "countryCode": {
+          "type": "string",
+          "description": "国家/地区英文简称"
+        },
+        "mobile": {
+          "type": "string",
+          "description": "手机号"
+        },
+        "smsCode": {
+          "type": "string",
+          "description": "短信验证码"
+        }
+      }
+    },
+    "LoginMobilePO": {
+      "type": "object",
+      "required": [
+        "countryCode",
+        "password"
+      ],
+      "properties": {
+        "countryCode": {
+          "type": "string",
+          "description": "国家英文简称"
+        },
+        "mobile": {
+          "type": "string",
+          "description": "手机号"
+        },
+        "password": {
+          "type": "string",
+          "description": "注册密码"
+        }
+      }
+    },
+    "BizResponse«RegisterAuthVO»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "data": {
+          "$ref": "#/definitions/RegisterAuthVO"
+        },
+        "msg": {
+          "type": "string"
+        }
+      }
+    },
+    "RegisterAuthVO": {
+      "type": "object",
+      "properties": {
+        "customerId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "loginName": {
+          "type": "string"
+        },
+        "mobile": {
+          "type": "string"
+        },
+        "networkBlock": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "registerAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "userToken": {
+          "$ref": "#/definitions/UserToken"
+        }
+      }
+    },
+    "BizResponse«boolean»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "data": {
+          "type": "boolean"
+        },
+        "msg": {
+          "type": "string"
+        }
+      }
+    },
+    "BizResponse«LoginAuthToken»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "data": {
+          "$ref": "#/definitions/LoginAuthToken"
+        },
+        "msg": {
+          "type": "string"
+        }
+      }
+    },
+    "ResetPasswordPO": {
+      "type": "object",
+      "required": [
+        "countryCode",
+        "mobile",
+        "password",
+        "smsCode"
+      ],
+      "properties": {
+        "countryCode": {
+          "type": "string",
+          "description": " 国家英文简称"
+        },
+        "mobile": {
+          "type": "string",
+          "description": " 手机号码不能为空"
+        },
+        "password": {
+          "type": "string",
+          "description": " 密码不能为空"
+        },
+        "smsCode": {
+          "type": "string",
+          "description": " 短信验证码不能为空"
+        }
+      }
+    },
+    "BizResponse«object»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "data": {
+          "type": "object"
+        },
+        "msg": {
+          "type": "string"
+        }
+      }
+    },
+    "UserToken": {
+      "type": "object",
+      "properties": {
+        "app_access_token": {
+          "type": "string"
+        },
+        "app_refresh_token": {
+          "type": "string"
+        },
+        "expires_in": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "h5_access_token": {
+          "type": "string"
+        },
+        "h5_refresh_token": {
+          "type": "string"
+        },
+        "openid": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "web_access_token": {
+          "type": "string"
+        },
+        "web_refresh_token": {
+          "type": "string"
+        },
+        "wx_access_token": {
+          "type": "string"
+        },
+        "wx_refresh_token": {
+          "type": "string"
+        }
+      }
+    },
+    "BizResponse«获取用户短信验证码的VO»": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "data": {
+          "$ref": "#/definitions/获取用户短信验证码的VO"
+        },
+        "msg": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

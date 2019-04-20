@@ -1,0 +1,3523 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "签到api",
+    "version": "0.0.1-SNAPSHOT",
+    "title": "签到api",
+    "termsOfService": "http://www.xxbmm.com"
+  },
+  "host": "dev.sign.xxbmm.com",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "会员业务接口",
+      "description": "Customer Controller"
+    },
+    {
+      "name": "会员查询",
+      "description": "Customer Query Controller"
+    },
+    {
+      "name": "奖励业务接口",
+      "description": "Reward Controller"
+    },
+    {
+      "name": "奖励查询",
+      "description": "Reward Query Controller"
+    },
+    {
+      "name": "微信授权",
+      "description": "Api Controller"
+    },
+    {
+      "name": "提现业务接口",
+      "description": "Withdraw Controller"
+    },
+    {
+      "name": "提现查询",
+      "description": "Withdraw Query Controller"
+    },
+    {
+      "name": "签到业务接口",
+      "description": "Sign Controller"
+    },
+    {
+      "name": "签到查询",
+      "description": "Sign Query Controller"
+    },
+    {
+      "name": "系统接口",
+      "description": "System Controller"
+    }
+  ],
+  "produces": [
+    "application/json;charset=UTF-8"
+  ],
+  "paths": {
+    "/api/wx/customer": {
+      "post": {
+        "tags": [
+          "微信授权"
+        ],
+        "summary": "首次授权",
+        "operationId": "decodeUserInfoUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "params",
+            "description": "params",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WechatAuthParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«WeixinAuthVO»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers": {
+      "get": {
+        "tags": [
+          "会员查询"
+        ],
+        "summary": "查询会员信息",
+        "operationId": "getCustomerUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«CustomerVO»"
+            }
+          }
+        },
+        "deprecated": false
+      },
+      "post": {
+        "tags": [
+          "会员业务接口"
+        ],
+        "summary": "会员注册",
+        "operationId": "registerUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerRegisterParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«RegisterCustomerVO»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/account": {
+      "get": {
+        "tags": [
+          "会员查询"
+        ],
+        "summary": "查询会员账户信息",
+        "operationId": "getCustomerAccountUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«CustomerAccountVO»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/account/gold": {
+      "get": {
+        "tags": [
+          "会员查询"
+        ],
+        "summary": "查询会员金币余额",
+        "operationId": "accountGoldUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "unionid",
+            "in": "query",
+            "description": "会员unionid",
+            "required": true,
+            "type": "string",
+            "allowEmptyValue": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«bigdecimal»"
+            }
+          }
+        },
+        "deprecated": false
+      },
+      "put": {
+        "tags": [
+          "会员业务接口"
+        ],
+        "summary": "金币兑换红包",
+        "operationId": "goldExchangeUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerExchangeMoneyParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      },
+      "delete": {
+        "tags": [
+          "会员业务接口"
+        ],
+        "summary": "兑换商品",
+        "operationId": "forGoodsUsingDELETE",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "params",
+            "description": "params",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerForGoodsParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/account/log": {
+      "get": {
+        "tags": [
+          "会员查询"
+        ],
+        "summary": "查询会员账户明细",
+        "operationId": "findAccountLogUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "当前页",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "x-example": 10
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "每页显示条数",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "x-example": 10
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "类型（INCREASE 增加，REDUCE 减少）",
+            "required": false,
+            "type": "string",
+            "x-example": "INCREASE"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«PaginationVO«CustomerAccountLogVO»»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/account/money": {
+      "get": {
+        "tags": [
+          "会员查询"
+        ],
+        "summary": "查询会员金额收益分页查询",
+        "operationId": "findMoneyUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "当前页",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "x-example": 10
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "每页显示条数",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "x-example": 10
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "ALREADY_ARRIVED已到账,WAITING_ACCOUNT待到账,FAILURE已失效,全部不传",
+            "required": false,
+            "type": "string",
+            "x-example": "WAITING_ACCOUNT"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«PaginationVO«Customer_account_money»»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/account/money/already_arrived": {
+      "post": {
+        "tags": [
+          "会员业务接口"
+        ],
+        "summary": "订单签收, 金额10天后状态转为已到账",
+        "operationId": "sendMoneyAlreadyArrivedMessageUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerAlreadyArrivedParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/account/money/failure": {
+      "put": {
+        "tags": [
+          "会员业务接口"
+        ],
+        "summary": "会员退款",
+        "operationId": "refundMoneyFailureUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerRefundMoneyFailureParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/customer_state": {
+      "put": {
+        "tags": [
+          "会员业务接口"
+        ],
+        "summary": "使会员获取会员状态",
+        "operationId": "customerStateUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/login": {
+      "post": {
+        "tags": [
+          "会员业务接口"
+        ],
+        "summary": "会员登录",
+        "operationId": "loginUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerLoginParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«CustomerLoginVO»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/order/gold": {
+      "post": {
+        "tags": [
+          "会员业务接口"
+        ],
+        "summary": "下单使用金币",
+        "operationId": "orderUseGoldUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "params",
+            "description": "params",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerOrderUseGoldParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/recommend": {
+      "get": {
+        "tags": [
+          "会员查询"
+        ],
+        "summary": "查询会员邀请列表",
+        "operationId": "recommendUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "当前页",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "x-example": 10
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "每页显示条数",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "x-example": 10
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«PaginationVO«customer_recommend_page»»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/recommend/count": {
+      "get": {
+        "tags": [
+          "会员查询"
+        ],
+        "summary": "查询会员邀请人数",
+        "operationId": "inviteeCountUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«int»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/recommend/inviter": {
+      "get": {
+        "tags": [
+          "会员查询"
+        ],
+        "summary": "查询会员邀请人",
+        "operationId": "inviterUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«CustomerRecommendVO»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/remind": {
+      "put": {
+        "tags": [
+          "会员业务接口"
+        ],
+        "summary": "会员签到提醒修改",
+        "operationId": "changeSignRemindUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerRemindParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/state": {
+      "get": {
+        "tags": [
+          "会员查询"
+        ],
+        "summary": "查询会员是否获取会员状态",
+        "operationId": "findCustomerStateByUnionIdUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "unionid",
+            "in": "query",
+            "description": "unionid",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/customers/telephone": {
+      "get": {
+        "tags": [
+          "会员查询"
+        ],
+        "summary": "查询会员手机号",
+        "operationId": "getTelephoneUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«string»"
+            }
+          }
+        },
+        "deprecated": false
+      },
+      "post": {
+        "tags": [
+          "会员业务接口"
+        ],
+        "summary": "保存会员手机号",
+        "operationId": "changeTelephoneUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CustomerTelephoneParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/rewards/browser": {
+      "post": {
+        "tags": [
+          "奖励业务接口"
+        ],
+        "summary": "会员浏览奖励",
+        "operationId": "browseGoldUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RewardBrowserParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«CustomerBrowseruleGoldVO»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/rewards/cps": {
+      "post": {
+        "tags": [
+          "奖励业务接口"
+        ],
+        "summary": "下单获取金额",
+        "operationId": "cpsUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RewardCpsParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/rewards/newbie": {
+      "post": {
+        "tags": [
+          "奖励业务接口"
+        ],
+        "summary": "会员新人奖励",
+        "operationId": "customerNewbilUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«CustomerSignGoldVO»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/rewards/newbie/gold": {
+      "get": {
+        "tags": [
+          "奖励查询"
+        ],
+        "summary": "获取新人奖励金币数",
+        "operationId": "newbieGoldUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«bigdecimal»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/rewards/newbie/state": {
+      "get": {
+        "tags": [
+          "奖励查询"
+        ],
+        "summary": "会员新人奖励是否领取, true已领取,false未领取",
+        "operationId": "customerNewbilStateUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/rewards/share": {
+      "post": {
+        "tags": [
+          "奖励业务接口"
+        ],
+        "summary": "会员分享固定奖励",
+        "operationId": "customerShareUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RewardShareParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«bigdecimal»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/rewards/share/gold": {
+      "post": {
+        "tags": [
+          "奖励业务接口"
+        ],
+        "summary": "会员分享指定奖励",
+        "operationId": "customerShareGoldUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RewardShareGoldParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/rewards/subscribe": {
+      "get": {
+        "tags": [
+          "奖励查询"
+        ],
+        "summary": "会员是否已领取过关注公众号奖励,true已领取,false未领取",
+        "operationId": "subscribeStateUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      },
+      "post": {
+        "tags": [
+          "奖励业务接口"
+        ],
+        "summary": "会员关注公众号奖励",
+        "operationId": "subscribeUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/RewardSubscribeParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«bigdecimal»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/signs": {
+      "get": {
+        "tags": [
+          "签到查询"
+        ],
+        "summary": "会员当前渠道是否曾经签到过",
+        "operationId": "signHistoryUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      },
+      "post": {
+        "tags": [
+          "签到业务接口"
+        ],
+        "summary": "会员签到",
+        "operationId": "signUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«CustomerSignGoldVO»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/signs/gold": {
+      "get": {
+        "tags": [
+          "签到查询"
+        ],
+        "summary": "获取当日签到金币",
+        "operationId": "signDayGoldUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«bigdecimal»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/signs/rule": {
+      "get": {
+        "tags": [
+          "签到查询"
+        ],
+        "summary": "获取签到规则",
+        "operationId": "signruleUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«List«signrule»»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/signs/state": {
+      "get": {
+        "tags": [
+          "签到查询"
+        ],
+        "summary": "会员当天签到状态,TRUE当日已签到, FALSE当日未签到",
+        "operationId": "signStateUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/system": {
+      "get": {
+        "tags": [
+          "系统接口"
+        ],
+        "summary": "心跳检测",
+        "operationId": "systemUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/withdraw": {
+      "get": {
+        "tags": [
+          "提现查询"
+        ],
+        "summary": "获取会员提现申请明细",
+        "operationId": "withdrawApplyUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "customerId",
+            "in": "query",
+            "description": "用户ID",
+            "required": false,
+            "type": "integer",
+            "format": "int64",
+            "x-example": 1233
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "当前页",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "x-example": 10
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "每页显示条数",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "x-example": 10
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "类型（TOAUDIT 待审核，THROUGH 审核通过）",
+            "required": false,
+            "type": "string",
+            "x-example": "TOAUDIT"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«PaginationVO«customer_account_withdraw»»"
+            }
+          }
+        },
+        "deprecated": false
+      },
+      "post": {
+        "tags": [
+          "提现业务接口"
+        ],
+        "summary": "发起提现",
+        "operationId": "withdrawUsingPOST",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "param",
+            "description": "param",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WithdrawParams"
+            }
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«withdraw»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/withdraw/audit/{audit_id}": {
+      "put": {
+        "tags": [
+          "提现业务接口"
+        ],
+        "summary": "提现审核",
+        "operationId": "withdrawAuditUsingPUT",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "audit_id",
+            "in": "path",
+            "description": "audit_id",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«boolean»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    },
+    "/withdraw/page": {
+      "get": {
+        "tags": [
+          "提现查询"
+        ],
+        "summary": "会员提现记录列表",
+        "operationId": "withdrawUsingGET",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "header",
+            "description": "渠道code",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "当前页",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "x-example": 10
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "每页显示条数",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "x-example": 10
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "审核状态（待审核TOAUDIT，审核通过THROUGH）",
+            "required": false,
+            "type": "string",
+            "x-example": "TOAUDIT"
+          },
+          {
+            "name": "uid",
+            "in": "header",
+            "description": "会员ID",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "ukey",
+            "in": "header",
+            "description": "会员key",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/base_result«PaginationVO«customer_account_withdraw_page»»"
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "definitions": {
+    "CustomerAccountLogVO": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2018-01-12",
+          "description": "明细记录时间"
+        },
+        "gold": {
+          "type": "number",
+          "example": 15.2,
+          "description": "金币数"
+        },
+        "msg": {
+          "type": "string",
+          "example": "每日签到",
+          "description": "记录描述"
+        }
+      },
+      "title": "CustomerAccountLogVO"
+    },
+    "CustomerAccountMoneyOrderParams": {
+      "type": "object",
+      "properties": {
+        "money": {
+          "type": "number",
+          "example": 12.5,
+          "description": "奖励金额"
+        },
+        "order_id": {
+          "type": "string",
+          "example": "12,13",
+          "description": "子订单ID"
+        }
+      },
+      "title": "CustomerAccountMoneyOrderParams"
+    },
+    "CustomerAccountVO": {
+      "type": "object",
+      "properties": {
+        "all_gold": {
+          "type": "number",
+          "example": 24.7,
+          "description": "累计获取金币总数"
+        },
+        "all_money": {
+          "type": "number",
+          "example": 27.3,
+          "description": "累计获取总金额"
+        },
+        "clean_remind": {
+          "type": "boolean",
+          "example": true,
+          "description": "是否需要提醒清空账户时间"
+        },
+        "clean_time": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2018-07-28",
+          "description": "金币清空时间"
+        },
+        "first_withd": {
+          "type": "string",
+          "example": "YES",
+          "description": "是否首次提现"
+        },
+        "gold": {
+          "type": "number",
+          "example": 1.2,
+          "description": "剩余金币数"
+        },
+        "gold_day": {
+          "type": "number",
+          "example": 32.22,
+          "description": "当日获取金币总数"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "example": 122311,
+          "description": "会员账户信息ID"
+        },
+        "money": {
+          "type": "number",
+          "example": 12.0,
+          "description": "剩余金额"
+        },
+        "use_gold": {
+          "type": "number",
+          "example": 23.5,
+          "description": "已使用金币数"
+        },
+        "use_money": {
+          "type": "number",
+          "example": 15.3,
+          "description": "已提现金额"
+        },
+        "waiting_account_money": {
+          "type": "number",
+          "example": 15.4,
+          "description": "待到账金额"
+        }
+      },
+      "title": "CustomerAccountVO"
+    },
+    "CustomerAlreadyArrivedParams": {
+      "type": "object",
+      "properties": {
+        "order_ids": {
+          "type": "array",
+          "example": [
+            "as2ss",
+            "j2jk1k"
+          ],
+          "description": "退款订单ID数组",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "CustomerAlreadyArrivedParams"
+    },
+    "CustomerBrowseruleGoldVO": {
+      "type": "object",
+      "properties": {
+        "gold": {
+          "type": "number",
+          "example": 1.23,
+          "description": "金币数, 为0时奖励达到上限"
+        }
+      },
+      "title": "CustomerBrowseruleGoldVO"
+    },
+    "CustomerExchangeMoneyParams": {
+      "type": "object",
+      "properties": {
+        "money": {
+          "type": "number",
+          "example": 15.2,
+          "description": "兑换金额"
+        },
+        "order_id": {
+          "type": "string",
+          "example": "asd22k1",
+          "description": "订单ID"
+        },
+        "unionid": {
+          "type": "string",
+          "example": "asd22k1",
+          "description": "会员unionid"
+        }
+      },
+      "title": "CustomerExchangeMoneyParams"
+    },
+    "CustomerForGoodsParams": {
+      "type": "object",
+      "properties": {
+        "gold": {
+          "type": "number",
+          "example": 1.2119921E8,
+          "description": "金币数"
+        },
+        "unionid": {
+          "type": "string",
+          "example": "BH5B7s$2kds99ksdSD7F3b",
+          "description": "unionid"
+        }
+      },
+      "title": "CustomerForGoodsParams"
+    },
+    "CustomerLoginParams": {
+      "type": "object",
+      "properties": {
+        "unionid": {
+          "type": "string",
+          "example": "asdasd2223a",
+          "description": "unionid"
+        }
+      },
+      "title": "CustomerLoginParams"
+    },
+    "CustomerLoginVO": {
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "integer",
+          "format": "int64",
+          "example": 12312,
+          "description": "会员ID"
+        },
+        "ukey": {
+          "type": "string",
+          "example": "sad231sa2dff3",
+          "description": "会员加密字符串"
+        }
+      },
+      "title": "CustomerLoginVO"
+    },
+    "CustomerOrderParams": {
+      "type": "object",
+      "properties": {
+        "gold": {
+          "type": "number",
+          "example": 12.5,
+          "description": "金币数"
+        },
+        "order_id": {
+          "type": "string",
+          "example": 132332,
+          "description": "子订单ID"
+        }
+      },
+      "title": "CustomerOrderParams"
+    },
+    "CustomerOrderUseGoldParams": {
+      "type": "object",
+      "properties": {
+        "order": {
+          "type": "array",
+          "example": [
+            {
+              "order_id": "13",
+              "gold": 1.2
+            },
+            {
+              "order_id": "14",
+              "gold": 1.4
+            }
+          ],
+          "description": "订单使用金币信息",
+          "items": {
+            "$ref": "#/definitions/CustomerOrderParams"
+          }
+        },
+        "unionid": {
+          "type": "string",
+          "example": "BH5B7s$2kds99ksdSD7F3b",
+          "description": "unionid"
+        }
+      },
+      "title": "CustomerOrderUseGoldParams"
+    },
+    "CustomerRecommendParams": {
+      "type": "object",
+      "properties": {
+        "inviter_header": {
+          "type": "string",
+          "example": "abc.jpg",
+          "description": "邀请人头像"
+        },
+        "inviter_id": {
+          "type": "integer",
+          "format": "int64",
+          "example": 3,
+          "description": "邀请人id"
+        },
+        "inviter_name": {
+          "type": "string",
+          "example": "张三",
+          "description": "邀请人名称"
+        }
+      },
+      "title": "CustomerRecommendParams"
+    },
+    "CustomerRecommendVO": {
+      "type": "object",
+      "properties": {
+        "cps_money": {
+          "type": "number",
+          "example": 100.0,
+          "description": "邀请人绑定后累计获取CPS奖励金额"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "invite_time": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2018-08-29",
+          "description": "邀请时间"
+        },
+        "inviter_header": {
+          "type": "string",
+          "example": "abc.jpg",
+          "description": "邀请人头像"
+        },
+        "inviter_id": {
+          "type": "integer",
+          "format": "int64",
+          "example": 1234,
+          "description": "邀请人ID"
+        },
+        "inviter_name": {
+          "type": "string",
+          "example": "张三",
+          "description": "邀请人姓名"
+        },
+        "order_number": {
+          "type": "integer",
+          "format": "int32",
+          "example": 100,
+          "description": "邀请人绑定后下单次数"
+        }
+      },
+      "title": "CustomerRecommendVO"
+    },
+    "CustomerRefundMoneyFailureParams": {
+      "type": "object",
+      "properties": {
+        "order": {
+          "type": "array",
+          "example": [
+            {
+              "order_id": "13",
+              "gold": 1.2
+            },
+            {
+              "order_id": "14",
+              "gold": 1.4
+            }
+          ],
+          "description": "订单使用金币信息",
+          "items": {
+            "$ref": "#/definitions/CustomerOrderParams"
+          }
+        },
+        "unionid": {
+          "type": "string",
+          "example": "BH5B7s$2kds99ksdSD7F3b",
+          "description": "退款人unionid"
+        }
+      },
+      "title": "CustomerRefundMoneyFailureParams"
+    },
+    "CustomerRegisterParams": {
+      "type": "object",
+      "properties": {
+        "headimg": {
+          "type": "string",
+          "example": "a.jpg",
+          "description": "头像"
+        },
+        "nickname": {
+          "type": "string",
+          "example": "张三",
+          "description": "昵称"
+        },
+        "recommend": {
+          "example": {
+            "inviter_id": 1,
+            "inviter_name": "张三",
+            "inviter_header": "abc.jpg"
+          },
+          "description": "会员邀请人信息",
+          "$ref": "#/definitions/CustomerRecommendParams"
+        },
+        "unionid": {
+          "type": "string",
+          "example": "2kds99ksdSD7F3b",
+          "description": "unionid"
+        }
+      },
+      "title": "CustomerRegisterParams"
+    },
+    "CustomerRemindParams": {
+      "type": "object",
+      "properties": {
+        "sign_remind": {
+          "type": "boolean",
+          "example": true,
+          "description": "签到提醒开启状态,true开启,false关闭"
+        }
+      },
+      "title": "CustomerRemindParams"
+    },
+    "CustomerSignGoldVO": {
+      "type": "object",
+      "properties": {
+        "gold": {
+          "type": "number",
+          "example": 1.23,
+          "description": "金币数, 为0时奖励达到上限"
+        }
+      },
+      "title": "CustomerSignGoldVO"
+    },
+    "CustomerTelephoneParams": {
+      "type": "object",
+      "properties": {
+        "telephone": {
+          "type": "string",
+          "example": 18745865623,
+          "description": "会员手机号"
+        }
+      },
+      "title": "CustomerTelephoneParams"
+    },
+    "CustomerVO": {
+      "type": "object",
+      "properties": {
+        "customer_state": {
+          "type": "boolean",
+          "example": true,
+          "description": "会员是否已获取会员状态,True获取,Flase未获取"
+        },
+        "regist_channel": {
+          "type": "string",
+          "example": "VIDEO",
+          "description": "会员注册渠道"
+        },
+        "regist_channel_cn": {
+          "type": "string",
+          "example": "VIDEO",
+          "description": "会员注册渠道中文"
+        },
+        "sign_bout": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "签到轮数"
+        },
+        "sign_day": {
+          "type": "integer",
+          "format": "int32",
+          "example": 13,
+          "description": "连续签到天数"
+        },
+        "sign_remind": {
+          "type": "boolean",
+          "example": true,
+          "description": "是否开启签到推送"
+        }
+      },
+      "title": "CustomerVO"
+    },
+    "Customer_account_money": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2018-01-12",
+          "description": "明细记录时间"
+        },
+        "money": {
+          "type": "number",
+          "example": 15.2,
+          "description": "金额"
+        },
+        "msg": {
+          "type": "string",
+          "example": "自购返利",
+          "description": "记录描述"
+        },
+        "status": {
+          "type": "string",
+          "example": 15.2,
+          "description": "状态"
+        }
+      },
+      "title": "Customer_account_money"
+    },
+    "PaginationVO«CustomerAccountLogVO»": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "当前页"
+        },
+        "result": {
+          "type": "array",
+          "description": "查询结果",
+          "items": {
+            "$ref": "#/definitions/CustomerAccountLogVO"
+          }
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "每页条数"
+        },
+        "total_number": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "总条数"
+        },
+        "total_page": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "总页数"
+        }
+      },
+      "title": "PaginationVO«CustomerAccountLogVO»"
+    },
+    "PaginationVO«Customer_account_money»": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "当前页"
+        },
+        "result": {
+          "type": "array",
+          "description": "查询结果",
+          "items": {
+            "$ref": "#/definitions/Customer_account_money"
+          }
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "每页条数"
+        },
+        "total_number": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "总条数"
+        },
+        "total_page": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "总页数"
+        }
+      },
+      "title": "PaginationVO«Customer_account_money»"
+    },
+    "PaginationVO«customer_account_withdraw_page»": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "当前页"
+        },
+        "result": {
+          "type": "array",
+          "description": "查询结果",
+          "items": {
+            "$ref": "#/definitions/customer_account_withdraw_page"
+          }
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "每页条数"
+        },
+        "total_number": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "总条数"
+        },
+        "total_page": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "总页数"
+        }
+      },
+      "title": "PaginationVO«customer_account_withdraw_page»"
+    },
+    "PaginationVO«customer_account_withdraw»": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "当前页"
+        },
+        "result": {
+          "type": "array",
+          "description": "查询结果",
+          "items": {
+            "$ref": "#/definitions/customer_account_withdraw"
+          }
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "每页条数"
+        },
+        "total_number": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "总条数"
+        },
+        "total_page": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "总页数"
+        }
+      },
+      "title": "PaginationVO«customer_account_withdraw»"
+    },
+    "PaginationVO«customer_recommend_page»": {
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "当前页"
+        },
+        "result": {
+          "type": "array",
+          "description": "查询结果",
+          "items": {
+            "$ref": "#/definitions/customer_recommend_page"
+          }
+        },
+        "size": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "每页条数"
+        },
+        "total_number": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10,
+          "description": "总条数"
+        },
+        "total_page": {
+          "type": "integer",
+          "format": "int32",
+          "example": 1,
+          "description": "总页数"
+        }
+      },
+      "title": "PaginationVO«customer_recommend_page»"
+    },
+    "RegisterCustomerVO": {
+      "type": "object",
+      "properties": {
+        "customer_id": {
+          "type": "integer",
+          "format": "int64",
+          "example": 123,
+          "description": "会员ID"
+        },
+        "recommend_gold": {
+          "type": "number",
+          "example": 1.0,
+          "description": "拉新奖励"
+        }
+      },
+      "title": "RegisterCustomerVO"
+    },
+    "RewardBrowserParams": {
+      "type": "object",
+      "properties": {
+        "content_id": {
+          "type": "string",
+          "example": 123123,
+          "description": "content_id"
+        },
+        "type": {
+          "type": "string",
+          "example": "GOODS商品,VIDEO视频,ARTICLE文章,VOICE音频",
+          "description": "type"
+        }
+      },
+      "title": "RewardBrowserParams"
+    },
+    "RewardCpsParams": {
+      "type": "object",
+      "properties": {
+        "order": {
+          "type": "array",
+          "example": [
+            {
+              "order_id": "13",
+              "money": 1.2
+            },
+            {
+              "order_id": "14",
+              "money": 1.4
+            }
+          ],
+          "description": "订单金额信息",
+          "items": {
+            "$ref": "#/definitions/CustomerAccountMoneyOrderParams"
+          }
+        },
+        "order_customer_name": {
+          "type": "string",
+          "example": "张三",
+          "description": "订单会员名称"
+        },
+        "order_customer_unionid": {
+          "type": "string",
+          "example": "BH5B7s$2kds99ksdSD7F3b",
+          "description": "下单人unionid"
+        }
+      },
+      "title": "RewardCpsParams"
+    },
+    "RewardShareGoldParams": {
+      "type": "object",
+      "properties": {
+        "content_id": {
+          "type": "string",
+          "example": 123329,
+          "description": "内容ID"
+        },
+        "gold": {
+          "type": "number",
+          "example": 123329.0,
+          "description": "奖励金币数"
+        },
+        "share_type": {
+          "type": "string",
+          "example": "GOODS",
+          "description": "分享类型,商品GOODS,视频课VIDEO,文章ARTICLE,音频可VOICE,HOME主页"
+        },
+        "share_uid": {
+          "type": "integer",
+          "format": "int64",
+          "example": 4,
+          "description": "分享人uid"
+        }
+      },
+      "title": "RewardShareGoldParams"
+    },
+    "RewardShareParams": {
+      "type": "object",
+      "properties": {
+        "content_id": {
+          "type": "string",
+          "example": 123329,
+          "description": "内容ID"
+        },
+        "share_type": {
+          "type": "string",
+          "example": "GOODS",
+          "description": "分享类型,商品GOODS,视频课VIDEO,A文章RTICLE,音频可VOICE,HOME主页"
+        },
+        "share_uid": {
+          "type": "integer",
+          "format": "int64",
+          "example": 4,
+          "description": "分享人uid"
+        }
+      },
+      "title": "RewardShareParams"
+    },
+    "RewardSubscribeParams": {
+      "type": "object",
+      "properties": {
+        "unionid": {
+          "type": "string",
+          "example": "abcdefghijklmn",
+          "description": "unionid"
+        }
+      },
+      "title": "RewardSubscribeParams"
+    },
+    "WechatAuthParams": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "afeafa",
+          "description": "code"
+        },
+        "encrypteddata": {
+          "type": "string",
+          "example": "2kds99ksdSD7F3b",
+          "description": "加密数据"
+        },
+        "iv": {
+          "type": "string",
+          "example": "gagagag",
+          "description": "iv"
+        }
+      },
+      "title": "WechatAuthParams"
+    },
+    "WeixinAuthVO": {
+      "type": "object",
+      "properties": {
+        "openid": {
+          "type": "string",
+          "example": "gagfdas34534",
+          "description": "用户openid"
+        },
+        "unionid": {
+          "type": "string",
+          "example": "sdfafaf434",
+          "description": "用户unionid"
+        },
+        "user_id": {
+          "type": "integer",
+          "format": "int64",
+          "example": "afdde3",
+          "description": "用户ID"
+        },
+        "user_key": {
+          "type": "string",
+          "example": "1323sss",
+          "description": "用户key"
+        }
+      },
+      "title": "WeixinAuthVO"
+    },
+    "WithdrawParams": {
+      "type": "object",
+      "properties": {
+        "openid": {
+          "type": "string",
+          "example": "as234jhai",
+          "description": "会员openid"
+        },
+        "unionid": {
+          "type": "string",
+          "example": "as234jhai",
+          "description": "会员unionid, 只有在商城调用时传"
+        }
+      },
+      "title": "WithdrawParams"
+    },
+    "base_result«CustomerAccountVO»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/CustomerAccountVO"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«CustomerAccountVO»"
+    },
+    "base_result«CustomerBrowseruleGoldVO»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/CustomerBrowseruleGoldVO"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«CustomerBrowseruleGoldVO»"
+    },
+    "base_result«CustomerLoginVO»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/CustomerLoginVO"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«CustomerLoginVO»"
+    },
+    "base_result«CustomerRecommendVO»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/CustomerRecommendVO"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«CustomerRecommendVO»"
+    },
+    "base_result«CustomerSignGoldVO»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/CustomerSignGoldVO"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«CustomerSignGoldVO»"
+    },
+    "base_result«CustomerVO»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/CustomerVO"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«CustomerVO»"
+    },
+    "base_result«List«signrule»»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "description": "返回结果",
+          "items": {
+            "$ref": "#/definitions/signrule"
+          }
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«List«signrule»»"
+    },
+    "base_result«PaginationVO«CustomerAccountLogVO»»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/PaginationVO«CustomerAccountLogVO»"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«PaginationVO«CustomerAccountLogVO»»"
+    },
+    "base_result«PaginationVO«Customer_account_money»»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/PaginationVO«Customer_account_money»"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«PaginationVO«Customer_account_money»»"
+    },
+    "base_result«PaginationVO«customer_account_withdraw_page»»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/PaginationVO«customer_account_withdraw_page»"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«PaginationVO«customer_account_withdraw_page»»"
+    },
+    "base_result«PaginationVO«customer_account_withdraw»»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/PaginationVO«customer_account_withdraw»"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«PaginationVO«customer_account_withdraw»»"
+    },
+    "base_result«PaginationVO«customer_recommend_page»»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/PaginationVO«customer_recommend_page»"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«PaginationVO«customer_recommend_page»»"
+    },
+    "base_result«RegisterCustomerVO»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/RegisterCustomerVO"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«RegisterCustomerVO»"
+    },
+    "base_result«WeixinAuthVO»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/WeixinAuthVO"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«WeixinAuthVO»"
+    },
+    "base_result«bigdecimal»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "number",
+          "description": "返回结果"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«bigdecimal»"
+    },
+    "base_result«boolean»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "boolean",
+          "description": "返回结果"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«boolean»"
+    },
+    "base_result«int»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "integer",
+          "format": "int32",
+          "description": "返回结果"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«int»"
+    },
+    "base_result«string»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "description": "返回结果"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«string»"
+    },
+    "base_result«withdraw»": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "description": "返回结果",
+          "$ref": "#/definitions/withdraw"
+        },
+        "error_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10001,
+          "description": "失败码"
+        },
+        "msg": {
+          "type": "string",
+          "example": "请求处理失败",
+          "description": "失败消息"
+        },
+        "suc": {
+          "type": "boolean",
+          "example": true,
+          "description": "请求是否处理成功"
+        }
+      },
+      "title": "base_result«withdraw»"
+    },
+    "customer_account_withdraw": {
+      "type": "object",
+      "properties": {
+        "audit_time": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2018-01-16",
+          "description": "审核通过时间"
+        },
+        "channel": {
+          "type": "string",
+          "example": "SHOP",
+          "description": "提现渠道"
+        },
+        "create_time": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2018-01-12",
+          "description": "创建时间"
+        },
+        "customer_id": {
+          "type": "integer",
+          "format": "int64",
+          "example": 1223,
+          "description": "会员id"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "example": 123,
+          "description": "主键"
+        },
+        "money": {
+          "type": "number",
+          "example": 20.0,
+          "description": "提现金额"
+        },
+        "openid": {
+          "type": "string",
+          "example": "dafaf4545",
+          "description": "openid"
+        },
+        "status": {
+          "type": "string",
+          "example": "TOAUDIT",
+          "description": "审核状态"
+        },
+        "wx_pay_id": {
+          "type": "string",
+          "example": "545AG5AG5",
+          "description": "微信支付单号"
+        }
+      },
+      "title": "customer_account_withdraw"
+    },
+    "customer_account_withdraw_page": {
+      "type": "object",
+      "properties": {
+        "create_time": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2018-01-12",
+          "description": "申请时间"
+        },
+        "money": {
+          "type": "number",
+          "example": 20.0,
+          "description": "提现金额"
+        },
+        "status": {
+          "type": "string",
+          "example": "TOAUDIT",
+          "description": "审核状态（待审核TOAUDIT，审核通过THROUGH）"
+        }
+      },
+      "title": "customer_account_withdraw_page"
+    },
+    "customer_recommend_page": {
+      "type": "object",
+      "properties": {
+        "invite_time": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2018-08-29",
+          "description": "邀请时间"
+        },
+        "invitee_header": {
+          "type": "string",
+          "example": 1223,
+          "description": "被邀请人头像"
+        },
+        "invitee_name": {
+          "type": "string",
+          "example": 1223,
+          "description": "被邀请人姓名"
+        }
+      },
+      "title": "customer_recommend_page"
+    },
+    "signrule": {
+      "type": "object",
+      "properties": {
+        "day": {
+          "type": "integer",
+          "format": "int32",
+          "example": 6,
+          "description": "签到天数"
+        },
+        "gold": {
+          "type": "number",
+          "example": 2.1,
+          "description": "签到送金币数"
+        },
+        "icon": {
+          "type": "string",
+          "example": "www.xxbmm.jpg",
+          "description": "图标"
+        }
+      },
+      "title": "signrule"
+    },
+    "withdraw": {
+      "type": "object",
+      "properties": {
+        "money": {
+          "type": "number",
+          "example": 21.3,
+          "description": "提现金额"
+        },
+        "quota": {
+          "type": "boolean",
+          "example": true,
+          "description": "是否超过限额,True超过,False未超过"
+        },
+        "status": {
+          "type": "string",
+          "example": "TOAUDIT",
+          "description": "审核状态（待审核TOAUDIT，审核通过THROUGH）"
+        }
+      },
+      "title": "withdraw"
+    }
+  }
+}
