@@ -58,7 +58,6 @@ class ParseParameters(object):
             "boolean": True
         }
 
-
     def parse_in_path(self, param):
         '''
         {
@@ -95,6 +94,9 @@ class ParseParameters(object):
         param_type = param["type"]
         param_name = param["name"]
         param_value = self.type_default_values[param_type]
+        if param_type == "array":
+            param_value = [str(i) for i in param_value]
+            param_value = ",".join(param_value)
         data = {param_name: param_value}
         return data
 
