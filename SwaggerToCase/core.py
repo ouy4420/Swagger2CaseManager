@@ -7,19 +7,21 @@ import re
 from collections import OrderedDict
 from SwaggerToCase import utils
 from SwaggerToCase.encoder import JSONEncoder
-from SwaggerToCase.parse import ParsePostData
+from SwaggerToCase.parse import ParseParameters
 import datetime
 import os
 
 class SwaggerParser(object):
-    def __init__(self, file_path=None, filter_str=None, exclude_str=None):
-        self.item = utils.load_item(file_path)
-        # self.item = utils.load_item(file_path)
+    def __init__(self, file_or_url=None, filter_str=None, exclude_str=None):
+        if file_or_url.startswith("http"):
+            self.item = utils.load_by_url(file_or_url)
+        else:
+            self.item = utils.load_by_file(file_or_url)
+        self.definitoins = self.item.get("definitions", None)
         self.user_agent = None
         self.filter_str = filter_str
         self.exclude_str = exclude_str or ""
         self.ordered_dict = False
-        self.parse_post_data = ParsePostData()
 
     def init_dict(self):
         return OrderedDict() if self.ordered_dict else {}
@@ -37,6 +39,42 @@ class SwaggerParser(object):
     def _make_request_name(testcase_dic, request_json):
         # TODO : try 机制
         testcase_dic["name"] = request_json['operationId']
+
+    @staticmethod
+    def _make_request_mothod(testcase_dic, method):
+        method = method.upper()
+        list_method = ["POST", "GET", "PUT", "DELETE", "PATCH", "OPTIONS"]
+        if method is None:
+            logging.exception("method missed in request.")
+            sys.exit(1)
+        if method not in list_method:
+            logging.exception("method is not correct.")
+            sys.exit(1)
+        testcase_dic["request"]["method"] = method
+
+    def _make_request_url(self, testcase_dic, url, params):
+        # 多个{}的情况也需要考虑， 写个通用的
+        path_params = params.path_param
+        if "{" in url:
+            path_dict = {}
+            [path_dict.update(item) for item in path_params]
+            url = url.format(**path_dict)
+        parsed_object = urlparse.urlparse(url)
+        testcase_dic["request"]["url"] = parsed_object.geturl()
+        return
+
+    def _make_request_query(self, api_item):
+        # Todo: 补充url的querystring
+        pass
+
+    @staticmethod
+    def _make_request_header(testcase_dic, request_json):
+        # ToDo： 通过consoums 获取content-type
+        headers = {}
+        headers_data = request_json.get("consumes", [])
+        if headers_data:
+            headers["content-type"] = ";".join(headers_data)
+            testcase_dic["request"]["headers"] = headers
 
     def _make_request_body(self, testcase_dic, request_json):
         try:
@@ -73,50 +111,8 @@ class SwaggerParser(object):
             logging.exception("can't convert postman file to json file.")
             sys.exit(1)
 
-    def _make_request_url(self, testcase_dic, url):
-        if isinstance(url, str):
-            parsed_object = urlparse.urlparse(url)
-            testcase_dic["request"]["url"] = parsed_object.geturl()
-            return
-        elif isinstance(url, dict):
-            url_dict = url
-            url_keys = url_dict.keys()
-            if "raw" in url_keys:
-                url = url_dict["raw"]
-                parsed_object = urlparse.urlparse(url)
-                url = parsed_object.geturl()
-                url = url.split("?")[0]
-                if url.startswith("{{"):
-                    url = re.sub(r"{{\w+}}", "", url, count=1)
-
-                testcase_dic["request"]["url"] = url
-            params = {}
-            if "query" in url_keys:
-                for query in url_dict.get("query"):
-                    params[query["key"]] = self.parse_value_from_type(query["value"])  # value可能是什么类型?
-            if len(params):
-                testcase_dic["request"]["params"] = params
-            return
-
-    @staticmethod
-    def _make_request_mothod(testcase_dic, method):
-        method = method.upper()
-        list_method = ["POST", "GET", "PUT", "DELETE", "PATCH", "OPTIONS"]
-        if method is None:
-            logging.exception("method missed in request.")
-            sys.exit(1)
-        if method not in list_method:
-            logging.exception("method is not correct.")
-            sys.exit(1)
-        testcase_dic["request"]["method"] = method
-
-    @staticmethod
-    def _make_request_header(testcase_dic, request_json):
-        headers = {}
-        headers_data = request_json.get("consumes", [])
-        if headers_data:
-            headers["content-type"] = ";".join(headers_data)
-            testcase_dic["request"]["headers"] = headers
+    def _make_response_schema_validate(self):
+        pass
 
     def make_testapi(self, url, api_item):
         testcase_dic = self.init_dict()  # OrderedDict没起作用？
@@ -124,8 +120,9 @@ class SwaggerParser(object):
         testcase_dic["request"] = {}
         method = api_item[0]
         request_data = api_item[1]
+        params = ParseParameters(self.definitoins, request_data['parameters'])
         self._make_request_name(testcase_dic, request_data)
-        self._make_request_url(testcase_dic, url)
+        self._make_request_url(testcase_dic, url, params)
         self._make_request_mothod(testcase_dic, method)
         self._make_request_header(testcase_dic, request_data)
         self._make_request_body(testcase_dic, request_data)
