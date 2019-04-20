@@ -53,7 +53,7 @@ class SwaggerParser(object):
         testcase_dic["request"]["method"] = method
 
     def _make_request_url(self, testcase_dic, url, params):
-        # 多个{}的情况也需要考虑， 写个通用的
+        # 多个{}的情况也需要考虑， 写个通用的(已完成！)
         path_params = params.path_param
         if "{" in url:
             path_dict = {}
@@ -63,9 +63,12 @@ class SwaggerParser(object):
         testcase_dic["request"]["url"] = parsed_object.geturl()
         return
 
-    def _make_request_query(self, api_item):
-        # Todo: 补充url的querystring
-        pass
+    def _make_request_query(self, testcase_dic, params):
+        # Todo: 补充url的querystring(已完成！)
+        query_pramas = params.query_param
+        query_dict = {}
+        [query_dict.update(item) for item in query_pramas]
+        testcase_dic["request"]["params"] = query_dict
 
     @staticmethod
     def _make_request_header(testcase_dic, request_json):
@@ -116,13 +119,14 @@ class SwaggerParser(object):
 
     def make_testapi(self, url, api_item):
         testcase_dic = self.init_dict()  # OrderedDict没起作用？
-
         testcase_dic["request"] = {}
         method = api_item[0]
         request_data = api_item[1]
         params = ParseParameters(self.definitoins, request_data['parameters'])
+        params.parse_parameters()
         self._make_request_name(testcase_dic, request_data)
         self._make_request_url(testcase_dic, url, params)
+        self._make_request_query(testcase_dic, params)
         self._make_request_mothod(testcase_dic, method)
         self._make_request_header(testcase_dic, request_data)
         self._make_request_body(testcase_dic, request_data)
