@@ -71,13 +71,19 @@ class SwaggerParser(object):
         testcase_dic["request"]["params"] = query_dict
 
     @staticmethod
-    def _make_request_header(testcase_dic, request_json):
+    def _make_request_header(testcase_dic, request_json, params):
         # ToDo： 通过consoums 获取content-type
         headers = {}
         headers_data = request_json.get("consumes", [])
+        # 添加content-type字段
         if headers_data:
             headers["content-type"] = ";".join(headers_data)
-            testcase_dic["request"]["headers"] = headers
+        # 添加parameters中的其它header字段
+        query_pramas = params.query_param
+        [headers.update(item) for item in query_pramas]
+        testcase_dic["request"]["headers"] = headers
+
+
 
     def _make_request_body(self, testcase_dic, request_json):
         try:
