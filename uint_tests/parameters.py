@@ -1,6 +1,6 @@
 import unittest
-from SwaggerToCase.parse import ParseParameters
-from SwaggerToCase.utils import load_by_file
+from SwaggerToCase.parser import ParseParameters
+from SwaggerToCase.loader import load_by_file
 
 
 class TestParser(unittest.TestCase):

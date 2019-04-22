@@ -77,6 +77,7 @@ class TestDefinitions(unittest.TestCase):
     def test_array(self):
         parse = ParseParameters(self.definitions, self.parameters)
         data = parse.parse_from_definitons("#/definitions/WechatAuthParams")
+        print(data)
         self.assertEqual(data['order'], [{'haha1': 123, 'haha2': True}, {'haha1': 123, 'haha2': True}])
 
 
