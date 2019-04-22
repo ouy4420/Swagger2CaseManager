@@ -1,21 +1,93 @@
-import json
-import yaml
-import logging
 from SwaggerToCase import loader
 from SwaggerToCase.encoder import JSONEncoder
 from SwaggerToCase.parser import ParseParameters
 from SwaggerToCase.maker import MakeAPI
+import json
+import yaml
+import logging
 import os
+import shutil
 
 
 class SwaggerParser(object):
-    def __init__(self, file_or_url=None, filter_str=None, exclude_str=None):
-        if file_or_url.startswith("http"):
-            self.item = loader.load_by_url(file_or_url)
+    def __init__(self, file_or_url=None):
+        self.file_or_url = file_or_url
+        self.item = None
+        self.definitoins = None
+        self.apis = []
+        self.testcases = []
+
+    def execute(self, testcase_dir, api_file, file_type):
+        # 加载swagger文件
+        self.load()  # 指出url和file两种方式
+        # 解析文件数据
+        self.parse()
+        # 组装api合testcase数据
+        self.make()
+        # 将api和testcase写入文件
+        self.write_file(testcase_dir, api_file, file_type)
+
+    def load(self):
+        if self.file_or_url.startswith("http"):
+            self.item = loader.load_by_url(self.file_or_url)
         else:
-            self.item = loader.load_by_file(file_or_url)
+            self.item = loader.load_by_file(self.file_or_url)
+
+    def parse(self):
         # TODO: host of swagger file
         self.definitoins = self.item.get("definitions", None)
+
+    def make(self):
+        self.apis = self.make_testapis()
+        for api in self.apis:
+            def_name, api_item = self.add_def_name(api)
+            body_data = api_item["api"]["request"].get("json", None)
+            name_case = self.make_testcase(def_name, body_data)
+            self.testcases.append(name_case)
+            if body_data is not None:
+                api_item["api"]["request"]['json'] = '$data'
+
+    def write_file(self, testcase_dir, api_file, file_type):
+        # -------写入api文件---------
+        if file_type == "yml":
+            logging.debug("Start to generate YAML apis.")
+            with open(api_file, 'w', encoding="utf-8") as outfile:
+                yaml.dump(self.apis, outfile, allow_unicode=True, default_flow_style=False, indent=4)
+            logging.debug("Generate YAML api_file successfully: {}".format(api_file))
+        else:
+            logging.debug("Start to generate JSON apis.")
+            with open(api_file, 'w', encoding="utf-8") as outfile:
+                my_json_str = json.dumps(self.apis, ensure_ascii=False, indent=4, cls=JSONEncoder, sort_keys=True)
+                if isinstance(my_json_str, bytes):
+                    my_json_str = my_json_str.decode("utf-8")
+                outfile.write(my_json_str)
+            logging.debug("Generate JSON api_file successfully: {}".format(api_file))
+
+        # --------写入testcase文件--------
+        if not os.path.exists(testcase_dir):
+            os.mkdir(testcase_dir)
+        else:
+            shutil.rmtree(testcase_dir)
+            os.mkdir(testcase_dir)
+
+        for name, case in self.testcases:
+            case_path = os.path.join(testcase_dir, '{}.{}'.format(name, file_type))
+            # 将对象先转换成json字符串，进行strip去除一些杂质字符，再转回obj
+            case_json = json.dumps(case)
+            case_json = case_json.strip()
+            case = json.loads(case_json)
+            if file_type == 'yml':
+                logging.debug("Start to generate YAML testcases.")
+                with open(case_path, 'w', encoding="utf-8") as outfile:
+                    yaml.dump(case, outfile, allow_unicode=True, default_flow_style=False, indent=2)
+                logging.debug("Generate YAML testcase successfully: {}".format(case_path))
+            else:
+                with open(case_path, 'w', encoding="utf-8") as outfile:
+                    my_json_str = json.dumps(case, ensure_ascii=False, indent=4, cls=JSONEncoder, sort_keys=True)
+                    if isinstance(my_json_str, bytes):
+                        my_json_str = my_json_str.decode("utf-8")
+                    outfile.write(my_json_str)
+                logging.debug("Generate JSON testcase successfully: {}".format(case_path))
 
     def make_testcase(self, def_name, body_data):
         name = def_name.split("(")[0]
@@ -87,73 +159,7 @@ class SwaggerParser(object):
         api_item["api"] = api_value
         return def_name, api_item
 
-    def gen_json(self, testcase_dir, api_file):
-        """ dump Swagger josn file to json testset
-        """
-        logging.debug("Start to generate JSON apis.")
-        self.apis = self.make_testapis()
-        apis = []
-        testcases = []
-        for api in self.apis:
-            def_name, api_item = self.add_def_name(api)
-            body_data = api_item["api"]["request"].get("json", None)
-            name_case = self.make_testcase(def_name, body_data)
-            testcases.append(name_case)
-            if body_data is not None:
-                api_item["api"]["request"]['json'] = '$data'
-            apis.append(api_item)
 
-        # 写入api文件
-        with open(api_file, 'w', encoding="utf-8") as outfile:
-            my_json_str = json.dumps(apis, ensure_ascii=False, indent=4, cls=JSONEncoder, sort_keys=True)
-            if isinstance(my_json_str, bytes):
-                my_json_str = my_json_str.decode("utf-8")
-            outfile.write(my_json_str)
-        logging.debug("Generate JSON api_file successfully: {}".format(api_file))
 
-        # 写入testcase文件
-        if os.path.exists(testcase_dir):
-            os.rmdir(testcase_dir)
-        os.mkdir(testcase_dir)
-        for name, case in testcases:
-            case_path = os.path.join(testcase_dir, name + '.json')
-            with open(case_path, 'w', encoding="utf-8") as outfile:
-                my_json_str = json.dumps(case, ensure_ascii=False, indent=4, cls=JSONEncoder, sort_keys=True)
-                if isinstance(my_json_str, bytes):
-                    my_json_str = my_json_str.decode("utf-8")
-                outfile.write(my_json_str)
-            logging.debug("Generate JSON testcase successfully: {}".format(case_path))
 
-    def gen_yaml(self, testcase_dir, api_file):
-        """ dump item of Collection v2.1 josn file to yaml testset
-       """
-        logging.debug("Start to generate JSON apis.")
-        self.apis = self.make_testapis()
-        apis = []
-        testcases = []
-        for api in self.apis:
-            def_name, api_item = self.add_def_name(api)
-            body_data = api_item["api"]["request"].get("json", None)
-            name_case = self.make_testcase(def_name, body_data)
-            testcases.append(name_case)
-            if body_data is not None:
-                api_item["api"]["request"]['json'] = '$data'
-            apis.append(api_item)
-
-        # 写入api文件
-        with open(api_file, 'w', encoding="utf-8") as outfile:
-            yaml.dump(apis, outfile, allow_unicode=True, default_flow_style=False, indent=4)
-        logging.debug("Generate JSON api_file successfully: {}".format(api_file))
-
-        # 写入testcase文件
-        if not os.path.exists(testcase_dir):
-            os.mkdir(testcase_dir)
-        for name, case in testcases:
-            case_path = os.path.join(testcase_dir, name + '.yml')
-            case_json = json.dumps(case)
-            case_json = case_json.strip()
-            case = json.loads(case_json)
-            with open(case_path, 'w', encoding="utf-8") as outfile:
-                yaml.dump(case, outfile, allow_unicode=True, default_flow_style=False, indent=2)
-            logging.debug("Generate YAML testcase successfully: {}".format(case_path))
 
