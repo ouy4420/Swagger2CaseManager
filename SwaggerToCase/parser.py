@@ -96,7 +96,10 @@ class ParseParameters(object):
         for key, value in body_format.items():
             param_type = value.get("type", None)
             if param_type is None or param_type == "object":
-                ref = value['items']['$ref']
+                if 'items' in value:
+                    ref = value['items']['$ref']
+                else:
+                    ref = value['$ref']
                 param_value = self.parse_from_definitons(ref)
             elif param_type == "array":
                 items = value['items']
