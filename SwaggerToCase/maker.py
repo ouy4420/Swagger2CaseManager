@@ -104,3 +104,50 @@ class MakeAPI(object):
         pass
 
 
+class MakeTestcase(object):
+    def __init__(self, def_name, body_data):
+        self.def_name = def_name
+        self.name = self.def_name.split("(")[0]
+        self.body_data = body_data
+        self.testcase = []
+
+    def make_config(self):
+        config = {
+            "config": {
+                "name": self.name,
+                "request": {
+                    "base_url": "$base_url",
+                    "headers": {
+                        "Content-Type": "application/json;charset=UTF-8"
+                    }
+                }
+            }
+        }
+        self.testcase.append(config)
+
+    def make_config_variables(self):
+        if self.body_data is not None:
+            config = self.testcase[0]["config"]
+            config.update({"variables": {"data": self.body_data}})
+
+    def make_teststep(self):
+        teststep = {
+            "test": {
+                "name": self.name,
+                "api": self.def_name
+            }
+        }
+        self.testcase.append(teststep)
+
+    def make_validate(self):
+        validate = {"validate": [{"eq": ["status_code",200]}]}
+        teststep = self.testcase[1]["test"]
+        teststep.update(validate)
+
+    def make_testcase(self):
+        self.make_config()
+        self.make_config_variables()
+        self.make_teststep()
+        self.make_validate()
+
+
