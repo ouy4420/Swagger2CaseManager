@@ -1,7 +1,6 @@
 import logging
 import sys
 import urllib.parse as urlparse
-import json
 
 
 class MakeAPI(object):
@@ -82,8 +81,9 @@ class MakeAPI(object):
             body_params = params.body_param
             formdata_params = params.formdata_param
             if body_params:
-                data = json.dumps(body_params[0])
-                self.test_api["request"]["data"] = data
+                # data = json.dumps(body_params[0])
+                data = body_params[0]
+                self.test_api["request"]["json"] = data
             else:
                 # ToDo: 待解决！！
                 # ToDo: parameter 是formdata时，要对应设置Header
