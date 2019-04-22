@@ -1,7 +1,7 @@
 from SwaggerToCase import loader
 from SwaggerToCase.encoder import JSONEncoder
 from SwaggerToCase.parser import ParseParameters
-from SwaggerToCase.maker import MakeAPI
+from SwaggerToCase.maker import MakeAPI,MakeTestcase
 import json
 import yaml
 import logging
@@ -15,8 +15,9 @@ class SwaggerParser(object):
         self.testcase_dir = config["testcase_dir"]
         self.api_file = config["api_file"]
         self.file_type = config["file_type"]
-        self.item = None
-        self.definitoins = None
+        self.item = {}
+        self.paths = {}
+        self.definitoins = {}
         self.apis = []
         self.testcases = []
 
@@ -38,6 +39,7 @@ class SwaggerParser(object):
 
     def parse(self):
         # TODO: host of swagger file
+        self.paths = paths = self.item["paths"]
         self.definitoins = self.item.get("definitions", None)
 
     def make(self):
@@ -95,31 +97,9 @@ class SwaggerParser(object):
                 logging.debug("Generate JSON testcase successfully: {}".format(case_path))
 
     def make_testcase(self, def_name, body_data):
-        name = def_name.split("(")[0]
-        testcase = []
-        # ToDo: 到时候，config中的name设置成description
-        config = {
-            "config": {
-                "name": name,
-                "request": {
-                    "base_url": "$base_url",
-                    "headers": {
-                        "Content-Type": "application/json;charset=UTF-8"
-                    }
-                }
-            }
-        }
-        if body_data is not None:
-            config["config"].update({"variables": {"data": body_data}})
-        testcase.append(config)
-        teststep = {
-            "test": {
-                "name": name,
-                "api": def_name
-            }
-        }
-        testcase.append(teststep)
-        return name, testcase
+        make_testcase = MakeTestcase(def_name, body_data)
+        make_testcase.make_testcase()
+        return make_testcase.name, make_testcase.testcase
 
     def make_testcases(self):
         for api in self.apis:
@@ -150,9 +130,8 @@ class SwaggerParser(object):
         return make_api.test_api
 
     def make_testapis(self):
-        paths = self.item["paths"]
-        for url in paths:
-            api_items = paths[url]
+        for url in self.paths:
+            api_items = self.paths[url]
             for api_item in api_items.items():
                 self.apis.append(
                     {"api": self.make_testapi(url, api_item)}
