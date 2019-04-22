@@ -58,6 +58,62 @@ class ParseParameters(object):
             "boolean": True
         }
 
+    def parse_from_definitons(self, ref):
+        '''
+        "order_ids": {
+          "type": "array",
+          "example": [
+            "as2ss",
+            "j2jk1k"
+          ],
+          "description": "退款订单ID数组",
+          "items": {
+            "type": "string"
+          }
+          -------------------------------------
+          "order": {
+          "type": "array",
+          "example": [
+            {
+              "order_id": "13",
+              "gold": 1.2
+            },
+            {
+              "order_id": "14",
+              "gold": 1.4
+            }
+          ],
+          "description": "订单使用金币信息",
+          "items": {
+            "$ref": "#/definitions/CustomerOrderParams"
+          }
+        :param ref:
+        :return:
+        '''
+        schema = ref.split('/')[-1]
+        body_format = self.definitions[schema]["properties"]
+        data = {}
+        for key, value in body_format.items():
+            param_type = value.get("type", None)
+            if param_type is None or param_type == "object":
+                ref = value['items']['$ref']
+                param_value = self.parse_from_definitons(ref)
+            elif param_type == "array":
+                items = value['items']
+                if "$ref" in items:
+                    ref = items["$ref"]
+                    array_value = self.parse_from_definitons(ref)
+                    param_value = []
+                    for i in range(2):
+                        param_value.append(array_value)
+                else:
+                    field_type = items["type"]
+                    param_value = self.type_default_values[field_type]
+            else:
+                param_value = self.type_default_values[param_type]
+            data.update({key: param_value})
+        return data
+
     def parse_in_path(self, param):
         '''
         {
@@ -180,16 +236,7 @@ class ParseParameters(object):
         schema = param["schema"]
         if "$ref" in schema:
             ref = schema["$ref"]
-            schema = ref.split('/')[-1]
-            definitons = self.definitions
-            body_format = definitons[schema]["properties"]
-            body = {}
-            for key, value in body_format.items():
-                # ToDO: definitions中properties可以让开发配合设置default值
-                # body.update({key: value["default"]})
-                param_type = value["type"]
-                param_value = self.type_default_values[param_type]
-                body.update({key: param_value})
+            body = self.parse_from_definitons(ref)
         else:
             # ToDO: Schema Object可以让开发配合设置default值
             # body = schema["default"]
@@ -236,10 +283,12 @@ class ParseParameters(object):
         }
         for param in self.parameters:
             param_type = param["in"]
-            param_required = param["required"]
-            if param_required:
-                parse_data = type_parse[param_type](param)
-                data_append[param_type].append(parse_data)
+            # Todo: 有没有require参数的情况？
+            if "required" in param:
+                param_required = param["required"]
+                if param_required:
+                    parse_data = type_parse[param_type](param)
+                    data_append[param_type].append(parse_data)
 
 
 class ParseResponse(object):
