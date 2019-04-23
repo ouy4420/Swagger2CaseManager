@@ -294,10 +294,143 @@ class ParseParameters(object):
                     data_append[param_type].append(parse_data)
 
 
-class ParseResponse(object):
-    def __init__(self, responses):
+class ParseResponses(object):
+    def __init__(self, definitions, responses):
+        self.definitions = definitions
         self.responses = responses
-        self.data_schema = {}
+        self.schema = {}
+        self.status_code = 200
 
     def parse_responses(self):
+        '''
+        responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/BizResponse«boolean»"
+            }
+          }
+        }
+        :return:
+        '''
+
+        # status_code, value = list(self.responses.items())[0]
+        # ref = value['schema']['$ref']
+        # self.schema = self.parse_from_definitons(ref)
         pass
+
+    def parse_from_definitons(self, ref):
+        '''
+        "order_ids": {
+          "type": "array",
+          "example": [
+            "as2ss",
+            "j2jk1k"
+          ],
+          "description": "退款订单ID数组",
+          "items": {
+            "type": "string"
+          }
+          -------------------------------------
+          "order": {
+          "type": "array",
+          "example": [
+            {
+              "order_id": "13",
+              "gold": 1.2
+            },
+            {
+              "order_id": "14",
+              "gold": 1.4
+            }
+          ],
+          "description": "订单使用金币信息",
+          "items": {
+            "$ref": "#/definitions/CustomerOrderParams"
+          }
+        :param ref:
+        :return:
+        '''
+        schema = ref.split('/')[-1]
+        sehema = self.definitions[schema]
+        body_format = self.definitions[schema]["properties"]
+        for key, value in body_format.items():
+            param_type = value.get("type", None)
+            if param_type is None or param_type == "object":
+                items = value['items']
+                if 'items' in value:
+                    ref = items['$ref']
+                else:
+                    ref = items['$ref']
+                param_value = self.parse_from_definitons(ref)
+                value['items'] = param_value
+            elif param_type == "array":
+                items = value['items']
+                if "$ref" in items:
+                    ref = items["$ref"]
+                    array_value = self.parse_from_definitons(ref)
+                    value['items'] = array_value
+        sehema["properties"] = body_format
+        return sehema
+
+
+class ParseSwagger(object):
+    def __init__(self, item):
+        self.item = item
+        self.paths = self.item["paths"]
+        self.definitions = self.item["definitions"]
+        self.swagger = {"interfaces": []}
+
+
+    def parse_baseurl(self):
+        host = self.item.get("host", "http://127.0.0.1")
+        basePath = self.item.get("basePath", "/")
+        base_url = host + basePath
+        self.swagger["base_url"] = base_url
+
+    def parse_paths(self):
+        for url in self.paths:
+            api_items = self.paths[url]
+            for api_item in api_items.items():
+                method, api = api_item
+                # 有时get方法没有parameters参数
+                if 'parameters' in api:
+                    parameters = self.parse_parameters(api["parameters"])
+                else:
+                    parameters = None
+                responses = self.parse_responses(api["responses"])
+                consumes = api.get("consumes", [])
+                produces = api.get("produces", [])
+                operationId = api.get("operationId", "")
+                summary = api.get("summary", "")
+                deprecated = api.get("deprecated", True)
+                api_element = {
+                    "url": url,
+                    "method": method,
+                    "responses": responses,
+                    "parameters": parameters,
+                    "consumes": consumes,
+                    "produces": produces,
+                    "operationId": operationId,
+                    "summary": summary,
+                    "deprecated": deprecated
+                }
+                self.swagger["interfaces"].append(api_element)
+
+    def parse_definitions(self):
+        self.swagger["definitions"] = self.definitions
+
+    def parse_parameters(self, parameters):
+        params = ParseParameters(self.definitions, parameters)
+        params.parse_parameters()
+        return params
+
+    def parse_responses(self, responses):
+        resps = ParseResponses(self.definitions, responses)
+        resps.parse_responses()
+        return resps
+
+    def parse_swagger(self):
+        self.parse_baseurl()
+        self.parse_paths()
+        self.parse_definitions()

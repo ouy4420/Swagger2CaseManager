@@ -7,19 +7,10 @@ class MakeAPI(object):
     def __init__(self):
         self.test_api = {"request": {}}
 
-    @staticmethod
-    def parse_value_from_type(value):
-        if value.lower() == "false":
-            return False
-        elif value.lower() == "true":
-            return True
-        else:
-            return str(value)
-
     # name
-    def make_request_name(self, request_json):
+    def make_request_name(self, operationId):
         # TODO : try 机制
-        self.test_api["name"] = request_json['operationId']
+        self.test_api["name"] = operationId
 
     # request -> method
     def make_request_mothod(self, method):
@@ -60,13 +51,11 @@ class MakeAPI(object):
         self.test_api["request"]["params"] = query_dict
 
     # request -> headers
-    def make_request_header(self, request_json):
-        # ToDo： 通过consoums 获取content-type(已完成！)
+    def make_request_header(self, consumes):
         headers = {}
-        headers_data = request_json.get("consumes", [])
         # 添加content-type字段
-        if headers_data:
-            headers["content-type"] = ";".join(headers_data)
+        if consumes:
+            headers["content-type"] = ";".join(consumes)
             self.test_api["request"]["headers"] = headers
 
     def add_header_from_parameters(self, params):
@@ -76,7 +65,7 @@ class MakeAPI(object):
         [headers.update(item) for item in query_pramas]
 
     # request -> data
-    def make_request_body(self, request_json, params):
+    def make_request_body(self, params):
         try:
             body_params = params.body_param
             formdata_params = params.formdata_param
@@ -103,13 +92,24 @@ class MakeAPI(object):
         # test_api['validate'] =
         pass
 
+    def make_def_name(self):
+        api_name = self.test_api["name"]
+        data = self.test_api["request"].get('json', None)
+        if data is not None:
+            def_name = "{}({})".format(api_name, "$data")
+        else:
+            def_name = "{}()".format(api_name)
+        self.test_api["def"] = def_name
+
 
 class MakeTestcase(object):
-    def __init__(self, def_name, body_data):
+    def __init__(self, def_name, body_data, reponses):
         self.def_name = def_name
         self.name = self.def_name.split("(")[0]
         self.body_data = body_data
-        self.testcase = []
+        self.responses = reponses
+        self.body_data = {}
+        self.test_case = []
 
     def make_config(self):
         config = {
@@ -123,12 +123,19 @@ class MakeTestcase(object):
                 }
             }
         }
-        self.testcase.append(config)
+        self.test_case.append(config)
 
     def make_config_variables(self):
+        self.make_request_variable()
+
+    def make_request_variable(self):
         if self.body_data is not None:
-            config = self.testcase[0]["config"]
+            config = self.test_case[0]["config"]
             config.update({"variables": {"data": self.body_data}})
+
+    def make_response_variable(self):
+        # self.responses
+        pass
 
     def make_teststep(self):
         teststep = {
@@ -137,11 +144,16 @@ class MakeTestcase(object):
                 "api": self.def_name
             }
         }
-        self.testcase.append(teststep)
+        self.test_case.append(teststep)
 
     def make_validate(self):
-        validate = {"validate": [{"eq": ["status_code",200]}]}
-        teststep = self.testcase[1]["test"]
+        validate = {"validate": []}
+        validate_list = validate["validate"]
+        eq = {"eq": ["status_code", 200]}
+        validate_list.append(eq)
+        # validate_schema = {"validate_schema": ["content", "$schema"]}
+        # validate_list.append(validate_schema)
+        teststep = self.test_case[1]["test"]
         teststep.update(validate)
 
     def make_testcase(self):

@@ -1,7 +1,7 @@
 from SwaggerToCase import loader
 from SwaggerToCase.encoder import JSONEncoder
-from SwaggerToCase.parser import ParseParameters
-from SwaggerToCase.maker import MakeAPI,MakeTestcase
+from SwaggerToCase.parser import ParseSwagger
+from SwaggerToCase.maker import MakeAPI, MakeTestcase
 import json
 import yaml
 import logging
@@ -16,7 +16,7 @@ class SwaggerParser(object):
         self.api_file = config["api_file"]
         self.file_type = config["file_type"]
         self.item = {}
-        self.paths = {}
+        self.parsed_swagger = {}
         self.definitoins = {}
         self.apis = []
         self.testcases = []
@@ -38,9 +38,10 @@ class SwaggerParser(object):
             self.item = loader.load_by_file(self.file_or_url)
 
     def parse(self):
-        # TODO: host of swagger file
-        self.paths = paths = self.item["paths"]
-        self.definitoins = self.item.get("definitions", None)
+        parsed_swagger = ParseSwagger(self.item)
+        parsed_swagger.parse_swagger()
+        self.parsed_swagger = parsed_swagger.swagger
+        self.definitoins = self.parsed_swagger["definitions"]
 
     def make(self):
         self.make_testapis()
@@ -96,55 +97,61 @@ class SwaggerParser(object):
                     outfile.write(my_json_str)
                 logging.debug("Generate JSON testcase successfully: {}".format(case_path))
 
-    def make_testcase(self, def_name, body_data):
-        make_testcase = MakeTestcase(def_name, body_data)
-        make_testcase.make_testcase()
-        return make_testcase.name, make_testcase.testcase
+    def make_testcase(self, test_api, interface):
+        reponses = interface["responses"]
+        def_name = test_api["api"]["def"]
+        body_data = test_api["api"]["request"].get("json", None)
+        if body_data is not None:
+            test_api["api"]["request"]['json'] = '$data'
+        make_case = MakeTestcase(def_name, body_data, reponses)
+        make_case.make_testcase()
+        return make_case.name, make_case.test_case
 
     def make_testcases(self):
-        for api in self.apis:
-            def_name, api_item = self.add_def_name(api)
-            body_data = api_item["api"]["request"].get("json", None)
-            name_case = self.make_testcase(def_name, body_data)
-            self.testcases.append(name_case)
-            if body_data is not None:
-                api_item["api"]["request"]['json'] = '$data'
+        interfaces = self.parsed_swagger["interfaces"]
+        for test_api, interface in zip(self.apis, interfaces):
+            self.testcases.append(self.make_testcase(test_api, interface))
 
-    def make_testapi(self, url, api_item):
-        method = api_item[0]
-        request_data = api_item[1]
+    def make_testapi(self, interface):
+        # -----获取解析后的参数---
+        method = interface["method"]
+        url = interface["url"]
+        consumes = interface["consumes"]
+        operationId = interface["operationId"]
+        parameters = interface["parameters"]
+
+        # -----Make API-----------
         make_api = MakeAPI()
-        make_api.make_request_url(url)
-        make_api.make_request_header(request_data)
-        make_api.make_request_name(request_data)
+        make_api.make_request_name(operationId)
         make_api.make_request_mothod(method)
+        make_api.make_request_url(url)
+        make_api.make_request_header(consumes)
         # 有时get方法没有parameters参数
-        if 'parameters' in request_data:
-            params = ParseParameters(self.definitoins, request_data['parameters'])
-            params.parse_parameters()
-            make_api.parse_path_url(params)
-            make_api.make_request_query(params)
-            make_api.make_request_header(request_data)
-            make_api.make_request_body(request_data, params)
-        # self.make_response_schema_validate()
+        if parameters is not None:
+            make_api.parse_path_url(parameters)
+            make_api.make_request_query(parameters)
+            make_api.make_request_body(parameters)
+        make_api.make_def_name()
         return make_api.test_api
 
     def make_testapis(self):
-        for url in self.paths:
-            api_items = self.paths[url]
-            for api_item in api_items.items():
-                self.apis.append(
-                    {"api": self.make_testapi(url, api_item)}
-                )
+        interfaces = self.parsed_swagger["interfaces"]
+        for interface in interfaces:
+            self.apis.append(
+                {"api": self.make_testapi(interface)}
+            )
 
-    def add_def_name(self, api_item):
-        api_value = api_item["api"]
-        api_name = api_value["name"]
-        data = api_value["request"].get('json', None)
-        if data is not None:
-            def_name = "{}({})".format(api_name, "$data")
-        else:
-            def_name = "{}()".format(api_name)
-        api_value["def"] = def_name
-        api_item["api"] = api_value
-        return def_name, api_item
+
+
+
+    # def add_def_name(self, api_item):
+    #     api_value = api_item["api"]
+    #     api_name = api_value["name"]
+    #     data = api_value["request"].get('json', None)
+    #     if data is not None:
+    #         def_name = "{}({})".format(api_name, "$data")
+    #     else:
+    #         def_name = "{}()".format(api_name)
+    #     api_value["def"] = def_name
+    #     api_item["api"] = api_value
+    #     return def_name, api_item
