@@ -5,15 +5,15 @@ import urllib.parse as urlparse
 
 class MakeAPI(object):
     def __init__(self):
-        self.test_api = {"request": {}}
+        self.test_api = {}
 
     # name
-    def make_request_name(self, operationId):
+    def _make_request_name(self, operationId):
         # TODO : try 机制
         self.test_api["name"] = operationId
 
     # request -> method
-    def make_request_mothod(self, method):
+    def _make_request_mothod(self, method):
         method = method.upper()
         list_method = ["POST", "GET", "PUT", "DELETE", "PATCH", "OPTIONS"]
         if method is None:
@@ -25,12 +25,12 @@ class MakeAPI(object):
         self.test_api["request"]["method"] = method
 
     # request -> url
-    def make_request_url(self, url):
+    def _make_request_url(self, url):
         parsed_object = urlparse.urlparse(url)
         self.test_api["request"]["url"] = parsed_object.geturl()
         return
 
-    def parse_path_url(self, params):
+    def _parse_path_url(self, params):
         # 多个{}的情况也需要考虑， 写个通用的(已完成！)
         url = self.test_api["request"]["url"]
         path_params = params.path_param
@@ -43,7 +43,7 @@ class MakeAPI(object):
             # request -> querystring
 
     # request -> params
-    def make_request_query(self, params):
+    def _make_request_query(self, params):
         # Todo: 补充url的querystring(已完成！)
         query_pramas = params.query_param
         query_dict = {}
@@ -51,21 +51,21 @@ class MakeAPI(object):
         self.test_api["request"]["params"] = query_dict
 
     # request -> headers
-    def make_request_header(self, consumes):
+    def _make_request_header(self, consumes):
         headers = {}
         # 添加content-type字段
         if consumes:
             headers["content-type"] = ";".join(consumes)
             self.test_api["request"]["headers"] = headers
 
-    def add_header_from_parameters(self, params):
+    def _add_header_from_parameters(self, params):
         # 添加parameters中的其它header字段
         headers = self.test_api["request"]["headers"]
         query_pramas = params.query_param
         [headers.update(item) for item in query_pramas]
 
     # request -> data
-    def make_request_body(self, params):
+    def _make_request_body(self, params):
         try:
             body_params = params.body_param
             formdata_params = params.formdata_param
@@ -87,12 +87,12 @@ class MakeAPI(object):
             sys.exit(1)
 
     # validate
-    def make_response_schema_validate(self, test_api):
+    def _make_response_schema_validate(self, test_api):
         # parse_responses
         # test_api['validate'] =
         pass
 
-    def make_def_name(self):
+    def _make_def_name(self):
         api_name = self.test_api["name"]
         data = self.test_api["request"].get('json', None)
         if data is not None:
@@ -101,20 +101,43 @@ class MakeAPI(object):
             def_name = "{}()".format(api_name)
         self.test_api["def"] = def_name
 
+    def _make_testapi(self, interface):
+        # -----获取解析后的参数---
+        method = interface["method"]
+        url = interface["url"]
+        consumes = interface["consumes"]
+        operationId = interface["operationId"]
+        parameters = interface["parameters"]
+
+        self.test_api = {"request": {}}
+        # -----Make API-----------
+        self._make_request_name(operationId)
+        self._make_request_mothod(method)
+        self._make_request_url(url)
+        self._make_request_header(consumes)
+        # 有时get方法没有parameters参数
+        if parameters is not None:
+            self._parse_path_url(parameters)
+            self._make_request_query(parameters)
+            self._make_request_body(parameters)
+        self._make_def_name()
+        return self.test_api
+
+    def make_testapis(self, apis, interfaces):
+        for interface in interfaces:
+            apis.append(
+                {"api": self._make_testapi(interface)}
+            )
+
 
 class MakeTestcase(object):
-    def __init__(self, def_name, body_data, reponses):
-        self.def_name = def_name
-        self.name = self.def_name.split("(")[0]
-        self.body_data = body_data
-        self.responses = reponses
-        self.body_data = {}
+    def __init__(self):
         self.test_case = []
 
-    def make_config(self):
+    def _make_config(self, name):
         config = {
             "config": {
-                "name": self.name,
+                "name": name,
                 "request": {
                     "base_url": "$base_url",
                     "headers": {
@@ -125,28 +148,25 @@ class MakeTestcase(object):
         }
         self.test_case.append(config)
 
-    def make_config_variables(self):
-        self.make_request_variable()
-
-    def make_request_variable(self):
-        if self.body_data is not None:
+    def _make_request_variable(self, body_data):
+        if body_data is not None:
             config = self.test_case[0]["config"]
-            config.update({"variables": {"data": self.body_data}})
+            config.update({"variables": {"data": body_data}})
 
-    def make_response_variable(self):
+    def _make_response_variable(self, responses):
         # self.responses
         pass
 
-    def make_teststep(self):
+    def _make_teststep(self, name, def_name):
         teststep = {
             "test": {
-                "name": self.name,
-                "api": self.def_name
+                "name": name,
+                "api": def_name
             }
         }
         self.test_case.append(teststep)
 
-    def make_validate(self):
+    def _make_validate(self):
         validate = {"validate": []}
         validate_list = validate["validate"]
         eq = {"eq": ["status_code", 200]}
@@ -156,10 +176,23 @@ class MakeTestcase(object):
         teststep = self.test_case[1]["test"]
         teststep.update(validate)
 
-    def make_testcase(self):
-        self.make_config()
-        self.make_config_variables()
-        self.make_teststep()
-        self.make_validate()
+    def _make_testcase(self, test_api, interface):
+        self.test_case = []
+        responses = interface["responses"]
+        def_name = test_api["api"]["def"]
+        name = def_name.split("(")[0]
+        body_data = test_api["api"]["request"].get("json", None)
+        if body_data is not None:
+            test_api["api"]["request"]['json'] = '$data'
+        self._make_config(name)
+        self._make_request_variable(body_data)
+        self._make_response_variable(responses)
+        self._make_teststep(name, def_name)
+        self._make_validate()
+        return name, self.test_case
+
+    def make_testcases(self, apis, testcases, interfaces):
+        for test_api, interface in zip(apis, interfaces):
+            testcases.append(self._make_testcase(test_api, interface))
 
 
