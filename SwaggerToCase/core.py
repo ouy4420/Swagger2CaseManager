@@ -4,7 +4,7 @@ from SwaggerToCase.maker import MakeAPI, MakeTestcase
 from SwaggerToCase.dumper import DumpFile
 
 
-class SwaggerParser(object):
+class Swagger2Case(object):
     def __init__(self, config):
         self.config = config
         self.item = {}
@@ -15,7 +15,7 @@ class SwaggerParser(object):
 
     def execute(self):
         # 加载swagger文件
-        self.load()  # 指出url和file两种方式
+        self.load()
         # 解析文件数据
         self.parse()
         # 组装api合testcase数据
@@ -43,8 +43,6 @@ class SwaggerParser(object):
 
     def dump(self):
         dumper = DumpFile(self.config, self.apis, self.testcases)
-        # 写入api文件
-        dumper.dump_api_file()
-        # 写入testcase文件
-        dumper.dump_testcases_files()
+        dumper.dump_api_file()  # 写入api文件
+        dumper.dump_testcases_files()  # 写入testcase文件
 
