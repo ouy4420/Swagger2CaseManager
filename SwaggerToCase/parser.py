@@ -1,3 +1,6 @@
+import copy
+
+
 class ParseFormData(object):
     @staticmethod
     def parse_urlencoded_type(testcase_dic, post_data):
@@ -98,9 +101,12 @@ class ParseParameters(object):
             if param_type is None or param_type == "object":
                 if 'items' in value:
                     ref = value['items']['$ref']
-                else:
+                    param_value = self.parse_from_definitons(ref)
+                elif "$ref" in value:
                     ref = value['$ref']
-                param_value = self.parse_from_definitons(ref)
+                    param_value = self.parse_from_definitons(ref)
+                else:
+                    param_value = {}
             elif param_type == "array":
                 items = value['items']
                 if "$ref" in items:
@@ -314,10 +320,10 @@ class ParseResponses(object):
         :return:
         '''
 
-        # status_code, value = list(self.responses.items())[0]
-        # ref = value['schema']['$ref']
-        # self.schema = self.parse_from_definitons(ref)
-        pass
+        status_code, value = list(self.responses.items())[0]
+        if '$ref' in value['schema']:
+            ref = value['schema']['$ref']
+            self.schema = self.parse_from_definitons(ref)
 
     def parse_from_definitons(self, ref):
         '''
@@ -352,24 +358,31 @@ class ParseResponses(object):
         :return:
         '''
         schema = ref.split('/')[-1]
-        sehema = self.definitions[schema]
-        body_format = self.definitions[schema]["properties"]
+        # 不能使用同一个difinitions，因为后面是基于这个变量改动
+        definitions = copy.deepcopy(self.definitions)  # 深拷贝
+        sehema = definitions[schema]
+        body_format = definitions[schema]["properties"]
         for key, value in body_format.items():
             param_type = value.get("type", None)
             if param_type is None or param_type == "object":
-                items = value['items']
                 if 'items' in value:
-                    ref = items['$ref']
+                    ref = value['items']['$ref']
+                    param_value = self.parse_from_definitons(ref)
+                elif "$ref" in value:
+                    ref = value['$ref']
+                    param_value = self.parse_from_definitons(ref)
                 else:
-                    ref = items['$ref']
-                param_value = self.parse_from_definitons(ref)
-                value['items'] = param_value
+                    param_value = {}
             elif param_type == "array":
                 items = value['items']
                 if "$ref" in items:
                     ref = items["$ref"]
-                    array_value = self.parse_from_definitons(ref)
-                    value['items'] = array_value
+                    param_value = self.parse_from_definitons(ref)
+                else:
+                    param_value = value
+            else:
+                param_value = value
+            body_format[key] = param_value
         sehema["properties"] = body_format
         return sehema
 
@@ -380,7 +393,6 @@ class ParseSwagger(object):
         self.paths = self.item["paths"]
         self.definitions = self.item["definitions"]
         self.swagger = {"interfaces": []}
-
 
     def parse_baseurl(self):
         host = self.item.get("host", "http://127.0.0.1")

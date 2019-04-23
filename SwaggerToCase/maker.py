@@ -133,6 +133,7 @@ class MakeAPI(object):
 class MakeTestcase(object):
     def __init__(self):
         self.test_case = []
+        self.responses = None
 
     def _make_config(self, name):
         config = {
@@ -154,8 +155,14 @@ class MakeTestcase(object):
             config.update({"variables": {"data": body_data}})
 
     def _make_response_variable(self, responses):
-        # self.responses
-        pass
+        self.responses = responses
+        if hasattr(self.responses, "schema"):
+            schema = responses.schema
+            config = self.test_case[0]["config"]
+            if "variables" in config:
+                config["variables"].update({"schema": schema})
+            else:
+                config.update({"variables": {"schema": schema}})
 
     def _make_teststep(self, name, def_name):
         teststep = {
@@ -171,8 +178,9 @@ class MakeTestcase(object):
         validate_list = validate["validate"]
         eq = {"eq": ["status_code", 200]}
         validate_list.append(eq)
-        # validate_schema = {"validate_schema": ["content", "$schema"]}
-        # validate_list.append(validate_schema)
+        if hasattr(self.responses, "schema"):
+            validate_schema = {"validate_schema": ["content", "$schema"]}
+            validate_list.append(validate_schema)
         teststep = self.test_case[1]["test"]
         teststep.update(validate)
 
