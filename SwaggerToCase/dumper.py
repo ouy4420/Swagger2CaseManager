@@ -4,6 +4,15 @@ import logging
 import os
 import shutil
 from SwaggerToCase.encoder import JSONEncoder
+from sqlalchemy.orm import sessionmaker
+from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract
+from sqlalchemy import create_engine
+
+engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
+                       encoding='utf-8', echo=True,
+                       max_overflow=5)
+Session = sessionmaker(bind=engine)
+session = Session()
 
 
 class DumpFile(object):
@@ -57,3 +66,91 @@ class DumpFile(object):
                         my_json_str = my_json_str.decode("utf-8")
                     outfile.write(my_json_str)
                 logging.debug("Generate JSON testcase successfully: {}".format(case_path))
+
+
+class DumpDB(object):
+    def __init__(self, test_apis, test_cases):
+        self.test_apis = test_apis
+        self.test_cases = test_cases
+
+    @staticmethod
+    def insert_extract(step, step_obj):
+        step_case = step["test"]
+        extract = step_case.get("extract", None)
+        if extract is not None:
+            extract_list = extract
+            for item in extract_list:
+                key, value = tuple(item.items())[0]
+                extract_obj = Extract(key=key, value=value, stepcase_id=step_obj.id)
+                session.add(extract_obj)
+                session.commit()
+
+    @staticmethod
+    def insert_validate(step, step_obj):
+        validate_list = step["test"]["validate"]
+        for item in validate_list:
+            key, value = tuple(item.items())[0]
+            comparator = key
+            check = value[0]
+            expected = value[1]
+            validate_obj = Validate(comparator=comparator,
+                                    check=check,
+                                    expected=expected,
+                                    stepcase_id=step_obj.id)
+            session.add(validate_obj)
+            session.commit()
+
+    @staticmethod
+    def insert_api(api, step_obj):
+        test_api = api["api"]
+        name = test_api["name"]
+        request = test_api["request"]
+        url = request["url"]
+        method = request["method"]
+        body = json.dumps(api)
+        api_obj = API(name=name, url=url, method=method, body=body, stepcase_id=step_obj.id)
+        session.add(api_obj)
+        session.commit()
+
+    @staticmethod
+    def insert_stepcase(step, case_obj):
+        step_case = step["test"]
+        name = step_case["name"]
+        api_name = step_case["api"]
+        body = json.dumps(step)
+        step_obj = StepCase(name=name, step=1, api_name=api_name, body=body, testcase_id=case_obj.id)
+        session.add(step_obj)
+        session.commit()
+        return step_obj
+
+    @staticmethod
+    def insert_config(config, case_obj):
+        name = config["config"]["name"]
+        body = json.dumps(config)
+        config_obj = Config(name=name, body=body, testcase_id=case_obj.id)
+        session.add(config_obj)
+        session.commit()
+        return config_obj
+
+    @staticmethod
+    def insert_testcase(case_name, project_obj):
+        case_obj = TestCase(name=case_name, project_id=project_obj.id)
+        session.add(case_obj)
+        session.commit()
+        return case_obj
+
+    def insert_project(self, name, desc, owner):
+        project_obj = Project(name=name, desc=desc, owner=owner)
+        session.add(project_obj)
+        session.commit()
+        for api, case in zip(self.test_apis, self.test_cases):
+            case_name, test_case = case
+            case_obj = self.insert_testcase(case_name, project_obj)
+            config = test_case[0]
+            self.insert_config(config, case_obj)
+            for step in test_case[1:]:
+                step_obj = self.insert_stepcase(step, case_obj)
+                self.insert_api(api, step_obj)
+                self.insert_validate(step, step_obj)
+                self.insert_extract(step, step_obj)
+
