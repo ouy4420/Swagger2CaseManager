@@ -5,7 +5,7 @@ import os
 import shutil
 from SwaggerToCase.encoder import JSONEncoder
 from sqlalchemy.orm import sessionmaker
-from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract
+from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters
 from sqlalchemy import create_engine
 
 engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
@@ -124,6 +124,18 @@ class DumpDB(object):
         return step_obj
 
     @staticmethod
+    def insert_parameters(config, config_obj):
+        config_field = config["config"]
+        parameters = config_field.get("parameters", None)
+        if parameters is not None:
+            parameter_list = parameters
+            for item in parameter_list:
+                key, value = tuple(item.items())[0]
+                parameter_obj = Parameters(key=key, value=value, config_id=config_obj.id)
+                session.add(parameter_obj)
+                session.commit()
+
+    @staticmethod
     def insert_config(config, case_obj):
         name = config["config"]["name"]
         body = json.dumps(config)
@@ -147,7 +159,9 @@ class DumpDB(object):
             case_name, test_case = case
             case_obj = self.insert_testcase(case_name, project_obj)
             config = test_case[0]
-            self.insert_config(config, case_obj)
+            config_obj = self.insert_config(config, case_obj)
+            # 这个加了也没什么意义，初始状态没有parameters，需要在后面动态添加
+            self.insert_parameters(config, config_obj)
             for step in test_case[1:]:
                 step_obj = self.insert_stepcase(step, case_obj)
                 self.insert_api(api, step_obj)
