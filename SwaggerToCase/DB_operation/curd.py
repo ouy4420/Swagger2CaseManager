@@ -3,7 +3,8 @@ import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters, Variables
+from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters, \
+    Variables
 
 engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
                        encoding='utf-8',
@@ -50,6 +51,29 @@ class CURD(object):
     # 下面对config的update和对teststep的update就是对testcase的update
     def update(self):
         pass
+
+    # update config
+    def add_variable(self, config_id, variable):
+        # 注意：这里variable是字符串（传进来需要json转换）
+        key = variable['key']
+        value = variable["value"]
+        variable_obj = Variables(key=key,
+                                 value=value,
+                                 config_id=config_id)
+        session.add(variable_obj)
+        session.commit()
+
+    def update_variable(self, config_id, variable):
+        key = variable['key']
+        value = variable["value"]
+        variable_obj = session.query(Variables).filter(variable.id == config_id)
+        variable_obj.key = key
+        variable_obj.value = value
+        session.add(variable_obj)
+        session.commit()
+
+    def delete_variable(self, variable_id):
+        session.query(Variables).filter_by(id=variable_id).delete()
 
     # update config
     def add_parameter(self, config_id, parameter):
