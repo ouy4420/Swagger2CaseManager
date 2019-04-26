@@ -74,6 +74,22 @@ class Parameters(Base):
         return "<class %s %s-%s-%s>" % (Extract.__name__, self.id, self.key, self.value)
 
 
+class Variables(Base):
+    __tablename__ = 'variables'
+    id = Column(Integer, nullable=False, autoincrement=True)
+    key = Column(VARCHAR(100), nullable=False, comment="变量名")
+    value = Column(VARCHAR(100), nullable=False, comment="变量值")
+    config_id = Column(Integer, nullable=False, comment="config外键")
+
+    __table_args__ = (
+        PrimaryKeyConstraint("id"),
+        ForeignKeyConstraint(('config_id',), ('config.id',), name='fk_variables_config')
+    )
+
+    def __repr__(self):
+        return "<class %s %s-%s-%s>" % (Extract.__name__, self.id, self.key, self.value)
+
+
 class StepCase(Base):
     __tablename__ = 'stepcase'
 
