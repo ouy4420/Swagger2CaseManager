@@ -1,7 +1,7 @@
 from SwaggerToCase.loader import LoadSwagger
 from SwaggerToCase.parser import ParseSwagger
 from SwaggerToCase.maker import MakeAPI, MakeTestcase
-from SwaggerToCase.dumper import DumpFile
+from SwaggerToCase.dumper import DumpFile, DumpDB
 
 
 class Swagger2Case(object):
@@ -42,7 +42,10 @@ class Swagger2Case(object):
         make_case.make_testcases(self.apis, self.testcases, interfaces)
 
     def dump(self):
-        dumper = DumpFile(self.config, self.apis, self.testcases)
-        dumper.dump_api_file()  # 写入api文件
-        dumper.dump_testcases_files()  # 写入testcase文件
+        dumper_file = DumpFile(self.config, self.apis, self.testcases)
+        dumper_file.dump_to_file()
+        if self.config["project"] is not None:
+            dumper_db = DumpDB(self.apis, self.testcases)
+            dumper_db.dump_to_db(self.config)
+
 
