@@ -5,11 +5,13 @@ import os
 import shutil
 from SwaggerToCase.encoder import JSONEncoder
 from sqlalchemy.orm import sessionmaker
-from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters, Variables
+from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters, \
+    Variables
 from sqlalchemy import create_engine
 
 engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
-                       encoding='utf-8', echo=True,
+                       encoding='utf-8',
+                       # echo=True,
                        max_overflow=5)
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -67,6 +69,10 @@ class DumpFile(object):
                     outfile.write(my_json_str)
                 logging.debug("Generate JSON testcase successfully: {}".format(case_path))
 
+    def dump_to_file(self):
+        self.dump_api_file()  # 写入api文件
+        self.dump_testcases_files()  # 写入testcase文件
+
 
 class DumpDB(object):
     def __init__(self, test_apis, test_cases):
@@ -100,17 +106,17 @@ class DumpDB(object):
             session.add(validate_obj)
             session.commit()
 
-    @staticmethod
-    def insert_api(api, step_obj):
-        test_api = api["api"]
-        name = test_api["name"]
-        request = test_api["request"]
-        url = request["url"]
-        method = request["method"]
-        body = json.dumps(api)
-        api_obj = API(name=name, url=url, method=method, body=body, stepcase_id=step_obj.id)
-        session.add(api_obj)
-        session.commit()
+    def insert_api(self):
+        for api in self.test_apis:
+            test_api = api["api"]
+            name = test_api["name"]
+            request = test_api["request"]
+            url = request["url"]
+            method = request["method"]
+            body = json.dumps(api)
+            api_obj = API(name=name, url=url, method=method, body=body)
+            session.add(api_obj)
+            session.commit()
 
     @staticmethod
     def insert_stepcase(step, case_obj):
@@ -161,10 +167,13 @@ class DumpDB(object):
         return case_obj
 
     def insert_project(self, name, desc, owner):
+        # insert into project
         project_obj = Project(name=name, desc=desc, owner=owner)
         session.add(project_obj)
         session.commit()
-        for api, case in zip(self.test_apis, self.test_cases):
+
+        # insert into testcase
+        for case in self.test_cases:
             case_name, test_case = case
             case_obj = self.insert_testcase(case_name, project_obj)
             config = test_case[0]
@@ -174,7 +183,15 @@ class DumpDB(object):
             self.insert_variables(config, config_obj)
             for step in test_case[1:]:
                 step_obj = self.insert_stepcase(step, case_obj)
-                self.insert_api(api, step_obj)
                 self.insert_validate(step, step_obj)
                 self.insert_extract(step, step_obj)
 
+        # insert into api
+        self.insert_api()
+
+    def dump_to_db(self, config):
+        project = config["project"]
+        name = project["name"]
+        desc = project["desc"]
+        owner = project["owner"]
+        self.insert_project(name=name, desc=desc, owner=owner)
