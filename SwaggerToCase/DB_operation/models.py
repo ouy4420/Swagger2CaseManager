@@ -58,6 +58,22 @@ class Config(Base):
         return "<class %s %s-%s>" % (Config.__name__, self.id, self.name)
 
 
+class Parameters(Base):
+    __tablename__ = 'parameters'
+    id = Column(Integer, nullable=False, autoincrement=True)
+    key = Column(VARCHAR(100), nullable=False, comment="变量名")
+    value = Column(VARCHAR(100), nullable=False, comment="参数驱动数据，默认来自于debugtalk")
+    config_id = Column(Integer, nullable=False, comment="config外键")
+
+    __table_args__ = (
+        PrimaryKeyConstraint("id"),
+        ForeignKeyConstraint(('config_id',), ('config.id',), name='fk_parameters_config')
+    )
+
+    def __repr__(self):
+        return "<class %s %s-%s-%s>" % (Extract.__name__, self.id, self.key, self.value)
+
+
 class StepCase(Base):
     __tablename__ = 'stepcase'
 
@@ -127,7 +143,6 @@ class Extract(Base):
 
     def __repr__(self):
         return "<class %s %s-%s>" % (Extract.__name__, self.id, self.key)
-
 
 # class Report(Base):
 #     pass
