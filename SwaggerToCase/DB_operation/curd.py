@@ -3,7 +3,7 @@ import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract
+from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters
 
 engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
                        encoding='utf-8',
@@ -26,6 +26,28 @@ class CURD(object):
     def update(self):
         pass
 
+    # update config
+    def add_parameter(self, config_id, parameter):
+        key = parameter['key']
+        value = parameter["value"]
+        parameter_obj = session.query(Parameters).filter(Parameters.id == config_id)
+        parameter_obj.key = key
+        parameter_obj.value = value
+        session.add(parameter_obj)
+        session.commit()
+
+    def update_parameter(self, config_id, parameter):
+        key = parameter['key']
+        value = parameter["value"]
+        parameter_obj = Parameters(key=key,
+                                   value=value,
+                                   config_id=config_id)
+        session.add(parameter_obj)
+        session.commit()
+
+    def delete_parameter(self, parameter_id):
+        session.query(Parameters).filter_by(id=parameter_id).delete()
+
     def add_step(self, case_id, test_step, step_pos):
         name = test_step["name"]
         step = step_pos
@@ -43,6 +65,9 @@ class CURD(object):
     def delete_step(self, step_id):
         session.query(StepCase).filter_by(id=step_id).delete()
 
+    # update_step:
+    #              add_validate、update_validate、delete_validate
+    #              add_extract、update_extract、delete_extract
     def add_validate(self, step_id, validate):
         comparator = validate['comparator']
         check = validate["check"]
@@ -71,7 +96,7 @@ class CURD(object):
     def add_extract(self, step_id, extract):
         key = extract['key']
         value = extract["value"]
-        extract_obj = session.query(Validate).filter(Validate.id == step_id)
+        extract_obj = session.query(Extract).filter(Extract.id == step_id)
         extract_obj.key = key
         extract_obj.value = value
         session.add(extract_obj)
@@ -106,13 +131,24 @@ class CURD(object):
             test_case = []  # testcase, include config and teststeps
             print("case : ", case_obj)
 
-            # 测试用例的config数据
+            # ----------------------------测试用例的config数据 ----------------------------
             config_obj = session.query(Config).filter(Config.testcase_id == case_obj.id).join(TestCase).first()
             print("config: ", config_obj)
             case_config = json.loads(config_obj.body)
+
+            # parameters of config
+            parameters_obj = session.query(Parameters). \
+                filter(Parameters.config_id == config_obj.id).join(Config, isouter=True).all()
+            print("parameters: ", parameters_obj)
+            parameter_list = []
+            for item in parameters_obj:
+                element = {item.key: item.value}
+                parameter_list.append(element)
+            case_config["config"].update({"parameters": parameter_list})
+
             test_case.append(case_config)
 
-            # 测试用例的teststeps数据
+            # ----------------------------测试用例的teststeps数据 ----------------------------
             teststeps_obj = session.query(StepCase).filter(StepCase.testcase_id == case_obj.id).join(TestCase).all()
             print(type(teststeps_obj), teststeps_obj)
             case_steps = []  # teststeps
@@ -153,15 +189,14 @@ class CURD(object):
                 step["test"].update({"validate": validate_list})  # teststep中的validate可能会add\update\delete，所以要update
 
                 # validate of teststep
-                extracts_obj = session.query(Extract).filter(Extract.stepcase_id == step_obj.id).join(StepCase,
-                                                                                                      isouter=True).all()
-                if extracts_obj is not None:
-                    print("extracts: ", extracts_obj)
-                    extract_list = []
-                    for item in extracts_obj:
-                        element = {item.key: item.value}
-                        extract_list.append(element)
-                    step["test"].update({"extract": extract_list})  # teststep中的extract可能会add\update\delete，所以要update
+                extracts_obj = session.query(Extract). \
+                    filter(Extract.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
+                print("extracts: ", extracts_obj)
+                extract_list = []
+                for item in extracts_obj:
+                    element = {item.key: item.value}
+                    extract_list.append(element)
+                step["test"].update({"extract": extract_list})  # teststep中的extract可能会add\update\delete，所以要update
 
                 case_steps.append(step)
 
