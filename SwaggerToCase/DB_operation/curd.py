@@ -3,7 +3,7 @@ import json
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters
+from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters, Variables
 
 engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
                        encoding='utf-8',
@@ -18,10 +18,10 @@ class CURD(object):
         pass
 
     # 适合新的测试用例的create（ TODO ：需要，models中新增config的variable表，CURD支持Variable的CURD）
-        # 然后在这个基础上修改（如：parameters、variables、name等等）
+    # 然后在这个基础上修改（如：parameters、variables、name等等）
     # 也适合流程场景测试testcase的create
-        # 新增testcase, 把teststep1对应的初始testcase查询出来
-        # 然后在这个testcase基础上进行修改
+    # 新增testcase, 把teststep1对应的初始testcase查询出来
+    # 然后在这个testcase基础上进行修改
     def create(self, old_case_id, case_name):
         old_case_obj = session.query(TestCase).filter(TestCase.id == old_case_id)
         new_case_obj = TestCase(name=case_name, project_id=old_case_obj.project_id)
@@ -139,6 +139,7 @@ class CURD(object):
     def delete_extract(self, extract_id):
         session.query(Extract).filter_by(id=extract_id).delete()
 
+    # TODO：待拆分
     def retrieve(self, pro_name, case_ids):
         '''
         从数据库中查询并组装好某个project中某些测试用例用于测试执行
@@ -170,6 +171,16 @@ class CURD(object):
                 element = {item.key: item.value}
                 parameter_list.append(element)
             case_config["config"].update({"parameters": parameter_list})
+
+            # variables of config
+            variables_obj = session.query(Variables). \
+                filter(Variables.config_id == config_obj.id).join(Config, isouter=True).all()
+            print("parameters: ", variables_obj)
+            variable_list = []
+            for item in variables_obj:
+                element = {item.key: json.loads(item.value)}
+                variable_list.append(element)
+            case_config["config"].update({"variables": variable_list})
 
             test_case.append(case_config)
 
