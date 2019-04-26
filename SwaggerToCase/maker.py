@@ -144,25 +144,34 @@ class MakeTestcase(object):
                     "headers": {
                         "Content-Type": "application/json;charset=UTF-8"
                     }
-                }
+                },
+                "parameters": [],
+                "variables": []
             }
         }
         self.test_case.append(config)
 
+    def _make_request_auth(self):
+        request = self.test_case[0]["config"]["request"]
+        request.update({"auth": ("$username", "password")})
+
     def _make_request_variable(self, body_data):
         if body_data is not None:
             config = self.test_case[0]["config"]
-            config.update({"variables": {"data": body_data}})
+            # config.update({"variables": {"data": body_data}})
+            # variables改成有顺序的列表，因为variable之间可能会有依赖
+            config["variables"].append({"data": body_data})
 
     def _make_response_variable(self, responses):
         self.responses = responses
         if hasattr(self.responses, "schema"):
             schema = responses.schema
             config = self.test_case[0]["config"]
-            if "variables" in config:
-                config["variables"].update({"schema": schema})
-            else:
-                config.update({"variables": {"schema": schema}})
+            # if "variables" in config:
+            #     config["variables"].update({"schema": schema})
+            # else:
+            #     config.update({"variables": {"schema": schema}})
+            config["variables"].append({"schema": schema})
 
     def _make_teststep(self, name, def_name):
         teststep = {
@@ -178,9 +187,9 @@ class MakeTestcase(object):
         validate_list = validate["validate"]
         eq = {"eq": ["status_code", 200]}
         validate_list.append(eq)
-        if hasattr(self.responses, "schema"):
-            validate_schema = {"validate_schema": ["content", "$schema"]}
-            validate_list.append(validate_schema)
+        # if hasattr(self.responses, "schema"):
+        #     validate_schema = {"validate_schema": ["content", "$schema"]}
+        #     validate_list.append(validate_schema)
         teststep = self.test_case[1]["test"]
         teststep.update(validate)
 
@@ -202,5 +211,3 @@ class MakeTestcase(object):
     def make_testcases(self, apis, testcases, interfaces):
         for test_api, interface in zip(apis, interfaces):
             testcases.append(self._make_testcase(test_api, interface))
-
-
