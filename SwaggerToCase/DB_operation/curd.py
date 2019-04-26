@@ -17,12 +17,37 @@ class CURD(object):
     def __init__(self):
         pass
 
-    def create(self):
-        pass
+    # 适合新的测试用例的create（ TODO ：需要，models中新增config的variable表，CURD支持Variable的CURD）
+        # 然后在这个基础上修改（如：parameters、variables、name等等）
+    # 也适合流程场景测试testcase的create
+        # 新增testcase, 把teststep1对应的初始testcase查询出来
+        # 然后在这个testcase基础上进行修改
+    def create(self, old_case_id, case_name):
+        old_case_obj = session.query(TestCase).filter(TestCase.id == old_case_id)
+        new_case_obj = TestCase(name=case_name, project_id=old_case_obj.project_id)
+        session.add(new_case_obj)
+        session.commit()
+
+        old_config_obj = session.query(Config).filter(Config.testcase_id == old_case_id).join(TestCase).first()
+        name = old_config_obj.name  # ToDo 支持config name 的update（其实这个就是testcasename，测试用例描述）
+        body = old_config_obj.body
+        config_obj = Config(name=name, body=body, testcase_id=new_case_obj.id)
+        session.add(config_obj)
+        session.commit()
+
+        old_teststeps_obj = session.query(StepCase).filter(StepCase.testcase_id == old_case_id).join(TestCase).all()
+        for old_step_obj in old_teststeps_obj:
+            name = old_step_obj.name
+            api_name = old_step_obj.api_name
+            body = old_step_obj.body
+            step_obj = StepCase(name=name, step=1, api_name=api_name, body=body, testcase_id=new_case_obj.id)
+            session.add(step_obj)
+            session.commit()
 
     def delete(self, case_id):
         session.query(TestCase).filter_by(id=case_id).delete()
 
+    # 下面对config的update和对teststep的update就是对testcase的update
     def update(self):
         pass
 
@@ -30,18 +55,18 @@ class CURD(object):
     def add_parameter(self, config_id, parameter):
         key = parameter['key']
         value = parameter["value"]
-        parameter_obj = session.query(Parameters).filter(Parameters.id == config_id)
-        parameter_obj.key = key
-        parameter_obj.value = value
+        parameter_obj = Parameters(key=key,
+                                   value=value,
+                                   config_id=config_id)
         session.add(parameter_obj)
         session.commit()
 
     def update_parameter(self, config_id, parameter):
         key = parameter['key']
         value = parameter["value"]
-        parameter_obj = Parameters(key=key,
-                                   value=value,
-                                   config_id=config_id)
+        parameter_obj = session.query(Parameters).filter(Parameters.id == config_id)
+        parameter_obj.key = key
+        parameter_obj.value = value
         session.add(parameter_obj)
         session.commit()
 
@@ -96,18 +121,18 @@ class CURD(object):
     def add_extract(self, step_id, extract):
         key = extract['key']
         value = extract["value"]
-        extract_obj = session.query(Extract).filter(Extract.id == step_id)
-        extract_obj.key = key
-        extract_obj.value = value
+        extract_obj = Extract(key=key,
+                              value=value,
+                              stepcase_id=step_id)
         session.add(extract_obj)
         session.commit()
 
     def update_extract(self, step_id, extract):
         key = extract['key']
         value = extract["value"]
-        extract_obj = Extract(key=key,
-                              value=value,
-                              stepcase_id=step_id)
+        extract_obj = session.query(Extract).filter(Extract.id == step_id)
+        extract_obj.key = key
+        extract_obj.value = value
         session.add(extract_obj)
         session.commit()
 
