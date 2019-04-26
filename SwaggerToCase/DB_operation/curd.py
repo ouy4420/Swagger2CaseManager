@@ -1,7 +1,9 @@
-from sqlalchemy.orm import sessionmaker
-from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract
-from sqlalchemy import create_engine
 import json
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract
 
 engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
                        encoding='utf-8',
@@ -18,60 +20,126 @@ class CURD(object):
     def create(self):
         pass
 
-    def delete(self):
-        pass
+    def delete(self, case_id):
+        session.query(TestCase).filter_by(id=case_id).delete()
 
     def update(self):
         pass
 
-    def add_validate(self):
-        pass
+    def add_step(self, case_id, test_step, step_pos):
+        name = test_step["name"]
+        step = step_pos
+        api_name = test_step["api"]
+        body = json.dumps({"test": test_step})
+        testcase_id = case_id
+        step_obj = StepCase(name=name,
+                            step=step,
+                            api_name=api_name,
+                            body=body,
+                            testcase_id=testcase_id)
+        session.add(step_obj)
+        session.commit()
 
-    def update_validate(self):
-        pass
+    def delete_step(self, step_id):
+        session.query(StepCase).filter_by(id=step_id).delete()
 
-    def delete_validate(self):
-        pass
+    def add_validate(self, step_id, validate):
+        comparator = validate['comparator']
+        check = validate["check"]
+        expected = validate["expected"]
+        validate_obj = Validate(comparator=comparator,
+                                check=check,
+                                expected=expected,
+                                stepcase_id=step_id)
+        session.add(validate_obj)
+        session.commit()
 
-    def add_extract(self):
-        pass
+    def update_validate(self, validate_id, validate):
+        comparator = validate['comparator']
+        check = validate["check"]
+        expected = validate["expected"]
+        validate_obj = session.query(Validate).filter(Validate.id == validate_id)
+        validate_obj.comparator = comparator
+        validate_obj.check = check
+        validate_obj.expected = expected
+        session.add(validate_obj)
+        session.commit()
 
-    def update_extract(self):
-        pass
+    def delete_validate(self, validate_id):
+        session.query(Validate).filter_by(id=validate_id).delete()
 
-    def delete_extract(self):
-        pass
+    def add_extract(self, step_id, extract):
+        key = extract['key']
+        value = extract["value"]
+        extract_obj = session.query(Validate).filter(Validate.id == step_id)
+        extract_obj.key = key
+        extract_obj.value = value
+        session.add(extract_obj)
+        session.commit()
+
+    def update_extract(self, step_id, extract):
+        key = extract['key']
+        value = extract["value"]
+        extract_obj = Extract(key=key,
+                              value=value,
+                              stepcase_id=step_id)
+        session.add(extract_obj)
+        session.commit()
+
+    def delete_extract(self, extract_id):
+        session.query(Extract).filter_by(id=extract_id).delete()
 
     def retrieve(self, pro_name, case_ids):
+        '''
+        从数据库中查询并组装好某个project中某些测试用例用于测试执行
+        :param pro_name:
+        :param case_ids:
+        :return:
+        '''
         project_obj = session.query(Project).filter(Project.name == pro_name).first()
         testcases_obj = session.query(TestCase).filter(TestCase.project_id == project_obj.id).join(Project).all()
         test_cases = [case for case in testcases_obj if case.id in case_ids]
-        testcases = []
-        testapis = []
+        testcases = []  # 要执行的测试用例
+        testapis = []  # 测试用例执行相关的api
         for case_obj in test_cases:
             case_name = case_obj.name
             test_case = []  # testcase, include config and teststeps
             print("case : ", case_obj)
 
+            # 测试用例的config数据
             config_obj = session.query(Config).filter(Config.testcase_id == case_obj.id).join(TestCase).first()
             print("config: ", config_obj)
             case_config = json.loads(config_obj.body)
             test_case.append(case_config)
 
+            # 测试用例的teststeps数据
             teststeps_obj = session.query(StepCase).filter(StepCase.testcase_id == case_obj.id).join(TestCase).all()
-            print(teststeps_obj)
-
+            print(type(teststeps_obj), teststeps_obj)
             case_steps = []  # teststeps
+            teststeps_obj = sorted(teststeps_obj, key=lambda x: x.step)
             for step_obj in teststeps_obj:
                 print("step: ", step_obj)
 
-                step = json.loads(step_obj.body)
+                step = json.loads(step_obj.body)  # teststep的主体信息
 
-                api_obj = session.query(API).filter(API.stepcase_id == step_obj.id).join(StepCase).first()
-                print("api: ", api_obj)
-                testapis.append(json.loads(api_obj.body))
+                # testcase corresponding api
+                api_obj = session.query(API).filter(API.stepcase_id == step_obj.id).join(StepCase, isouter=True).first()
+                if api_obj is not None:
+                    print("api: ", api_obj)
+                    api = json.loads(api_obj.body)  # api的主体信息
+                    testapis.append(api)
+                else:
+                    name = step_obj.name
+                    names = [i["api"]["name"] for i in testapis]
+                    if name not in names:
+                        api_obj = session.query(API).filter(API.name == name).first()
+                        api = json.loads(api_obj.body)  # api的主体信息
+                        testapis.append(api)
 
-                validates_obj = session.query(Validate).filter(Validate.stepcase_id == step_obj.id).join(StepCase).all()
+                # validate of teststep
+                validates_obj = session.query(Validate).filter(Validate.stepcase_id == step_obj.id).join(StepCase,
+                                                                                                         isouter=True).all()
+                # if validates_obj is not None:
                 print("validates: ", validates_obj)
                 validate_list = []
                 for item in validates_obj:
@@ -82,19 +150,22 @@ class CURD(object):
                         expected = int(expected)
                     element = {comparator: [check, expected]}
                     validate_list.append(element)
-                step["test"].update({"validate": validate_list})
+                step["test"].update({"validate": validate_list})  # teststep中的validate可能会add\update\delete，所以要update
 
-                extracts_obj = session.query(Extract).filter(Extract.stepcase_id == step_obj.id).join(StepCase).all()
-                print("extracts: ", extracts_obj)
-                extract_list = []
-                for item in extracts_obj:
-                    element = {item.key: item.value}
-                    validate_list.append(element)
-                step["test"].update({"extract": extract_list})
+                # validate of teststep
+                extracts_obj = session.query(Extract).filter(Extract.stepcase_id == step_obj.id).join(StepCase,
+                                                                                                      isouter=True).all()
+                if extracts_obj is not None:
+                    print("extracts: ", extracts_obj)
+                    extract_list = []
+                    for item in extracts_obj:
+                        element = {item.key: item.value}
+                        extract_list.append(element)
+                    step["test"].update({"extract": extract_list})  # teststep中的extract可能会add\update\delete，所以要update
 
                 case_steps.append(step)
 
             test_case = test_case + case_steps
             testcases.append((case_name, test_case))
-        return testapis, testcases
 
+        return testapis, testcases
