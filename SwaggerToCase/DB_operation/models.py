@@ -1,9 +1,29 @@
 from sqlalchemy import Column, Integer, UniqueConstraint, Index, CHAR, VARCHAR, SmallInteger, PrimaryKeyConstraint, \
     ForeignKeyConstraint, TEXT
-
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
+from passlib.apps import custom_app_context as pwd_context
+
+
+class Auth(Base):
+    __tablename__ = 'auth'
+    id = Column(Integer, nullable=False, autoincrement=True)
+    username = Column(VARCHAR(100), nullable=False)
+    password = Column(TEXT, nullable=False)
+    email = Column(VARCHAR(100), nullable=False)
+
+
+    def hash_password(self, password):  # 给密码加密方法
+        self.password = pwd_context.encrypt(password)
+
+    def verify_password(self, password):  # 验证密码方法
+        return pwd_context.verify(password, self.password)
+
+    __table_args__ = (
+        PrimaryKeyConstraint("id"),  # primary key(id)
+        UniqueConstraint('username', name='unique_username')
+    )
 
 
 class Project(Base):
@@ -78,7 +98,7 @@ class Variables(Base):
     __tablename__ = 'variables'
     id = Column(Integer, nullable=False, autoincrement=True)
     key = Column(VARCHAR(100), nullable=False, comment="变量名")
-    value = Column(VARCHAR(100), nullable=False, comment="变量值")
+    value = Column(TEXT, nullable=False, comment="变量值")  # 注意：这里与parameters的不同，需要json库转换
     config_id = Column(Integer, nullable=False, comment="config外键")
 
     __table_args__ = (
@@ -110,18 +130,17 @@ class StepCase(Base):
 
 
 class API(Base):
-    __tablename__ = 'api'
+    __tablename__ = 'test_api'
 
     id = Column(Integer, nullable=False, autoincrement=True)
     name = Column(VARCHAR(100), nullable=False)
     url = Column(VARCHAR(100), nullable=False, comment="请求地址")
     method = Column(VARCHAR(100), nullable=False, comment="请求方式")
     body = Column(TEXT, nullable=False, comment="API 主体信息")
-    stepcase_id = Column(Integer, nullable=False, comment="stepcase外键")
 
     __table_args__ = (
         PrimaryKeyConstraint("id"),
-        ForeignKeyConstraint(('stepcase_id',), ('stepcase.id',), name='fk_api_stepcase')
+        UniqueConstraint('name', name='unique_name'),
     )
 
     def __repr__(self):
