@@ -62,11 +62,11 @@ axios.interceptors.response.use(
 
 // ------------------------------------- user api -------------------------------------------
 export const register = params => {
-  return axios.post('/api/auth/register/', params).then(res => res.data)
+  return axios.post('/api/user/register/', params).then(res => res.data)
 };
 
 export const login = params => {
-  return axios.post('/api/auth/login/', params).then(res => res.data)
+  return axios.post('/api/user/login/', params).then(res => res.data)
 };
 
 
