@@ -5,7 +5,7 @@ from backend.auth.auth_token import generate_token
 from SwaggerToCase.DB_operation.curd import session
 
 
-@auth.route('/auth/register/', methods=['POST'])
+@auth.route('/api/user/register/', methods=['POST'])
 def register():
     username = request.json.get('username')
     password = request.json.get('password')
@@ -21,7 +21,7 @@ def register():
         return jsonify({'success': True, 'msg': '用户注册成功！'})
 
 
-@auth.route('/auth/login/', methods=['POST'])
+@auth.route('/api/user/login/', methods=['POST'])
 def login():
     username = request.json.get('username')
     password = request.json.get('password')
