@@ -1,15 +1,14 @@
 import json
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from SwaggerToCase.DB_operation.models import Project, \
     TestCase, Config, StepCase, API, Validate, Extract, \
     Parameters, Variables
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
                        encoding='utf-8',
                        # echo=True,
+                       isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
                        max_overflow=5)
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -24,6 +23,20 @@ class CURD(object):
     # 也适合流程场景测试testcase的create
     # 新增testcase, 把teststep1对应的初始testcase查询出来
     # 然后在这个testcase基础上进行修改
+    def add_project(self, project):
+        try:
+            name = project['name']
+            desc = project["desc"]
+            owner = project["owner"]
+            project_obj = Project(name=name,
+                                  desc=desc,
+                                  owner=owner)
+            session.add(project_obj)
+            session.commit()
+            return True
+        except Exception as e:
+            return False
+
     def add_case(self, old_case_id, case_name):
         old_case_obj = session.query(TestCase).filter(TestCase.id == old_case_id)
         new_case_obj = TestCase(name=case_name, project_id=old_case_obj.project_id)
@@ -100,10 +113,16 @@ class CURD(object):
         session.commit()
 
     def delete_project(self, project_id):
-        testcases_obj = session.query(TestCase).filter(TestCase.project_id == project_id).join(TestCase).all()
-        [self.delete_case(test_case) for test_case in testcases_obj]
-        session.query(Project).filter_by(id=project_id).delete()
-        session.commit()
+        try:
+            print(project_id, type(project_id))
+            testcases_obj = session.query(TestCase).filter(TestCase.project_id == project_id).join(Project).all()
+            print(123, testcases_obj)
+            [self.delete_case(test_case) for test_case in testcases_obj]
+            session.query(Project).filter_by(id=project_id).delete()
+            session.commit()
+            return True
+        except Exception as e:
+            return False
 
     def delete_case(self, case_id):
         # session.query(TestCase).filter_by(id=case_id).delete()  # 只是这样，删不了，因为有config和stepcase通过外键引用
@@ -162,6 +181,18 @@ class CURD(object):
     #       update teststep:
     #              add_validate、update_validate、delete_validate
     #              add_extract、update_extract、delete_extract
+    def update_project(self, project_id, project):
+        try:
+            project_obj = session.query(Project).filter(Project.id == project_id).first()
+            project_obj.name = project['name']
+            project_obj.desc = project["desc"]
+            project_obj.owner = project["owner"]
+            session.add(project_obj)
+            session.commit()
+            return True
+        except Exception as e:
+            return False
+
     def update_parameter(self, config_id, parameter):
         key = parameter['key']
         value = parameter["value"]
@@ -354,10 +385,10 @@ class CURD(object):
             test_case = test_case + case_steps
             testcases.append((case_name, test_case))
 
-        return testapis, testcases
+        return case_ids, testapis, testcases
 
-    def retrieve_one_caase(self, case_id):
-        testapis, testcases = self.retrieve_part_cases([case_id])
+    def retrieve_one_case(self, case_id):
+        case_ids, testapis, testcases = self.retrieve_part_cases([case_id])
         return case_id, testcases[0]
 
     def retrive_project_cases(self, project_id):
@@ -365,3 +396,5 @@ class CURD(object):
         testcases_obj = session.query(TestCase).filter(TestCase.project_id == project_obj.id).join(Project).all()
         case_id_names = [(case.id, case.name) for case in testcases_obj]
         return case_id_names
+
+    # def retrive_projects(self):
