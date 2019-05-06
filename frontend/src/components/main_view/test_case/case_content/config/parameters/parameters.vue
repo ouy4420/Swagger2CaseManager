@@ -6,54 +6,40 @@
         :visible.sync="DialogVisible"
         width="30%"
         align="center"
-        @close="reset_variable_form">
-        <!--<el-dialog-->
-          <!--width="30%"-->
-          <!--title="内层 Dialog"-->
-          <!--:visible.sync="innerVisible"-->
-          <!--append-to-body>-->
-          <!--<edit_value></edit_value>-->
-        <!--</el-dialog>-->
-        <el-form :model="variableForm"
+        @close="reset_parameter_form"
+      >
+        <el-form :model="parameterForm"
                  :rules="rules"
-                 ref="variableForm"
+                 ref="parameterForm"
                  label-width="110px"
-                 class="project"
-                  close >
+                 class="project">
           <el-form-item label="变量名称" prop="key">
-            <el-input v-model="variableForm.key" clearable></el-input>
+            <el-input v-model="parameterForm.key" clearable></el-input>
           </el-form-item>
           <el-form-item label="变量值" prop="value">
-            <!--<el-input-->
-              <!--type=""-->
-              <!--v-model="variableForm.value"-->
-              <!--clearable>-->
-            <!--</el-input>-->
-            <el-input type="textarea" v-model="variableForm.value"></el-input>
+            <el-input type="textarea" v-model="parameterForm.value"></el-input>
           </el-form-item>
-
         </el-form>
-        <div slot="footer" class="dialog-footer">
-          <el-button @click="DialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleConfirm()">确 定</el-button>
-          <!--<el-button type="primary" @click="innerVisible = true">打开内层 Dialog</el-button>-->
-        </div>
+        <span slot="footer" class="dialog-footer">
+                        <el-button @click="DialogVisible = false">取消</el-button>
+                        <el-button type="primary" @click="handleConfirm()">确 定</el-button>
+                      </span>
       </el-dialog>
       <div style="">
         <el-button type="primary"
                    size="small"
-                   @click="DialogVisible = true; DialogTitle='添加Variable'"
+                   @click="DialogVisible = true; DialogTitle='添加Parameter'"
                    icon="el-icon-circle-plus">
-          添加Variable
+          添加Parameter
         </el-button>
       </div>
     </div>
     <el-table
       highlight-current-row
-      :data="this.$store.state.currentCase['config'].config.variables"
+      :data="this.$store.state.currentCase['config'].config.parameters"
       border
       stripe
-      :show-header="this.$store.state.currentCase['config'].config.variables.length > 0"
+      :show-header="this.$store.state.currentCase['config'].config.parameters.length > 0"
       style="width: 100%;"
     >
       <el-table-column
@@ -102,19 +88,15 @@
 </template>
 
 <script>
-  import EditValue from "./edit_value/edit_value"
+
 
   export default {
-    name: "Variables",
-    components: {
-      "edit_value": EditValue
-    },
+    name: "Parameters",
     data() {
       return {
-        innerVisible: false,
         DialogTitle: "",
         DialogVisible: false,
-        variableForm: {
+        parameterForm: {
           key: '',
           value: '',
           id: '',
@@ -127,28 +109,24 @@
           ],
           value: [
             {required: true, message: '请输入变量值', trigger: 'blur'},
-            {min: 1, max: 99999999, message: '最多不超过50个字符', trigger: 'blur'}
+            {min: 1, max: 50, message: '最多不超过50个字符', trigger: 'blur'}
           ]
         }
       }
     },
     methods: {
       handleEdit(index, row) {
-
-        this.DialogTitle = '编辑Variable'; // 设置dialog title
-        this.variableForm.key = row['key'];
-        this.variableForm.value = JSON.stringify(JSON.parse(row['value']), null, 2);
-        // if (typeof row['value'] == "object") {
-        //   // this.variableForm.value = JSON.stringify(row['value']);
-        //   this.variableForm.value = this.formatJson(row['value']);
-        //   console.log("66666", this.variableForm.value)
-        // } else {
-        //   this.variableForm.value = row['value'];
-        // }
-        this.variableForm.id = row['id'];
-        this.variableForm.config_id = row['config_id'];
-
         this.DialogVisible = true; // 弹出编辑框
+        this.DialogTitle = '编辑Parameter'; // 设置dialog title
+        this.parameterForm.key = row['key'];
+        this.parameterForm.value = JSON.stringify(JSON.parse(row['value']), null, 2);
+        // if (typeof row['value'] == "object") {
+        //   this.parameterForm.value = JSON.stringify(row['value']);
+        // } else {
+        //   this.parameterForm.value = row['value'];
+        // }
+        this.parameterForm.id = row['id'];
+        this.parameterForm.config_id = row['config_id'];
       },
       handleDelete(index, row) {
         // 弹出确认警告提示框
@@ -158,19 +136,19 @@
           type: 'warning'
         }).then(() => {
           // delete 和 post/patch方法的参数不一样，需要加一层data
-          this.$api.deleteVariable(row).then(resp => {
+          this.$api.deleteParameter(row).then(resp => {
             if (resp['success']) {
               this.success(resp);       // 弹出成功提示消息
               this.get_case();          // 重新刷新当前case数据
             } else {
               this.failure(resp);
             }
-            this.reset_variable_form()  // 重置表单数据
+            this.reset_parameter_form()  // 重置表单数据
           })
         })
       },
-      reset_variable_form() {
-        this.variableForm = {
+      reset_parameter_form() {
+        this.parameterForm = {
           key: '',
           value: '',
           id: '',
@@ -178,17 +156,16 @@
         };
       },
       handleConfirm() {
-        console.log(1111, this.$refs["variableForm"])
-        this.$refs["variableForm"].validate((valid) => {
+        this.$refs["parameterForm"].validate((valid) => {
           if (valid) {
             // 新建或编辑框中的数据校验通过后，将弹框隐藏掉
             this.DialogVisible = false;
             let obj;
-            if (this.variableForm.id === '') {
-              this.variableForm.config_id = this.$store.state.currentCase['config'].config_id;
-              obj = this.$api.addVariable(this.variableForm);     // 没有就新建
+            if (this.parameterForm.id === '') {
+              this.parameterForm.config_id = this.$store.state.currentCase['config'].config_id;
+              obj = this.$api.addParameter(this.parameterForm);     // 没有就新建
             } else {
-              obj = this.$api.updateVariable(this.variableForm);  // 有就更新
+              obj = this.$api.updateParameter(this.parameterForm);  // 有就更新
             }
             // 给http response挂载一个处理的钩子
             obj.then(resp => {
@@ -198,14 +175,14 @@
               } else {
                 this.failure(resp);
               }
-              this.reset_variable_form()  // 重置表单数据
+              this.reset_parameter_form()  // 重置表单数据
             })
           } else {
             this.DialogVisible = true;
-            if (this.variableForm.id !== '') {
-              this.DialogTitle = "编辑Variable";  // 已经存在显示编辑框
+            if (this.parameterForm.id !== '') {
+              this.DialogTitle = "编辑Parameter";  // 已经存在显示编辑框
             } else {
-              this.DialogTitle = "新增Variable";  // 不存在显示新建框
+              this.DialogTitle = "新增Parameter";  // 不存在显示新建框
             }
             return false;
           }
@@ -216,17 +193,17 @@
         this.$notify({
           message: resp["msg"],
           type: 'success',
-          duration: 1000
+          duration: 2000
         });
       },
       failure(resp) {
         this.$notify.error({
           message: resp["msg"],
-          duration: 1000
+          duration: 3000
         });
       },
       get_case() {
-        // console.log("in get_case2", this.variableForm);
+        // console.log("in get_case2", this.parameterForm);
         // console.log("in get_case is.$store.state.currentCase", this.$store.state.currentCase);
         var currentCaseID = this.$store.state.currentCase['config'].case_id;
         this.$api.getCaseDetail(currentCaseID).then(resp => {
@@ -241,13 +218,6 @@
   }
 </script>
 
+<style scoped>
 
-<style>
-  #xxx {
-    height: 200px;
-  }
 </style>
-
-
-
-
