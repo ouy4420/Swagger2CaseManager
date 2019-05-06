@@ -1,6 +1,6 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
-
+from sqlalchemy.exc import InternalError, InterfaceError
 from SwaggerToCase.DB_operation.models import Project, \
     TestCase, Config, StepCase, API, Validate, Extract, \
     Parameters, Variables
@@ -21,17 +21,26 @@ from SwaggerToCase.run import execute
 
 class ProjectItem(Resource):
     def get(self, project_id):
-        project = session.query(Project).filter_by(id=project_id).first()
-        test_apis = session.query(API).filter_by(project_id=project_id).all()
-        test_cases = session.query(TestCase).filter_by(project_id=project_id).all()
-        rst = make_response(jsonify({"len_apis": len(test_apis),
-                                     "len_cases": len(test_cases),
-                                     "len_envir": 0,
-                                     "len_report": 0,
-                                     "name": project.name,
-                                     "desc": project.desc
-                                     }))
-        return rst
+        try:
+            project = session.query(Project).filter_by(id=project_id).first()
+            test_apis = session.query(API).filter_by(project_id=project_id).all()
+            test_cases = session.query(TestCase).filter_by(project_id=project_id).all()
+            rst = make_response(jsonify({"len_apis": len(test_apis),
+                                         "len_cases": len(test_cases),
+                                         "len_envir": 0,
+                                         "len_report": 0,
+                                         "name": project.name,
+                                         "desc": project.desc
+                                         }))
+            return rst
+        except InternalError as e:
+            print('InternalError:', e)
+            session.rollback()
+        except InterfaceError as e:
+            print('InterfaceError:', e)
+            session.rollback()
+
+            return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!"}))
 
     def delete(self, project_id):
         pass
@@ -40,7 +49,7 @@ class ProjectItem(Resource):
         pass
 
 
-class PROJECT(Resource):
+class ProjectList(Resource):
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('owner', type=str)
@@ -58,22 +67,16 @@ class PROJECT(Resource):
     def delete(self):
         args = parser.parse_args()
         project_id = int(args["id"])
-        status = curd.delete_project(project_id)
-        if status:
-            rst = make_response(jsonify({"success": True, "msg": "项目删除成功"}))
-        else:
-            rst = make_response(jsonify({"success": False, "msg": "项目删除失败"}))
+        status, msg = curd.delete_project(project_id)
+        rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
 
     def patch(self):
         args = parser.parse_args()
         project_id = int(args["id"])
         args["owner"] = args["responsible"]
-        status = curd.update_project(project_id, args)
-        if status:
-            rst = make_response(jsonify({"success": True, "msg": "项目更新成功"}))
-        else:
-            rst = make_response(jsonify({"success": False, "msg": "项目更新失败"}))
+        status, msg = curd.update_project(project_id, args)
+        rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
 
     # def post(self):
@@ -90,11 +93,8 @@ class PROJECT(Resource):
         args = parser.parse_args()
         args["owner"] = args["responsible"]
         if args["url"] == "" and args["file"] == {}:
-            status = curd.add_project(args)
+            status, msg = curd.add_project(args)
         else:
-            status = execute(args)
-        if status:
-            rst = make_response(jsonify({"success": True, "msg": "项目创建成功"}))
-        else:
-            rst = make_response(jsonify({"success": False, "msg": "项目创建失败"}))
+            status, msg = execute(args)
+        rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst

@@ -30,12 +30,14 @@ class CURD(object):
             owner = project["owner"]
             project_obj = Project(name=name,
                                   desc=desc,
-                                  owner=owner)
+                                  owner=owner,
+                                  mode="common")
             session.add(project_obj)
             session.commit()
-            return True
+            return True, "Project创建成功！"
         except Exception as e:
-            return False
+            session.rollback()
+            return False, "Project创建失败！" + str(e)
 
     def add_case(self, old_case_id, case_name):
         old_case_obj = session.query(TestCase).filter(TestCase.id == old_case_id)
@@ -60,23 +62,33 @@ class CURD(object):
             session.commit()
 
     def add_variable(self, config_id, variable):
-        # 注意：这里variable是字符串（传进来需要json转换）
-        key = variable['key']
-        value = variable["value"]
-        variable_obj = Variables(key=key,
-                                 value=value,
-                                 config_id=config_id)
-        session.add(variable_obj)
-        session.commit()
+        try:
+            # 注意：这里variable是字符串（传进来需要json转换）
+            key = variable['key']
+            value = variable["value"]
+            variable_obj = Variables(key=key,
+                                     value=value,
+                                     config_id=config_id)
+            session.add(variable_obj)
+            session.commit()
+            return True, "Variable添加成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "Variable添加失败！" + str(e)
 
     def add_parameter(self, config_id, parameter):
-        key = parameter['key']
-        value = parameter["value"]
-        parameter_obj = Parameters(key=key,
-                                   value=value,
-                                   config_id=config_id)
-        session.add(parameter_obj)
-        session.commit()
+        try:
+            key = parameter['key']
+            value = parameter["value"]
+            parameter_obj = Parameters(key=key,
+                                       value=value,
+                                       config_id=config_id)
+            session.add(parameter_obj)
+            session.commit()
+            return True, "Parameter添加成功!"
+        except Exception as e:
+            session.rollback()
+            return False, "Parameter添加失败！" + str(e)
 
     def add_step(self, case_id, test_step, step_pos):
         name = test_step["name"]
@@ -117,12 +129,15 @@ class CURD(object):
             print(project_id, type(project_id))
             testcases_obj = session.query(TestCase).filter(TestCase.project_id == project_id).join(Project).all()
             print(123, testcases_obj)
-            [self.delete_case(test_case) for test_case in testcases_obj]
+            [self.delete_case(test_case.id) for test_case in testcases_obj]
+            apis_obj = session.query(API).filter(API.project_id == project_id).join(Project).all()
+            [self.delete_api(test_api.id) for test_api in apis_obj]
             session.query(Project).filter_by(id=project_id).delete()
             session.commit()
-            return True
+            return True, "Project删除成功！"
         except Exception as e:
-            return False
+            session.rollback()
+            return False, "Project删除失败！" + str(e)
 
     def delete_case(self, case_id):
         # session.query(TestCase).filter_by(id=case_id).delete()  # 只是这样，删不了，因为有config和stepcase通过外键引用
@@ -130,14 +145,15 @@ class CURD(object):
         # 同理，要想删除config，先删除parameters和variables
         # 要想删除teststep，先删除api(这个不合适)、validate和extract
         config_obj = session.query(Config).filter(Config.testcase_id == case_id).join(TestCase).first()
-        self.delete_config(config_obj.id)
+        config_id = config_obj.id
+        self.delete_config(config_id)
         teststeps_obj = session.query(StepCase).filter(StepCase.testcase_id == case_id).join(TestCase).all()
         [self.delete_setp(teststep.id) for teststep in teststeps_obj]
         session.query(TestCase).filter_by(id=case_id).delete()
         session.commit()
 
     def delete_config(self, config_id):
-        config_obj = session.query(Config).filter(Config.id == config_id)
+        config_obj = session.query(Config).filter(Config.id == config_id).first()
         parameters_obj = session.query(Parameters). \
             filter(Parameters.config_id == config_obj.id).join(Config, isouter=True).all()
         [self.delete_parameter(parameter.id) for parameter in parameters_obj]
@@ -148,21 +164,31 @@ class CURD(object):
         session.commit()
 
     def delete_parameter(self, parameter_id):
-        session.query(Parameters).filter_by(id=parameter_id).delete()
-        session.commit()
+        try:
+            session.query(Parameters).filter_by(id=parameter_id).delete()
+            session.commit()
+            return True, "Parameter删除成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "Parameter删除成功！" + str(e)
 
     def delete_variable(self, variable_id):
-        session.query(Variables).filter_by(id=variable_id).delete()
-        session.commit()
+        try:
+            session.query(Variables).filter_by(id=variable_id).delete()
+            session.commit()
+            return True, "Variable删除成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "Variable删除失败！" + str(e)
 
     def delete_setp(self, step_id):
-        step_obj = session.query(Config).filter(Config.id == step_id)
+        step_obj = session.query(StepCase).filter(StepCase.id == step_id).first()
         validates_obj = session.query(Validate). \
             filter(Validate.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
         [self.delete_validate(validate.id) for validate in validates_obj]
         extracts_obj = session.query(Extract). \
             filter(Extract.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
-        [self.delete_variable(extract.id) for extract in extracts_obj]
+        [self.delete_extract(extract.id) for extract in extracts_obj]
         session.query(StepCase).filter_by(id=step_id).delete()
         session.commit()
 
@@ -172,6 +198,10 @@ class CURD(object):
 
     def delete_extract(self, extract_id):
         session.query(Extract).filter_by(id=extract_id).delete()
+        session.commit()
+
+    def delete_api(self, api_id):
+        session.query(API).filter_by(id=api_id).delete()
         session.commit()
 
     # update testcase:
@@ -186,30 +216,42 @@ class CURD(object):
             project_obj = session.query(Project).filter(Project.id == project_id).first()
             project_obj.name = project['name']
             project_obj.desc = project["desc"]
-            project_obj.owner = project["owner"]
             session.add(project_obj)
             session.commit()
-            return True
+            return True, "Project更新成功！"
         except Exception as e:
-            return False
+            session.rollback()
+            return False, "Project更新失败！" + str(e)
 
-    def update_parameter(self, config_id, parameter):
-        key = parameter['key']
-        value = parameter["value"]
-        parameter_obj = session.query(Parameters).filter(Parameters.id == config_id)
-        parameter_obj.key = key
-        parameter_obj.value = value
-        session.add(parameter_obj)
-        session.commit()
+    def update_parameter(self, parameter):
+        try:
+            id = parameter['id']
+            key = parameter['key']
+            value = parameter["value"]
+            parameter_obj = session.query(Parameters).filter(Parameters.id == id).first()
+            parameter_obj.key = key
+            parameter_obj.value = value
+            session.add(parameter_obj)
+            session.commit()
+            return True, "更新parameter成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "更新parameter失败！" + str(e)
 
-    def update_variable(self, config_id, variable):
-        key = variable['key']
-        value = variable["value"]
-        variable_obj = session.query(Variables).filter(variable.id == config_id)
-        variable_obj.key = key
-        variable_obj.value = value
-        session.add(variable_obj)
-        session.commit()
+    def update_variable(self, variable):
+        try:
+            id = variable['id']
+            key = variable['key']
+            value = variable["value"]
+            variable_obj = session.query(Variables).filter(Variables.id == id).first()
+            variable_obj.key = key
+            variable_obj.value = value
+            session.add(variable_obj)
+            session.commit()
+            return True, "Variable更新成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "Variable更新失败" + str(e)
 
     def update_validate(self, validate_id, validate):
         comparator = validate['comparator']
@@ -347,10 +389,13 @@ class CURD(object):
                 step = json.loads(step_obj.body)  # teststep的主体信息
 
                 # testcase corresponding api
+                case_id = step_obj.testcase_id
+                case_obj = session.query(TestCase).filter_by(id=case_id).first()
+                project_id = case_obj.project_id
                 step_name = step["test"]["name"]
                 names = [test_api["api"]["name"] for test_api in testapis]
                 if step_name not in names:
-                    api_obj = session.query(API).filter(API.name == step_name).first()
+                    api_obj = session.query(API).filter(API.name == step_name and project_id == project_id).first()
                     api = json.loads(api_obj.body)  # api的主体信息
                     testapis.append(api)
 
@@ -397,4 +442,107 @@ class CURD(object):
         case_id_names = [(case.id, case.name) for case in testcases_obj]
         return case_id_names
 
-    # def retrive_projects(self):
+    def retrieve_part_cases_ui(self, case_ids):
+        '''
+        从数据库中查询并组装好某个project中某些测试用例用于测试执行
+        :param pro_name:
+        :param case_ids:
+        :return:
+        '''
+        test_cases = session.query(TestCase).filter(TestCase.id.in_(case_ids)).all()
+        testcases = []  # 要执行的测试用例
+        testapis = []  # 测试用例执行相关的api
+        for case_obj in test_cases:
+            case_name = case_obj.name
+            test_case = []  # testcase, include config and teststeps
+            print("case : ", case_obj)
+
+            # ----------------------------测试用例的config数据 ----------------------------
+            config_obj = session.query(Config).filter(Config.testcase_id == case_obj.id).join(TestCase).first()
+            print("config: ", config_obj)
+            case_config = json.loads(config_obj.body)
+            # parameters of config
+            parameters_obj = session.query(Parameters). \
+                filter(Parameters.config_id == config_obj.id).join(Config, isouter=True).all()
+            print("parameters: ", parameters_obj)
+            parameter_list = []
+            for item in parameters_obj:
+                element = {"id": item.id, "config_id": config_obj.id, "key": item.key, "value": item.value}
+                parameter_list.append(element)
+            case_config["config"].update({"parameters": parameter_list})
+
+            # variables of config
+            variables_obj = session.query(Variables). \
+                filter(Variables.config_id == config_obj.id).join(Config, isouter=True).all()
+            print("variables: ", variables_obj)
+            variable_list = []
+            for item in variables_obj:
+                if not isinstance(item.value, str):
+                    value = json.loads(item.value)
+                else:
+                    value = item.value
+
+                element = {"id": item.id, "config_id": config_obj.id,  "key": item.key, "value": value}
+                variable_list.append(element)
+            case_config["config"].update({"variables": variable_list})
+            case_config.update({"config_id": config_obj.id})
+            case_config.update({"case_id": case_obj.id})
+            test_case.append(case_config)
+
+            # ----------------------------测试用例的teststeps数据 ----------------------------
+            teststeps_obj = session.query(StepCase).filter(StepCase.testcase_id == case_obj.id).join(TestCase).all()
+            print(type(teststeps_obj), teststeps_obj)
+            case_steps = []  # teststeps
+            teststeps_obj = sorted(teststeps_obj, key=lambda x: x.step)
+            for step_obj in teststeps_obj:
+                print("step: ", step_obj)
+
+                step = json.loads(step_obj.body)  # teststep的主体信息
+
+                # testcase corresponding api
+                case_id = step_obj.testcase_id
+                case_obj = session.query(TestCase).filter_by(id=case_id).first()
+                project_id = case_obj.project_id
+                step_name = step["test"]["name"]
+                names = [test_api["api"]["name"] for test_api in testapis]
+                if step_name not in names:
+                    api_obj = session.query(API).filter(API.name == step_name and project_id == project_id).first()
+                    api = json.loads(api_obj.body)  # api的主体信息
+                    testapis.append(api)
+
+                # validate of teststep
+                validates_obj = session.query(Validate).filter(Validate.stepcase_id == step_obj.id).join(StepCase,
+                                                                                                         isouter=True).all()
+                # if validates_obj is not None:
+                print("validates: ", validates_obj)
+                validate_list = []
+                for item in validates_obj:
+                    comparator = item.comparator
+                    check = item.check
+                    expected = item.expected
+                    if expected in ["200", "404", "500", "401"]:
+                        expected = int(expected)
+                    element = {"id": item.id, "step_id": step_obj.id,  "comparator": comparator, "check": check, "expected": expected}
+                    validate_list.append(element)
+                step["test"].update({"validate": validate_list})  # teststep中的validate可能会add\update\delete，所以要update
+
+                # validate of teststep
+                extracts_obj = session.query(Extract). \
+                    filter(Extract.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
+                print("extracts: ", extracts_obj)
+                extract_list = []
+                for item in extracts_obj:
+                    element = {"id": item.id, "step_id": step_obj.id,  "key": item.key, "value": item.value}
+                    extract_list.append(element)
+                step["test"].update({"extract": extract_list})  # teststep中的extract可能会add\update\delete，所以要update
+                step.update({"step_id": step_obj.id})
+                case_steps.append(step)
+
+            test_case = test_case + case_steps
+            testcases.append((case_name, test_case))
+
+        return case_ids, testapis, testcases
+
+    def retrieve_one_case_ui(self, case_id):
+        case_ids, testapis, testcases = self.retrieve_part_cases_ui([case_id])
+        return case_id, testcases[0]

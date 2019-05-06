@@ -37,29 +37,20 @@ class VariableItem(Resource):
     def delete(self):
         args = parser.parse_args()
         variable_id = int(args["id"])
-        status = curd.delete_variable(variable_id)
-        if status:
-            rst = make_response(jsonify({"success": True, "msg": "Variable删除成功"}))
-        else:
-            rst = make_response(jsonify({"success": False, "msg": "Variable删除失败"}))
+        status, msg = curd.delete_variable(variable_id)
+        rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
 
     def patch(self):
         args = parser.parse_args()
-        status = curd.update_variable(args)
-        if status:
-            rst = make_response(jsonify({"success": True, "msg": "Variable更新成功"}))
-        else:
-            rst = make_response(jsonify({"success": False, "msg": "Variable更新失败"}))
+        status, msg = curd.update_variable(args)
+        rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
 
     def post(self):
         args = parser.parse_args()
         config_id = int(args["config_id"])
         variable = {"key": args["key"], "value": args["value"]}
-        status = curd.add_variable(config_id, variable)
-        if status:
-            rst = make_response(jsonify({"success": True, "msg": "Variable新增成功"}))
-        else:
-            rst = make_response(jsonify({"success": False, "msg": "Variable新增失败"}))
+        status, msg = curd.add_variable(config_id, variable)
+        rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
