@@ -15,7 +15,7 @@ axios.interceptors.request.use(
   function (config) {
     console.log("config", config)
     console.log("config.url", config.url)
-    if (config.url.indexOf("/api/auth/") !== -1) {
+    if (config.url.indexOf("/api/waykichain/project/?cursor=\"") !== -1) {
 
     } else if (!config.url.startsWith("/api/user/")) {
       config.url = config.url.indexOf('?') == '-1' ? config.url + "?token=" + store.token : config.url + "&token=" + store.token;
@@ -74,6 +74,7 @@ export const login = params => {
 
 // project
 export const addProject = body => {
+  console.log("project body: ", body)
   return axios.post('/api/waykichain/project/', body).then(res => res.data)
 };
 
@@ -89,14 +90,58 @@ export const getProjectList = params => {
   return axios.get('/api/waykichain/project/', {"params": params}).then(res => res.data)
 };
 
-export const getProjectDetail = pk => {
-  return axios.get('/api/waykichain/project/' + pk + '/').then(res => res.data)
+export const getProjectDetail = project_id => {
+  return axios.get('/api/waykichain/project/' + project_id + '/').then(res => res.data)
+};
+
+export const getAPIList = params => {
+  return axios.get('/api/waykichain/api/', {"params": params}).then(res => res.data)
+};
+
+export const getPagination_api = params => {
+  return axios.get('/api/waykichain/api/', {"params": params}).then(res => res.data)
+};
+
+export const getPagination_case = params => {
+  return axios.get('/api/waykichain/case/', {"params": params}).then(res => res.data)
+};
+
+export const getCaseDetail = case_id => {
+  return axios.get('/api/waykichain/case/' + case_id + '/').then(res => res.data)
 };
 
 
-export const getPagination = url => {
-  return axios.get(url).then(res => res.data)
+export const addVariable = body => {
+  console.log("project body: ", body)
+  return axios.post('/api/waykichain/variable/', body).then(res => res.data)
 };
+
+export const deleteVariable = data => {
+  return axios.delete('/api/waykichain/variable/', {"data": data}).then(res => res.data)
+};
+
+export const updateVariable = body => {
+  return axios.patch('/api/waykichain/variable/', body).then(res => res.data)
+};
+
+export const addParameter = body => {
+  console.log("project body: ", body);
+  return axios.post('/api/waykichain/parameter/', body).then(res => res.data)
+};
+
+export const deleteParameter = data => {
+  return axios.delete('/api/waykichain/parameter/', {"data": data}).then(res => res.data)
+};
+
+export const updateParameter = body => {
+  return axios.patch('/api/waykichain/parameter/', body).then(res => res.data)
+};
+
+
+
+// export const getPagination = url => {
+//   return axios.get(url).then(res => res.data)
+// };
 
 // debugtalk
 export const getDebugtalk = url => {
@@ -253,30 +298,30 @@ export const runSuiteTree = params => {
   return axios.post('/api/waykichain/run_suite_tree/', params).then(res => res.data)
 };
 
-export const addVariables = params => {
-  return axios.post('/api/waykichain/variables/', params).then(res => res.data)
-};
+// export const addVariables = params => {
+//   return axios.post('/api/waykichain/variables/', params).then(res => res.data)
+// };
 
-export const variablesList = params => {
-  return axios.get('/api/waykichain/variables/', params).then(res => res.data)
-};
+// export const variablesList = params => {
+//   return axios.get('/api/waykichain/variables/', params).then(res => res.data)
+// };
 
-export const getVariablesPaginationBypage = params => {
-  return axios.get('/api/waykichain/variables/', params).then(res => res.data)
-};
+// export const getVariablesPaginationBypage = params => {
+//   return axios.get('/api/waykichain/variables/', params).then(res => res.data)
+// };
 
 
-export const updateVariables = (url, params) => {
-  return axios.patch('/api/waykichain/variables/' + url + '/', params).then(res => res.data)
-};
+// export const updateVariables = (url, params) => {
+//   return axios.patch('/api/waykichain/variables/' + url + '/', params).then(res => res.data)
+// };
 
-export const deleteVariables = url => {
-  return axios.delete('/api/waykichain/variables/' + url + '/').then(res => res.data)
-};
+// export const deleteVariables = url => {
+//   return axios.delete('/api/waykichain/variables/' + url + '/').then(res => res.data)
+// };
 
-export const delAllVariabels = params => {
-  return axios.delete('/api/waykichain/variables/', params).then(res => res.data)
-};
+// export const delAllVariabels = params => {
+//   return axios.delete('/api/waykichain/variables/', params).then(res => res.data)
+// };
 
 export const reportList = params => {
   return axios.get('/api/waykichain/reports/', params).then(res => res.data)
