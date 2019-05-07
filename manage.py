@@ -4,8 +4,10 @@ import requests
 from backend.restful.project import ProjectList, ProjectItem
 from backend.restful.api import APILIst
 from backend.restful.case import CaseList, CaseItem
+from backend.restful.config import ConfigItem
 from backend.restful.variables import VariableItem
 from backend.restful.parameters import ParameterItem
+from backend.restful.validate import ValidateItem
 from flask_restful import Api
 
 app = Flask(__name__,
@@ -23,8 +25,10 @@ api.add_resource(ProjectItem, '/api/waykichain/project/<int:project_id>/')
 api.add_resource(APILIst, '/api/waykichain/api/')
 api.add_resource(CaseList, '/api/waykichain/case/')
 api.add_resource(CaseItem, '/api/waykichain/case/<int:case_id>/')
+api.add_resource(ConfigItem, '/api/waykichain/config/')
 api.add_resource(VariableItem, '/api/waykichain/variable/')
 api.add_resource(ParameterItem, '/api/waykichain/parameter/')
+api.add_resource(ValidateItem, '/api/waykichain/validate/')
 
 
 @app.route('/', defaults={'path': ''})
