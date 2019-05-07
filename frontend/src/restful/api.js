@@ -137,6 +137,33 @@ export const updateParameter = body => {
   return axios.patch('/api/waykichain/parameter/', body).then(res => res.data)
 };
 
+export const updateConfigName = body => {
+  return axios.patch('/api/waykichain/config/', body).then(res => res.data)
+};
+
+
+export const addValidate = body => {
+  return axios.post('/api/waykichain/validate/', body).then(res => res.data)
+};
+export const deleteValidate = data => {
+  return axios.delete('/api/waykichain/validate/', {"data": data}).then(res => res.data)
+};
+
+export const updateValidate = body => {
+  return axios.patch('/api/waykichain/validate/', body).then(res => res.data)
+};
+
+
+export const addExtract = body => {
+  return axios.post('/api/waykichain/extract/', body).then(res => res.data)
+};
+export const deleteExtract = data => {
+  return axios.delete('/api/waykichain/extract/', {"data": data}).then(res => res.data)
+};
+
+export const updateExtract = body => {
+  return axios.patch('/api/waykichain/extract/', body).then(res => res.data)
+};
 
 
 // export const getPagination = url => {
