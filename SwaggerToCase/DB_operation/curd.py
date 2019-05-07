@@ -105,24 +105,34 @@ class CURD(object):
         session.commit()
 
     def add_validate(self, step_id, validate):
-        comparator = validate['comparator']
-        check = validate["check"]
-        expected = validate["expected"]
-        validate_obj = Validate(comparator=comparator,
-                                check=check,
-                                expected=expected,
-                                stepcase_id=step_id)
-        session.add(validate_obj)
-        session.commit()
+        try:
+            comparator = validate['comparator']
+            check = validate["check"]
+            expected = validate["expected"]
+            validate_obj = Validate(comparator=comparator,
+                                    check=check,
+                                    expected=expected,
+                                    stepcase_id=step_id)
+            session.add(validate_obj)
+            session.commit()
+            return True, "Validate添加成功!"
+        except Exception as e:
+            session.rollback()
+            return False, "Validate添加失败！" + str(e)
 
     def add_extract(self, step_id, extract):
-        key = extract['key']
-        value = extract["value"]
-        extract_obj = Extract(key=key,
-                              value=value,
-                              stepcase_id=step_id)
-        session.add(extract_obj)
-        session.commit()
+        try:
+            key = extract['key']
+            value = extract["value"]
+            extract_obj = Extract(key=key,
+                                  value=value,
+                                  stepcase_id=step_id)
+            session.add(extract_obj)
+            session.commit()
+            return True, "Extract添加成功!"
+        except Exception as e:
+            session.rollback()
+            return False, "Extract添加失败！" + str(e)
 
     def delete_project(self, project_id):
         try:
@@ -193,12 +203,22 @@ class CURD(object):
         session.commit()
 
     def delete_validate(self, validate_id):
-        session.query(Validate).filter_by(id=validate_id).delete()
-        session.commit()
+        try:
+            session.query(Validate).filter_by(id=validate_id).delete()
+            session.commit()
+            return True, "Validate删除成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "Validate删除失败！" + str(e)
 
     def delete_extract(self, extract_id):
-        session.query(Extract).filter_by(id=extract_id).delete()
-        session.commit()
+        try:
+            session.query(Extract).filter_by(id=extract_id).delete()
+            session.commit()
+            return True, "Extract删除成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "Extract删除失败！" + str(e)
 
     def delete_api(self, api_id):
         session.query(API).filter_by(id=api_id).delete()
@@ -222,6 +242,38 @@ class CURD(object):
         except Exception as e:
             session.rollback()
             return False, "Project更新失败！" + str(e)
+
+    def update_config(self, config):
+        try:
+            id = config['id']
+            name = config['name']
+            config_obj = session.query(Config).filter(Config.id == id).first()
+            config_obj.name = name
+            body = json.loads(config_obj.body)
+            body["config"]["name"] = name
+            config_obj.body = json.dumps(body)
+            session.add(config_obj)
+            session.commit()
+            return True, "用例名称更新成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "用例名称更新失败！" + str(e)
+
+    def update_step(self, step):
+        try:
+            id = step['id']
+            name = step['name']
+            step_obj = session.query(StepCase).filter(StepCase.id == id).first()
+            step_obj.name = name
+            body = json.loads(step_obj.body)
+            body["test"]["name"] = name
+            step_obj.body = json.dumps(body)
+            session.add(step_obj)
+            session.commit()
+            return True, "API调用名称更新成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "API调用名称更新失败！" + str(e)
 
     def update_parameter(self, parameter):
         try:
@@ -253,25 +305,37 @@ class CURD(object):
             session.rollback()
             return False, "Variable更新失败" + str(e)
 
-    def update_validate(self, validate_id, validate):
-        comparator = validate['comparator']
-        check = validate["check"]
-        expected = validate["expected"]
-        validate_obj = session.query(Validate).filter(Validate.id == validate_id)
-        validate_obj.comparator = comparator
-        validate_obj.check = check
-        validate_obj.expected = expected
-        session.add(validate_obj)
-        session.commit()
+    def update_validate(self, validate):
+        try:
+            id = validate['id']
+            comparator = validate['comparator']
+            check = validate["check"]
+            expected = validate["expected"]
+            validate_obj = session.query(Validate).filter(Validate.id == id).first()
+            validate_obj.comparator = comparator
+            validate_obj.check = check
+            validate_obj.expected = expected
+            session.add(validate_obj)
+            session.commit()
+            return True, "Validate更新成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "Validate更新失败" + str(e)
 
-    def update_extract(self, step_id, extract):
-        key = extract['key']
-        value = extract["value"]
-        extract_obj = session.query(Extract).filter(Extract.id == step_id)
-        extract_obj.key = key
-        extract_obj.value = value
-        session.add(extract_obj)
-        session.commit()
+    def update_extract(self, extract):
+        try:
+            id = extract['id']
+            key = extract['key']
+            value = extract["value"]
+            extract_obj = session.query(Extract).filter(Extract.id == id).first()
+            extract_obj.key = key
+            extract_obj.value = value
+            session.add(extract_obj)
+            session.commit()
+            return True, "Extract更新成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "Extract更新失败" + str(e)
 
     def retrieve_parameter(self, parameter_id):
         '''
