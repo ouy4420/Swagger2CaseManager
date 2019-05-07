@@ -5,6 +5,10 @@ import Login from '../components/auth/Login'
 import Register from '../components/auth/Register'
 import Home from '../components/home/Home'
 import ProjectList from '../components/main_view/project/project'
+import ProjectDetail from '../components/main_view/project/ProjectDetail'
+import APIView from '../components/main_view/test_api/APIView'
+import AutoTest from '../components/main_view/test_case/AutoTest'
+import ReportList from '../components/main_view/report/report'
 
 Vue.use(Router);  // Vue 导入vue-router插件
 
@@ -45,16 +49,15 @@ const router = new Router({
             requireAuth: true,
           }
         },
-        // {
-        //   name: 'ProjectDetail',
-        //   path: 'project/:id/dashbord',
-        //   component: ProjectDetail,
-        //   meta: {
-        //     title: '项目预览',
-        //     requireAuth: true,
-        //   }
-        //
-        // },
+        {
+          name: 'ProjectDetail',
+          path: 'project/:id/dashbord', // router中的id就是this.$router.id,注意语法格式（带:）
+          component: ProjectDetail,
+          meta: {
+            title: '项目预览',
+            requireAuth: true,
+          }
+        },
         // {
         //   name: 'DebugTalk',
         //   path: 'debugtalk/:id',
@@ -65,26 +68,26 @@ const router = new Router({
         //   }
         //
         // },
-        // {
-        //   name: 'RecordApi',
-        //   path: 'api_record/:id',
-        //   component: RecordApi,
-        //   meta: {
-        //     title: '接口模板',
-        //     requireAuth: true
-        //   }
-        //
-        // },
-        // {
-        //   name: 'AutoTest',
-        //   path: 'auto_test/:id',
-        //   component: AutoTest,
-        //   meta: {
-        //     title: '自动化测试',
-        //     requireAuth: true
-        //   }
-        //
-        // },
+        {
+          name: 'APIView',
+          path: 'api_record/:id',
+          component: APIView,
+          meta: {
+            title: '接口模板',
+            requireAuth: true
+          }
+
+        },
+        {
+          name: 'AutoTest',
+          path: 'auto_test/:id',
+          component: AutoTest,
+          meta: {
+            title: '自动化测试',
+            requireAuth: true
+          }
+
+        },
         // {
         //   name: 'RecordConfig',
         //   path: 'record_config/:id',
@@ -105,16 +108,16 @@ const router = new Router({
         //   }
         //
         // },
-        // {
-        //   name: 'Reports',
-        //   path: 'reports/:id',
-        //   component: ReportList,
-        //   meta: {
-        //     title: '历史报告',
-        //     requireAuth: true
-        //   }
-        //
-        // },
+        {
+          name: 'Reports',
+          path: 'reports/:id',
+          component: ReportList,
+          meta: {
+            title: '历史报告',
+            requireAuth: true
+          }
+
+        },
         // {
         //   name: 'Task',
         //   path: 'tasks/:id',
@@ -151,7 +154,15 @@ router.beforeEach((to, from, next) => {
     /* 路由发生变化修改页面title */
     setTimeout((res) => {
         if (to.meta.title) {
-            document.title = to.meta.title
+            document.title = to.meta.title;
+            var routerNameObject = {
+              "项目列表": 'ProjectList',
+              "项目预览": 'APIView',
+              "自动化测试": 'AutoTest',
+              "历史报告": 'Reports',
+            };
+            store.state.routerName = routerNameObject[to.meta.title];
+            // this.setLocalValue("routerName",routerNameObject[to.meta.title]);
         }
 
         if (to.meta.requireAuth) {
