@@ -33,7 +33,7 @@ def main(swagger_name, file_type, url_or_file, project, specified_cases):
     gen_api_case(config)
     print(test_pro_path, url_or_file, swagger_name, file_type)
 
-    run(test_pro_path, specified_cases)
+    # run(test_pro_path, specified_cases)
 
 
 def execute(project=None):
