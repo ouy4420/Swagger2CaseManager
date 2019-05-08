@@ -114,7 +114,9 @@
       setCaseItem(case_id) {
         this.$api.getCaseDetail(case_id).then(resp => {
           this.$store.commit('setCurrentCase', resp);
-          window.scrollTo(0, 0);
+          window.scrollTo(0, 0); // 滚动条弹到顶端
+          this.$refs.multipleTable.clearSelection(); // 清空checkbox所有选中
+
         });
       },
       runTest(){
