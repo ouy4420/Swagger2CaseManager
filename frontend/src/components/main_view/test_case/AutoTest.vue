@@ -1,9 +1,9 @@
 <template>
-  <el-container
-    v-loading="loading_flag"
-    element-loading-text="报告拼命加载中，请稍后">
+  <el-container>
 
-    <el-header>
+    <el-header
+    v-loading="loading_flag"
+    element-loading-text="报告拼命加载中，请稍侯">
       <ul class="title-project">
         <li class="title-li" title="Test Project">
           <b>{{projectInfo.name}}</b>
@@ -52,7 +52,6 @@
         })
       },
       getData(loading_flag) {
-      console.log(1111, loading_flag);
       this.loading_flag = loading_flag;
     }
     },
