@@ -155,29 +155,30 @@ class MakeTestcase(object):
         request = self.test_case[0]["config"]["request"]
         request.update({"auth": ("$username", "password")})
 
-    def _make_request_variable(self, body_data):
+    def _make_request_variable_local(self, body_data):
         if body_data is not None:
-            config = self.test_case[0]["config"]
+            test_step = self.test_case[1]["test"]
             # config.update({"variables": {"data": body_data}})
             # variables改成有顺序的列表，因为variable之间可能会有依赖
-            config["variables"].append({"data": body_data})
+            test_step["variables"].append({"data": body_data})
 
     def _make_response_variable(self, responses):
         self.responses = responses
         if hasattr(self.responses, "schema"):
             schema = responses.schema
-            config = self.test_case[0]["config"]
+            test_step = self.test_case[1]["test"]
             # if "variables" in config:
             #     config["variables"].update({"schema": schema})
             # else:
             #     config.update({"variables": {"schema": schema}})
-            config["variables"].append({"schema": schema})
+            test_step["variables"].append({"schema": schema})
 
     def _make_teststep(self, name, def_name):
         teststep = {
             "test": {
                 "name": name,
-                "api": def_name
+                "api": def_name,
+                "variables": []
             }
         }
         self.test_case.append(teststep)
@@ -202,9 +203,9 @@ class MakeTestcase(object):
         if body_data is not None:
             test_api["api"]["request"]['json'] = '$data'
         self._make_config(name)
-        self._make_request_variable(body_data)
-        self._make_response_variable(responses)
         self._make_teststep(name, def_name)
+        self._make_request_variable_local(body_data)
+        self._make_response_variable(responses)
         self._make_validate()
         return name, self.test_case
 
