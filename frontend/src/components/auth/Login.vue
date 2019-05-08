@@ -113,7 +113,6 @@
         if (resp.success) {
           this.$router.push({name: 'ProjectList'}); // 路由跳转，是这需要这句？？
 
-          console.log("this, this.$router", this)
           this.$store.commit("isLogin", resp.token);
           this.$store.commit("setUser", resp.user);
           // 搞清楚这个store和下面三个setLocalValue是干啥的
@@ -122,6 +121,7 @@
           this.setLocalValue("token", resp.token);
           this.setLocalValue("user", resp.user);
           this.setLocalValue("routerName", 'ProjectList');
+
 
           this.$message.success({
                       message: resp.msg,

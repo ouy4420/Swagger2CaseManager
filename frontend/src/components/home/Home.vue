@@ -5,7 +5,7 @@
         </el-header>
 
         <el-container>
-            <el-aside style="width: 202px">
+            <el-aside style="width: 150px">
                 <home-side></home-side>
             </el-aside>
 
@@ -35,6 +35,7 @@
 <style scoped>
     .el-main {
         padding: 0px;
+      overflow-y: auto;
     }
 
 </style>

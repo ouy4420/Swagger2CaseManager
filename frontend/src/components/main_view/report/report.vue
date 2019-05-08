@@ -171,13 +171,13 @@
         this.$notify({
           message: resp["msg"],
           type: 'success',
-          duration: 1000
+          duration: 2000
         });
       },
       failure(resp) {
         this.$notify.error({
           message: resp["msg"],
-          duration: 1000
+          duration: 2000
         });
       },
       getPagination(page) {
@@ -255,4 +255,6 @@
     color: #b6b6b6;
     font-size: 14px;
   }
+
+
 </style>

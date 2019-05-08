@@ -1,9 +1,9 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from sqlalchemy.exc import InternalError, InterfaceError
-from SwaggerToCase.DB_operation.models import Parameters
-from SwaggerToCase.DB_operation.curd import CURD, session
-import json
+from backend.models.models import Parameters
+from backend.models.curd import CURD, session
+
 
 curd = CURD()
 parser = reqparse.RequestParser()
@@ -51,6 +51,6 @@ class ParameterItem(Resource):
         args = parser.parse_args()
         config_id = int(args["config_id"])
         variable = {"key": args["key"], "value": args["value"]}
-        status, msg = curd.add_variable(config_id, variable)
+        status, msg = curd.add_parameter(config_id, variable)
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst

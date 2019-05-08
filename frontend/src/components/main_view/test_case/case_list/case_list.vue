@@ -8,7 +8,7 @@
       @row-click="handleCurrentChange"
       @selection-change="selsChange"
       ref="multipleTable"
-      :data="caseList"
+      :data="$store.state.caseList"
       tooltip-effect="dark"
       style="width: 100%"
     >
@@ -22,8 +22,8 @@
         width="100">
       </el-table-column>
       <el-table-column
-        label=""
-        width="240">
+        label="用例描述"
+        width="280">
         <template slot-scope="scope">
           <a @click="setCaseItem(scope.row.id)">{{ scope.row.name }}</a>
         </template>
@@ -39,7 +39,7 @@
     name: "CASEList",
     data() {
       return {
-        caseList: [],
+        loading_flag: false,
         multipleSelection: [],
         page: {
           page_now: 1,
@@ -88,11 +88,6 @@
         this.arrID = valId;
         console.log(this.arrID)
       },
-      handleSelectionChange(val) {
-        console.log("this.multipleSelection: ", this.multipleSelection)
-        console.log("this.his.$refs.multipleTable: ", this.$refs.multipleTable)
-        this.multipleSelection = val;
-      },
       getPagination(page) {
         const project_id = this.$route.params.id;
         this.$api.getPagination_case({"id": project_id, "page": page}).then(resp => {
@@ -104,11 +99,9 @@
       },
       getCaseList() {
         const project_id = this.$route.params.id;
-        console.log("project_id",project_id)
-        console.log("this.$route.params.id",this.$route.params.id)
         this.$api.getCaseList({"id": project_id}).then(resp => {
-          this.caseList = resp["caseList"];
-          this.setCaseItem(this.caseList[0].id);
+          this.$store.commit("setCaseList", resp["caseList"]);
+          this.setCaseItem(this.$store.state.caseList[0].id);
         })
       },
       setCaseItem(case_id) {
@@ -116,13 +109,23 @@
           this.$store.commit('setCurrentCase', resp);
           window.scrollTo(0, 0); // 滚动条弹到顶端
           this.$refs.multipleTable.clearSelection(); // 清空checkbox所有选中
-
         });
       },
-      runTest(){
+      runTest() {
         const project_id = this.$route.params.id;
+        if (this.arrID.length === 0) {
+          this.$notify.error({
+            position: "top-left",
+            message: "请选择要执行的测试用例！！！",
+            duration: 3000
+          });
+          return
+        }
+        this.loading_flag = true;
+        this.$emit('e-autotest',this.loading_flag);
         this.$api.runTestcases({"case_list": this.arrID, "project_id": project_id}).then(resp => {
-
+          this.loading_flag = false;
+          this.$emit('e-autotest',this.loading_flag);
           if (resp['success']) {
             var render_content = resp.render_content;
             this.success(resp);       // 弹出成功提示消息
@@ -146,7 +149,6 @@
           duration: 3000
         });
       }
-
     },
     mounted() {
       var obj = this;

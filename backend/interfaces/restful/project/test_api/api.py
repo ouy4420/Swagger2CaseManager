@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
-from SwaggerToCase.DB_operation.models import API
-from SwaggerToCase.DB_operation.curd import CURD, session
+from backend.models.models import API, Project
+from backend.models.curd import CURD, session
 import json
 
 curd = CURD()
@@ -23,15 +23,15 @@ def parse_api_body(api):
     return parsed_api
 
 
-def get_page(page):
-    all_rets = session.query(API).filter_by(project_id=1).all()
+def get_page(page, project_id):
+    all_rets = session.query(API).filter_by(project_id=project_id).all()
     length = len(all_rets)
     per_page = 5
     pages = length // per_page
     if length % per_page > 0:
         pages += 1
     offset = per_page * (page - 1)
-    page_rets = session.query(API).filter_by(project_id=1).limit(per_page).offset(offset).all()
+    page_rets = session.query(API).filter_by(project_id=project_id).limit(per_page).offset(offset).all()
     return all_rets, page_rets, pages
 
 
@@ -41,7 +41,7 @@ class APILIst(Resource):
         print("args: ", args)
         id, page = args["id"], args["page"]
         api_list = []
-        all_rets, page_rets, pages = get_page(page)
+        all_rets, page_rets, pages = get_page(page, id)
         for api in page_rets:
             api_body = json.loads(api.body)
             request = api_body["api"]["request"]
@@ -61,9 +61,12 @@ class APILIst(Resource):
         if page + 1 <= pages:
             page_next = page + 1
 
-        rst = make_response(jsonify({"apiList": api_list, "page": {"page_now": page,
-                                                                   "page_previous": page_previous,
-                                                                   "page_next": page_next}}))
+        project = session.query(Project).filter_by(id=id).first()
+        rst = make_response(jsonify({"apiList": api_list,
+                                     "projectInfo": {"name": project.name, "desc": project.desc},
+                                     "page": {"page_now": page,
+                                              "page_previous": page_previous,
+                                              "page_next": page_next}}))
         return rst
 
     def delete(self):

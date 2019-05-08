@@ -157,7 +157,8 @@ router.beforeEach((to, from, next) => {
             document.title = to.meta.title;
             var routerNameObject = {
               "项目列表": 'ProjectList',
-              "项目预览": 'APIView',
+              "项目预览": 'ProjectDetail',
+              "接口模板": 'APIView',
               "自动化测试": 'AutoTest',
               "历史报告": 'Reports',
             };

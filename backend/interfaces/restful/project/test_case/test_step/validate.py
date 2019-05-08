@@ -1,16 +1,13 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
-from SwaggerToCase.DB_operation.models import Validate
-from SwaggerToCase.DB_operation.curd import CURD, session
-
+from backend.models.models import Validate
+from backend.models.curd import CURD, session
 
 curd = CURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=str)
-parser.add_argument('config_id', type=str)
-parser.add_argument('key', type=str)
-parser.add_argument('value', type=str)
+parser.add_argument('validateForm', type=dict)
 
 
 class ValidateItem(Resource):
@@ -21,7 +18,7 @@ class ValidateItem(Resource):
             validate = session.query(Validate).filter_by(id=validate_id).first()
             rst = make_response(jsonify({"success": True,
                                          "id": validate.id,
-                                         "config_id": validate.config_id,
+                                         "config_id": validate.step_id,
                                          "key": validate.key,
                                          "value": validate.value
                                          }))
@@ -39,14 +36,29 @@ class ValidateItem(Resource):
 
     def patch(self):
         args = parser.parse_args()
-        status, msg = curd.update_validate(args)
+        validateForm = args["validateForm"]
+        if validateForm["expected_type"] == 'int':
+            try:
+                validateForm["expected"] = int(validateForm["expected"])
+            except ValueError as e:
+                status, msg = False, "期望值-请选择正确的类型"
+                rst = make_response(jsonify({"success": status, "msg": msg}))
+                return rst
+        status, msg = curd.update_validate(validateForm)
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
 
     def post(self):
         args = parser.parse_args()
-        config_id = int(args["config_id"])
-        variable = {"key": args["key"], "value": args["value"]}
-        status, msg = curd.add_validate(config_id, variable)
+        validateForm = args["validateForm"]
+        if validateForm["expected_type"] == 'int':
+            try:
+                validateForm["expected"] = int(validateForm["expected"])
+            except ValueError as e:
+                status, msg = False, "期望值-请选择正确的类型"
+                rst = make_response(jsonify({"success": status, "msg": msg}))
+                return rst
+        step_id = int(validateForm["step_id"])
+        status, msg = curd.add_validate(step_id, validateForm)
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst

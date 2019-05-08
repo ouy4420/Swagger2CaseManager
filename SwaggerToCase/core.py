@@ -42,9 +42,10 @@ class Swagger2Case(object):
         make_case.make_testcases(self.apis, self.testcases, interfaces)
 
     def dump(self):
-        dumper_file = DumpFile(self.config, self.apis, self.testcases)
-        dumper_file.dump_to_file()
+        # dumper_file = DumpFile(self.config, self.apis, self.testcases)
+        # dumper_file.dump_to_file()
         if self.config["project"] is not None:
+            print("in dump config:", self.config)
             dumper_db = DumpDB(self.apis, self.testcases)
             dumper_db.dump_to_db(self.config)
 

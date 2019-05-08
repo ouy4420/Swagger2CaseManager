@@ -1,25 +1,29 @@
 from flask import Flask, render_template
 from flask_cors import CORS
 import requests
-from backend.restful.project import ProjectList, ProjectItem
-from backend.restful.api import APILIst
-from backend.restful.case import CaseList, CaseItem
-from backend.restful.config import ConfigItem
-from backend.restful.teststep import StepItem
-from backend.restful.variables import VariableItem
-from backend.restful.parameters import ParameterItem
-from backend.restful.validate import ValidateItem
-from backend.restful.extract import ExtractItem
-from flask_restful import Api
+from backend.interfaces.restful.project.project import ProjectList, ProjectItem
+from backend.interfaces.restful.project.test_api.api import APILIst
+from backend.interfaces.restful.project.test_case.case import CaseList, CaseItem
+from backend.interfaces.restful.project.test_case.config.config import ConfigItem
+from backend.interfaces.restful.project.test_case.test_step.teststep import StepItem
+from backend.interfaces.restful.project.test_case.config.variables import VariableItem
+from backend.interfaces.restful.project.test_case.config.parameters import ParameterItem
+from backend.interfaces.restful.project.test_case.test_step.validate import ValidateItem
+from backend.interfaces.restful.project.test_case.test_step.extract import ExtractItem
+from backend.interfaces.restful.project.report.report import ReportList, ReportItem
 
 app = Flask(__name__,
             static_folder="./dist/static",
             template_folder="./dist")
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-from backend.auth import auth as auth_blueprint
+from backend.interfaces.auth import auth as auth_blueprint
+from backend.interfaces.runTest import run_test as runTest_blueprint
 
 app.register_blueprint(auth_blueprint)
+app.register_blueprint(runTest_blueprint)
+
+from flask_restful import Api
 
 api = Api(app)
 api.add_resource(ProjectList, '/api/waykichain/project/')
@@ -33,6 +37,8 @@ api.add_resource(VariableItem, '/api/waykichain/variable/')
 api.add_resource(ParameterItem, '/api/waykichain/parameter/')
 api.add_resource(ValidateItem, '/api/waykichain/validate/')
 api.add_resource(ExtractItem, '/api/waykichain/extract/')
+api.add_resource(ReportList, '/api/waykichain/report/')
+api.add_resource(ReportItem, '/api/waykichain/report/<int:report_id>/')
 
 
 @app.route('/', defaults={'path': ''})

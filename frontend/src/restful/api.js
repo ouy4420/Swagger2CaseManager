@@ -94,10 +94,6 @@ export const getProjectDetail = project_id => {
   return axios.get('/api/waykichain/project/' + project_id + '/').then(res => res.data)
 };
 
-export const getAPIList = params => {
-  return axios.get('/api/waykichain/api/', {"params": params}).then(res => res.data)
-};
-
 export const getPagination_api = params => {
   return axios.get('/api/waykichain/api/', {"params": params}).then(res => res.data)
 };
@@ -105,7 +101,9 @@ export const getPagination_api = params => {
 export const getPagination_case = params => {
   return axios.get('/api/waykichain/case/', {"params": params}).then(res => res.data)
 };
-
+export const getCaseList = params => {
+  return axios.get('/api/waykichain/case/', {"params": params}).then(res => res.data)
+};
 export const getCaseDetail = case_id => {
   return axios.get('/api/waykichain/case/' + case_id + '/').then(res => res.data)
 };
@@ -164,6 +162,46 @@ export const deleteExtract = data => {
 export const updateExtract = body => {
   return axios.patch('/api/waykichain/extract/', body).then(res => res.data)
 };
+
+export const updateStepAPIName = body => {
+  return axios.patch('/api/waykichain/step/', body).then(res => res.data)
+};
+
+export const runTestcases = body => {
+  return axios.post('/api/waykichain/run_test/', body).then(res => res.data)
+};
+
+
+export const getPagination_report = params => {
+  return axios.get('/api/waykichain/report/', {"params": params}).then(res => res.data)
+};
+
+export const deleteReport = report_id => {
+  return axios.delete('/api/waykichain/report/' + report_id + '/').then(res => res.data)
+};
+
+export const getReportDetail = report_id => {
+  return axios.get('/api/waykichain/report/' + report_id + '/').then(res => res.data)
+};
+
+export const updateReport = body => {
+  return axios.patch('/api/waykichain/report/' + body.id + '/', body).then(res => res.data)
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // export const getPagination = url => {

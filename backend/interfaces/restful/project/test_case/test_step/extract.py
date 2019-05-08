@@ -1,8 +1,8 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
-from SwaggerToCase.DB_operation.models import Extract
-from SwaggerToCase.DB_operation.curd import CURD, session
+from backend.models.models import Extract
+from backend.models.curd import CURD, session
 
 
 curd = CURD()

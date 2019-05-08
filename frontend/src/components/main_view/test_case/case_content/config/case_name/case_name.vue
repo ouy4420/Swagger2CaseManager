@@ -13,6 +13,7 @@
     methods: {
       editCaseName() {
         this.$prompt('请输入测试用例名称', '编辑用例名称', {
+          inputValue: this.$store.state.currentCase['config'].config.name,
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           inputPattern: /[^\u4e00-\u9fa5]+/,
@@ -25,6 +26,13 @@
           });
           // 更新测试用例名称
           this.updateConfig(value);
+          // 更新测试用例列表(注意：前一个动作也要访问数据库，避免冲突，此动作延时访问)
+          var obj = this;
+          function temp_func() {
+            // obj.getPagination(1)
+            obj.getCaseList()
+          }
+          setTimeout(temp_func, 500);
         }).catch(() => {
           this.$message({
             type: 'info',
@@ -64,6 +72,12 @@
         this.$api.getCaseDetail(currentCaseID).then(resp => {
           this.$store.commit('setCurrentCase', resp);
         });
+      },
+      getCaseList() {
+        const project_id = this.$route.params.id;
+        this.$api.getCaseList({"id": project_id}).then(resp => {
+          this.$store.commit("setCaseList", resp["caseList"]);
+        })
       }
 
     }

@@ -1,5 +1,8 @@
 <template>
-  <el-container>
+  <el-container
+    v-loading="loading_flag"
+    element-loading-text="报告拼命加载中，请稍后">
+
     <el-header>
       <ul class="title-project">
         <li class="title-li" title="Test Project">
@@ -8,11 +11,11 @@
         </li>
       </ul>
     </el-header>
-    <el-container>
-      <el-aside style="width: 400px; margin-left:10px; margin-top: 40px; border: solid">
-        <case_list></case_list>
+    <el-container style="margin-bottom: 20px">
+      <el-aside style="width: 450px; margin-left:10px; margin-top: 40px; border: solid">
+        <case_list @e-autotest="getData"></case_list>
       </el-aside>
-      <el-main  style="margin-left:10px; margin-top: 40px; margin-right: 20px; border: solid;">
+      <el-main style="margin-left:10px; margin-top: 40px; margin-right: 20px; border: solid;">
         <case_content></case_content>
       </el-main>
     </el-container>
@@ -31,6 +34,7 @@
     },
     data() {
       return {
+        loading_flag: false,
         projectInfo: {
           "name": "11",
           "desc": "22"
@@ -46,12 +50,17 @@
           console.log("step3", res);
           this.projectInfo = res
         })
-      }
+      },
+      getData(loading_flag) {
+      console.log(1111, loading_flag);
+      this.loading_flag = loading_flag;
+    }
     },
+
     mounted() {
-        // console.log("step1");
-        this.getProjectDetail()
-      }
+      // console.log("step1");
+      this.getProjectDetail()
+    }
   }
 </script>
 

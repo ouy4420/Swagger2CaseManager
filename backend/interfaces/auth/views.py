@@ -1,8 +1,8 @@
 from flask import request, jsonify
 from . import auth
-from SwaggerToCase.DB_operation.models import Auth
-from backend.auth.auth_token import generate_token
-from SwaggerToCase.DB_operation.curd import session
+from backend.models.models import Auth
+from backend.interfaces.auth.auth_token import generate_token
+from backend.models.curd import session
 
 
 @auth.route('/api/user/register/', methods=['POST'])

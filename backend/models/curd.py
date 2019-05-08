@@ -303,7 +303,7 @@ class CURD(object):
     def update_step(self, step):
         try:
             id = step['id']
-            api_name = step['api_name']
+            api_name = step['step_name']
             step_obj = session.query(StepCase).filter(StepCase.id == id).first()
             body = json.loads(step_obj.body)
             body["test"]["api"] = api_name

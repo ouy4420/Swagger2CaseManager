@@ -1,9 +1,9 @@
 <template>
 
   <div>
-    <h1 class="title">Config:</h1>
-    <config style="margin-bottom: 20px"></config>
-    <h1 class="title">Teststeps:</h1>
+    <h1 class="title">Config(全局配置):</h1>
+    <config style="margin-bottom: 40px"></config>
+    <h1 class="title">Teststeps(测试步骤):</h1>
     <teststeps></teststeps>
   </div>
 

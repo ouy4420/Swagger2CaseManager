@@ -321,9 +321,10 @@ class ParseResponses(object):
         '''
 
         status_code, value = list(self.responses.items())[0]
-        if '$ref' in value['schema']:
-            ref = value['schema']['$ref']
-            self.schema = self.parse_from_definitons(ref)
+        if "schema" in value:
+            if '$ref' in value['schema']:
+                ref = value['schema']['$ref']
+                self.schema = self.parse_from_definitons(ref)
 
     def parse_from_definitons(self, ref):
         '''

@@ -37,8 +37,8 @@
         },
         methods:{
             select(url) {
-                this.$store.commit('setRouterName',url);
                 this.$router.push({name:url});
+                this.$store.commit('setRouterName',url);
                 this.setLocalValue("routerName",url);
             }
         }
@@ -52,7 +52,7 @@
         top: 48px;
         border-right: 1px solid #ddd;
         height: 100%;
-        width: 202px;
+        width: 150px;
         background-color: #fff;
         display: inline-block;
     }

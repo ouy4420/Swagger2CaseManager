@@ -1,9 +1,8 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from sqlalchemy.exc import InternalError, InterfaceError
-from SwaggerToCase.DB_operation.models import Variables
-from SwaggerToCase.DB_operation.curd import CURD, session
-import json
+from backend.models.models import Variables
+from backend.models.curd import CURD, session
 
 curd = CURD()
 parser = reqparse.RequestParser()

@@ -1,12 +1,11 @@
 <template>
 
-    <el-table
-    v-loadmore="loadMore"
-    :data="APIListData"
+  <el-table
+    :data="apiList"
     style="width: 100%;">
 
-    <el-table-column type="expand" >
-      <template slot-scope="props" >
+    <el-table-column type="expand">
+      <template slot-scope="props">
         <el-form label-position="left" inline class="demo-table-expand">
           <el-form-item label="API调用: ">
             <span>{{ props.row.defname }}</span>
@@ -39,6 +38,10 @@
       </template>
     </el-table-column>
     <el-table-column
+      label="Index"
+      prop="index">
+    </el-table-column>
+    <el-table-column
       label="Name"
       prop="name">
     </el-table-column>
@@ -57,25 +60,13 @@
 <script>
   export default {
     name: "APIList",
+    props: ["apiList"],
     data() {
       return {
         APIListData: []
       }
     },
     methods: {
-      loadMore() {
-        if (this.loadSign) {
-          this.loadSign = false
-          this.page++
-          if (this.page > 10) {
-            return
-          }
-          setTimeout(() => {
-            this.loadSign = true
-          }, 1000)
-          console.log('到底了', this.page)
-        }
-      },
       success(resp) {
         this.$notify({
           message: resp["msg"],
@@ -89,16 +80,16 @@
           duration: 1000
         });
       },
-      get_api_list() {
-        const project_id = this.$route.params.id;
-        this.$api.getAPIList({"id": project_id}).then(res => {
-          console.log("res: ", res)
-          this.APIListData = res.results
-        })
-      }
+      // get_api_list() {
+      //   const project_id = this.$route.params.id;
+      //   this.$api.getAPIList({"id": project_id}).then(res => {
+      //     console.log("res: ", res);
+      //     this.APIListData = res
+      //   })
+      // }
     },
     mounted() {
-      this.get_api_list();
+      // this.get_api_list();
     }
   }
 </script>
