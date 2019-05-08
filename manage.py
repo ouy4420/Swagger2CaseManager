@@ -7,6 +7,7 @@ from backend.interfaces.restful.project.test_case.case import CaseList, CaseItem
 from backend.interfaces.restful.project.test_case.config.config import ConfigItem
 from backend.interfaces.restful.project.test_case.test_step.teststep import StepItem
 from backend.interfaces.restful.project.test_case.config.variables import VariableItem
+from backend.interfaces.restful.project.test_case.test_step.variables import VariableLocalItem
 from backend.interfaces.restful.project.test_case.config.parameters import ParameterItem
 from backend.interfaces.restful.project.test_case.test_step.validate import ValidateItem
 from backend.interfaces.restful.project.test_case.test_step.extract import ExtractItem
@@ -34,6 +35,7 @@ api.add_resource(CaseItem, '/api/waykichain/case/<int:case_id>/')
 api.add_resource(ConfigItem, '/api/waykichain/config/')
 api.add_resource(StepItem, '/api/waykichain/step/')
 api.add_resource(VariableItem, '/api/waykichain/variable/')
+api.add_resource(VariableLocalItem, '/api/waykichain/variable_local/')
 api.add_resource(ParameterItem, '/api/waykichain/parameter/')
 api.add_resource(ValidateItem, '/api/waykichain/validate/')
 api.add_resource(ExtractItem, '/api/waykichain/extract/')
