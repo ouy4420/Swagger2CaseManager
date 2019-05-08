@@ -6,7 +6,7 @@ import shutil
 from SwaggerToCase.encoder import JSONEncoder
 from sqlalchemy.orm import sessionmaker
 from backend.models.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters, \
-    Variables
+    VariablesLocal
 from sqlalchemy import create_engine
 
 engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
@@ -145,13 +145,12 @@ class DumpDB(object):
             session.commit()
 
     @staticmethod
-    def insert_variables(config, config_obj):
-        config_field = config["config"]
-        variables = config_field.get("variables")
+    def insert_variables_local(step, case_obj):
+        variables = step["test"]["variables"]
         for item in variables:
             key, value = tuple(item.items())[0]
             value = json.dumps(value)
-            variable_obj = Variables(key=key, value=value, config_id=config_obj.id)
+            variable_obj = VariablesLocal(key=key, value=value, stepcase_id=case_obj.id)
             session.add(variable_obj)
             session.commit()
 
@@ -192,10 +191,11 @@ class DumpDB(object):
             config_obj = self.insert_config(config, case_obj)
             # insert_parameters没什么意义，初始parameters为空列表
             self.insert_parameters(config, config_obj)
-            self.insert_variables(config, config_obj)
             for step in test_case[1:]:
                 step_obj = self.insert_stepcase(step, case_obj)
+                self.insert_variables_local(step, case_obj)
                 self.insert_validate(step, step_obj)
+                # insert_parameters没什么意义，初始extract为空列表
                 self.insert_extract(step, step_obj)
 
         # insert into test_api
