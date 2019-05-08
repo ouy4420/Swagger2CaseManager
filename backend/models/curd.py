@@ -1,7 +1,7 @@
 import json
 from backend.models.models import Project, \
     TestCase, Config, StepCase, API, Validate, Extract, \
-    Parameters, Variables, Report
+    Parameters, VariablesGlobal, Report, VariablesLocal, VariablesEnv, DebugTalk
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -78,20 +78,44 @@ class CURD(object):
             session.rollback()
             return False, "Report创建失败！" + str(e)
 
-    def add_variable(self, config_id, variable):
+    def add_variable_global(self, config_id, variable):
         try:
             # 注意：这里variable是字符串（传进来需要json转换）
-            key = variable['key']
-            value = variable["value"]
-            variable_obj = Variables(key=key,
-                                     value=value,
-                                     config_id=config_id)
+            variable_obj = VariablesGlobal(key=variable['key'],
+                                           value=variable["value"],
+                                           config_id=config_id)
             session.add(variable_obj)
             session.commit()
-            return True, "Variable添加成功！"
+            return True, "全局变量添加成功！"
         except Exception as e:
             session.rollback()
-            return False, "Variable添加失败！" + str(e)
+            return False, "全局变量添加失败！" + str(e)
+
+    def add_variable_local(self, stepcase_id, variable):
+        try:
+            # 注意：这里variable是字符串（传进来需要json转换）
+            variable_obj = VariablesLocal(key=variable['key'],
+                                          value=variable["value"],
+                                          stepcase_id=stepcase_id)
+            session.add(variable_obj)
+            session.commit()
+            return True, "局部变量添加成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "局部变量添加失败！" + str(e)
+
+    def add_variable_env(self, project_id, variable):
+        try:
+            # 注意：这里variable是字符串（传进来需要json转换）
+            variable_obj = VariablesEnv(key=variable['key'],
+                                        value=variable["value"],
+                                        project_id=project_id)
+            session.add(variable_obj)
+            session.commit()
+            return True, "环境变量添加成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "环境变量添加失败！" + str(e)
 
     def add_parameter(self, config_id, parameter):
         try:
@@ -155,12 +179,21 @@ class CURD(object):
 
     def delete_project(self, project_id):
         try:
-            print(project_id, type(project_id))
             testcases_obj = session.query(TestCase).filter(TestCase.project_id == project_id).join(Project).all()
-            print(123, testcases_obj)
             [self.delete_case(test_case.id) for test_case in testcases_obj]
+
             apis_obj = session.query(API).filter(API.project_id == project_id).join(Project).all()
             [self.delete_api(test_api.id) for test_api in apis_obj]
+
+            envs_obj = session.query(VariablesEnv).filter(VariablesEnv.project_id == project_id).join(Project).all()
+            [self.delete_variable_env(var_env.id) for var_env in envs_obj]
+
+            reports_obj = session.query(Report).filter(Report.project_id == project_id).join(Project).all()
+            [self.delete_report(test_report.id) for test_report in reports_obj]
+
+            debugtalks_obj = session.query(DebugTalk).filter(DebugTalk.project_id == project_id).join(Project).all()
+            [self.delete_debugtalk(debugtalk.id) for debugtalk in debugtalks_obj]
+
             session.query(Project).filter_by(id=project_id).delete()
             session.commit()
             return True, "Project删除成功！"
@@ -175,7 +208,16 @@ class CURD(object):
             return True, "Report删除成功！"
         except Exception as e:
             session.rollback()
-            return False, "Report删除成功！" + str(e)
+            return False, "Report删除失败！" + str(e)
+
+    def delete_debugtalk(self, debugtalk_id):
+        try:
+            session.query(DebugTalk).filter_by(id=debugtalk_id).delete()
+            session.commit()
+            return True, "DebugTalk删除成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "DebugTalk删除失败！" + str(e)
 
     def delete_case(self, case_id):
         # session.query(TestCase).filter_by(id=case_id).delete()  # 只是这样，删不了，因为有config和stepcase通过外键引用
@@ -195,9 +237,9 @@ class CURD(object):
         parameters_obj = session.query(Parameters). \
             filter(Parameters.config_id == config_obj.id).join(Config, isouter=True).all()
         [self.delete_parameter(parameter.id) for parameter in parameters_obj]
-        variables_obj = session.query(Variables). \
-            filter(Variables.config_id == config_obj.id).join(Config, isouter=True).all()
-        [self.delete_variable(variable.id) for variable in variables_obj]
+        variables_obj = session.query(VariablesGlobal). \
+            filter(VariablesGlobal.config_id == config_obj.id).join(Config, isouter=True).all()
+        [self.delete_variable_global(variable.id) for variable in variables_obj]
         session.query(Config).filter_by(id=config_id).delete()
         session.commit()
 
@@ -210,23 +252,48 @@ class CURD(object):
             session.rollback()
             return False, "Parameter删除成功！" + str(e)
 
-    def delete_variable(self, variable_id):
+    def delete_variable_global(self, variable_id):
         try:
-            session.query(Variables).filter_by(id=variable_id).delete()
+            session.query(VariablesGlobal).filter_by(id=variable_id).delete()
             session.commit()
-            return True, "Variable删除成功！"
+            return True, "全局变量删除成功！"
         except Exception as e:
             session.rollback()
-            return False, "Variable删除失败！" + str(e)
+            return False, "全局变量删除失败！" + str(e)
+
+    def delete_variable_local(self, variable_id):
+        try:
+            session.query(VariablesLocal).filter_by(id=variable_id).delete()
+            session.commit()
+            return True, "局部变量删除成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "局部变量删除失败！" + str(e)
+
+    def delete_variable_env(self, variable_id):
+        try:
+            session.query(VariablesEnv).filter_by(id=variable_id).delete()
+            session.commit()
+            return True, "环境变量删除成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "环境变量删除失败！" + str(e)
 
     def delete_setp(self, step_id):
         step_obj = session.query(StepCase).filter(StepCase.id == step_id).first()
+
+        variables_obj = session.query(VariablesLocal). \
+            filter(VariablesLocal.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
+        [self.delete_variable_local(variable.id) for variable in variables_obj]
+
         validates_obj = session.query(Validate). \
             filter(Validate.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
         [self.delete_validate(validate.id) for validate in validates_obj]
+
         extracts_obj = session.query(Extract). \
             filter(Extract.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
         [self.delete_extract(extract.id) for extract in extracts_obj]
+
         session.query(StepCase).filter_by(id=step_id).delete()
         session.commit()
 
@@ -330,20 +397,41 @@ class CURD(object):
             session.rollback()
             return False, "更新parameter失败！" + str(e)
 
-    def update_variable(self, variable):
+    def update_variable_global(self, variable):
         try:
-            id = variable['id']
-            key = variable['key']
-            value = variable["value"]
-            variable_obj = session.query(Variables).filter(Variables.id == id).first()
-            variable_obj.key = key
-            variable_obj.value = value
+            variable_obj = session.query(VariablesGlobal).filter(VariablesGlobal.id == variable['id']).first()
+            variable_obj.key = variable['key']
+            variable_obj.value = variable["value"]
             session.add(variable_obj)
             session.commit()
-            return True, "Variable更新成功！"
+            return True, "全局变量更新成功！"
         except Exception as e:
             session.rollback()
-            return False, "Variable更新失败" + str(e)
+            return False, "全局变量更新失败" + str(e)
+
+    def update_variable_local(self, variable):
+        try:
+            variable_obj = session.query(VariablesLocal).filter(VariablesLocal.id == variable['id']).first()
+            variable_obj.key = variable['key']
+            variable_obj.value = variable["value"]
+            session.add(variable_obj)
+            session.commit()
+            return True, "局部变量更新成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "局部变量更新失败" + str(e)
+
+    def update_variable_env(self, variable):
+        try:
+            variable_obj = session.query(VariablesEnv).filter(VariablesEnv.id == variable['id']).first()
+            variable_obj.key = variable['key']
+            variable_obj.value = variable["value"]
+            session.add(variable_obj)
+            session.commit()
+            return True, "环境变量更新成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "环境变量更新失败" + str(e)
 
     def update_validate(self, validate):
         try:
@@ -395,18 +483,48 @@ class CURD(object):
         }
         return element
 
-    def retrieve_variable(self, variable_id):
+    def retrieve_variable_global(self, variable_id):
         '''
         配合variable元素的update和delete
         :param variable_id:
         :return:
         '''
-        variable = session.query(Variables).filter_by(id=variable_id).first()
+        variable = session.query(VariablesGlobal).filter_by(id=variable_id).first()
         element = {
             "id": variable.id,
             "key": variable.key,
             "value": json.loads(variable.value),
             "config_id": variable.config_id
+        }
+        return element
+
+    def retrieve_variable_local(self, variable_id):
+        '''
+        配合variable元素的update和delete
+        :param variable_id:
+        :return:
+        '''
+        variable = session.query(VariablesLocal).filter_by(id=variable_id).first()
+        element = {
+            "id": variable.id,
+            "key": variable.key,
+            "value": json.loads(variable.value),
+            "stepcase_id": variable.stepcase_id
+        }
+        return element
+
+    def retrieve_variable_env(self, variable_id):
+        '''
+        配合variable元素的update和delete
+        :param variable_id:
+        :return:
+        '''
+        variable = session.query(VariablesEnv).filter_by(id=variable_id).first()
+        element = {
+            "id": variable.id,
+            "key": variable.key,
+            "value": json.loads(variable.value),
+            "project_id": variable.project_id
         }
         return element
 
@@ -473,9 +591,9 @@ class CURD(object):
             case_config["config"].update({"parameters": parameter_list})
 
             # variables of config
-            variables_obj = session.query(Variables). \
-                filter(Variables.config_id == config_obj.id).join(Config, isouter=True).all()
-            print("variables: ", variables_obj)
+            variables_obj = session.query(VariablesGlobal). \
+                filter(VariablesGlobal.config_id == config_obj.id).join(Config, isouter=True).all()
+            print("variablesGlobal: ", variables_obj)
             variable_list = []
             for item in variables_obj:
                 element = {item.key: json.loads(item.value)}
@@ -505,6 +623,16 @@ class CURD(object):
                     api = json.loads(api_obj.body)  # api的主体信息
                     testapis.append(api)
 
+                # variables of teststep
+                variables_obj = session.query(VariablesLocal). \
+                    filter(VariablesLocal.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
+                print("VariablesLocal: ", variables_obj)
+                variable_list = []
+                for item in variables_obj:
+                    element = {item.key: json.loads(item.value)}
+                    variable_list.append(element)
+                step["test"].update({"variables": variable_list})
+
                 # validate of teststep
                 validates_obj = session.query(Validate).filter(Validate.stepcase_id == step_obj.id).join(StepCase,
                                                                                                          isouter=True).all()
@@ -524,7 +652,7 @@ class CURD(object):
                     validate_list.append(element)
                 step["test"].update({"validate": validate_list})  # teststep中的validate可能会add\update\delete，所以要update
 
-                # validate of teststep
+                # extract of teststep
                 extracts_obj = session.query(Extract). \
                     filter(Extract.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
                 print("extracts: ", extracts_obj)
@@ -581,9 +709,9 @@ class CURD(object):
             case_config["config"].update({"parameters": parameter_list})
 
             # variables of config
-            variables_obj = session.query(Variables). \
-                filter(Variables.config_id == config_obj.id).join(Config, isouter=True).all()
-            print("variables: ", variables_obj)
+            variables_obj = session.query(VariablesGlobal). \
+                filter(VariablesGlobal.config_id == config_obj.id).join(Config, isouter=True).all()
+            print("VariablesGlobal: ", variables_obj)
             variable_list = []
             for item in variables_obj:
                 if not isinstance(item.value, str):
@@ -618,6 +746,21 @@ class CURD(object):
                     api_obj = session.query(API).filter(API.name == step_name and project_id == project_id).first()
                     api = json.loads(api_obj.body)  # api的主体信息
                     testapis.append(api)
+
+                # variables of teststep
+                variables_obj = session.query(VariablesLocal). \
+                    filter(VariablesLocal.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
+                print("VariablesLocal: ", variables_obj)
+                variable_list = []
+                for item in variables_obj:
+                    if not isinstance(item.value, str):
+                        value = json.loads(item.value)
+                    else:
+                        value = item.value
+
+                    element = {"id": item.id, "config_id": config_obj.id, "key": item.key, "value": value}
+                    variable_list.append(element)
+                step["test"].update({"variables": variable_list})
 
                 # validate of teststep
                 validates_obj = session.query(Validate).filter(Validate.stepcase_id == step_obj.id).join(StepCase,
