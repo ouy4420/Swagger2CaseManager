@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, UniqueConstraint, Index, CHAR, VARCHAR, SmallInteger, PrimaryKeyConstraint, \
     ForeignKeyConstraint, TEXT
+from backend.models.compress import CompressField
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -185,7 +186,7 @@ class Report(Base):
     id = Column(Integer, nullable=False, autoincrement=True)
     name = Column(VARCHAR(100), nullable=False, comment="报告名称")
     current_time = Column(VARCHAR(100), nullable=False, comment="报告生成时间")
-    render_content = Column(TEXT, nullable=False, comment="Html Code")
+    render_content = Column(CompressField(9999999), nullable=False, comment="Html Code")
     tester = Column(VARCHAR(100), nullable=False, comment="测试人员")
     description = Column(VARCHAR(1000), nullable=False, comment="报告描述")
     project_id = Column(Integer, nullable=False, comment="project外键")
