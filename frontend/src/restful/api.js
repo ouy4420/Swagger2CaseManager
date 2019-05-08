@@ -109,16 +109,16 @@ export const getCaseDetail = case_id => {
 };
 
 
-export const addVariable = body => {
+export const addVariableGlobal = body => {
   console.log("project body: ", body)
   return axios.post('/api/waykichain/variable/', body).then(res => res.data)
 };
 
-export const deleteVariable = data => {
+export const deleteVariableGlobal = data => {
   return axios.delete('/api/waykichain/variable/', {"data": data}).then(res => res.data)
 };
 
-export const updateVariable = body => {
+export const updateVariableGlobal = body => {
   return axios.patch('/api/waykichain/variable/', body).then(res => res.data)
 };
 
@@ -187,6 +187,28 @@ export const getReportDetail = report_id => {
 export const updateReport = body => {
   return axios.patch('/api/waykichain/report/' + body.id + '/', body).then(res => res.data)
 };
+
+export const addVariableLocal = body => {
+  return axios.post('/api/waykichain/variable_local/', body).then(res => res.data)
+};
+
+export const deleteVariableLocal = data => {
+  return axios.delete('/api/waykichain/variable_local/', {"data": data}).then(res => res.data)
+};
+
+export const updateVariableLocal = body => {
+  return axios.patch('/api/waykichain/variable_local/', body).then(res => res.data)
+};
+
+
+
+
+
+
+
+
+
+
 
 
 

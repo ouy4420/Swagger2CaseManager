@@ -12,7 +12,7 @@
             <span>{{item.test.api}}</span>
           </el-tab-pane>
           <el-tab-pane label="局部变量" name="local_variables">
-
+              <variables_local :stepItem="item"></variables_local>
           </el-tab-pane>
           <el-tab-pane label="断言校验" name="assert_validate">
             <validate v-bind:stepItem="item"></validate>
@@ -31,13 +31,15 @@
   import StepName from './step_name/step_name'
   import Vlidate from './validate/validate'
   import Extract from './extract/extract'
+  import VariableLocal from './variables/variables_local'
 
   export default {
     name: "Teststeps",
     components: {
       "step_name": StepName,
       "validate": Vlidate,
-      "extract": Extract
+      "extract": Extract,
+      "variables_local": VariableLocal
     },
     data() {
       return {

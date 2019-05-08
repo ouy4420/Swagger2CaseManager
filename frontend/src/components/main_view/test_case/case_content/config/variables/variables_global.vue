@@ -138,13 +138,6 @@
         this.DialogTitle = '编辑Variable'; // 设置dialog title
         this.variableForm.key = row['key'];
         this.variableForm.value = JSON.stringify(JSON.parse(row['value']), null, 2);
-        // if (typeof row['value'] == "object") {
-        //   // this.variableForm.value = JSON.stringify(row['value']);
-        //   this.variableForm.value = this.formatJson(row['value']);
-        //   console.log("66666", this.variableForm.value)
-        // } else {
-        //   this.variableForm.value = row['value'];
-        // }
         this.variableForm.id = row['id'];
         this.variableForm.config_id = row['config_id'];
 
@@ -158,7 +151,7 @@
           type: 'warning'
         }).then(() => {
           // delete 和 post/patch方法的参数不一样，需要加一层data
-          this.$api.deleteVariable(row).then(resp => {
+          this.$api.deleteVariableGlobal(row).then(resp => {
             if (resp['success']) {
               this.success(resp);       // 弹出成功提示消息
               this.get_case();          // 重新刷新当前case数据
@@ -186,9 +179,9 @@
             let obj;
             if (this.variableForm.id === '') {
               this.variableForm.config_id = this.$store.state.currentCase['config'].config_id;
-              obj = this.$api.addVariable(this.variableForm);     // 没有就新建
+              obj = this.$api.addVariableGlobal(this.variableForm);     // 没有就新建
             } else {
-              obj = this.$api.updateVariable(this.variableForm);  // 有就更新
+              obj = this.$api.updateVariableGlobal(this.variableForm);  // 有就更新
             }
             // 给http response挂载一个处理的钩子
             obj.then(resp => {
