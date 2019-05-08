@@ -5,7 +5,7 @@ import os
 import shutil
 from SwaggerToCase.encoder import JSONEncoder
 from sqlalchemy.orm import sessionmaker
-from SwaggerToCase.DB_operation.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters, \
+from backend.models.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters, \
     Variables
 from sqlalchemy import create_engine
 
@@ -99,14 +99,19 @@ class DumpDB(object):
             comparator = key
             check = value[0]
             expected = value[1]
+            if isinstance(expected, int):
+                expected_type = "int"
+            else:
+                expected_type = "str"
             validate_obj = Validate(comparator=comparator,
                                     check=check,
                                     expected=expected,
+                                    expected_type=expected_type,
                                     stepcase_id=step_obj.id)
             session.add(validate_obj)
             session.commit()
 
-    def insert_api(self):
+    def insert_api(self, project_obj):
         for api in self.test_apis:
             test_api = api["api"]
             name = test_api["name"]
@@ -114,7 +119,7 @@ class DumpDB(object):
             url = request["url"]
             method = request["method"]
             body = json.dumps(api)
-            api_obj = API(name=name, url=url, method=method, body=body)
+            api_obj = API(name=name, url=url, method=method, body=body, project_id=project_obj.id)
             session.add(api_obj)
             session.commit()
 
@@ -166,9 +171,16 @@ class DumpDB(object):
         session.commit()
         return case_obj
 
-    def insert_project(self, name, desc, owner):
+    def insert_project(self, project):
         # insert into project
-        project_obj = Project(name=name, desc=desc, owner=owner)
+        name = project["name"]
+        if project["url"]:
+            mode = "url"
+        else:
+            mode = "file"
+        desc = project["desc"]
+        owner = project["owner"]
+        project_obj = Project(name=name, mode=mode, desc=desc, owner=owner)
         session.add(project_obj)
         session.commit()
 
@@ -186,12 +198,9 @@ class DumpDB(object):
                 self.insert_validate(step, step_obj)
                 self.insert_extract(step, step_obj)
 
-        # insert into api
-        self.insert_api()
+        # insert into test_api
+        self.insert_api(project_obj)
 
     def dump_to_db(self, config):
         project = config["project"]
-        name = project["name"]
-        desc = project["desc"]
-        owner = project["owner"]
-        self.insert_project(name=name, desc=desc, owner=owner)
+        self.insert_project(project)

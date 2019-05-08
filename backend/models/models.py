@@ -13,7 +13,6 @@ class Auth(Base):
     password = Column(TEXT, nullable=False)
     email = Column(VARCHAR(100), nullable=False)
 
-
     def hash_password(self, password):  # 给密码加密方法
         self.password = pwd_context.encrypt(password)
 
@@ -31,6 +30,7 @@ class Project(Base):
 
     id = Column(Integer, nullable=False, autoincrement=True)
     name = Column(VARCHAR(20), nullable=False, comment="项目名称")
+    mode = Column(VARCHAR(20), nullable=False, comment="创建方式")
     desc = Column(VARCHAR(100), nullable=False, comment="简要介绍")
     owner = Column(VARCHAR(20), nullable=False, comment="创建人")
 
@@ -53,7 +53,7 @@ class TestCase(Base):
 
     __table_args__ = (
         PrimaryKeyConstraint("id"),
-        UniqueConstraint('name', name='unique_name'),
+        # UniqueConstraint('name', name='unique_name'),  # 同名没关系，属于不同project就行
         ForeignKeyConstraint(('project_id',), ('project.id',), name='fk_testcase_project')
     )
 
@@ -137,10 +137,12 @@ class API(Base):
     url = Column(VARCHAR(100), nullable=False, comment="请求地址")
     method = Column(VARCHAR(100), nullable=False, comment="请求方式")
     body = Column(TEXT, nullable=False, comment="API 主体信息")
+    project_id = Column(Integer, nullable=False, comment="project外键")
 
     __table_args__ = (
         PrimaryKeyConstraint("id"),
-        UniqueConstraint('name', name='unique_name'),
+        # UniqueConstraint('name', name='unique_name'),  # 同名没关系，属于不同project就行
+        ForeignKeyConstraint(('project_id',), ('project.id',), name='fk_testapi_project')
     )
 
     def __repr__(self):
@@ -150,9 +152,10 @@ class API(Base):
 class Validate(Base):
     __tablename__ = 'validate'
     id = Column(Integer, nullable=False, autoincrement=True)
-    comparator = Column(VARCHAR(100), nullable=False)
-    check = Column(VARCHAR(100), nullable=False, comment="请求地址")
-    expected = Column(VARCHAR(100), nullable=False, comment="请求方式")
+    comparator = Column(VARCHAR(100), nullable=False, comment="校验类型")
+    check = Column(VARCHAR(100), nullable=False, comment="校验值")
+    expected = Column(VARCHAR(100), nullable=False, comment="期望值")
+    expected_type = Column(VARCHAR(100), nullable=False, comment="期望值类型")
     stepcase_id = Column(Integer, nullable=False, comment="stepcase外键")
 
     __table_args__ = (
@@ -179,5 +182,22 @@ class Extract(Base):
     def __repr__(self):
         return "<class %s %s-%s>" % (Extract.__name__, self.id, self.key)
 
-# class Report(Base):
-#     pass
+
+class Report(Base):
+    __tablename__ = 'report'
+
+    id = Column(Integer, nullable=False, autoincrement=True)
+    name = Column(VARCHAR(100), nullable=False, comment="报告名称")
+    current_time = Column(VARCHAR(100), nullable=False, comment="报告生成时间")
+    render_content = Column(TEXT, nullable=False, comment="Html Code")
+    tester = Column(VARCHAR(100), nullable=False, comment="测试人员")
+    description = Column(VARCHAR(1000), nullable=False, comment="报告描述")
+    project_id = Column(Integer, nullable=False, comment="project外键")
+
+    __table_args__ = (
+        PrimaryKeyConstraint("id"),
+        ForeignKeyConstraint(('project_id',), ('project.id',), name='fk_report_project')
+    )
+
+    def __repr__(self):
+        return "<class %s %s-%s>" % (TestCase.__name__, self.id, self.name)

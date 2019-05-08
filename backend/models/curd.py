@@ -1,10 +1,11 @@
 import json
-from SwaggerToCase.DB_operation.models import Project, \
+from backend.models.models import Project, \
     TestCase, Config, StepCase, API, Validate, Extract, \
-    Parameters, Variables
+    Parameters, Variables, Report
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
                        encoding='utf-8',
                        # echo=True,
@@ -61,6 +62,22 @@ class CURD(object):
             session.add(step_obj)
             session.commit()
 
+    def add_report(self, report):
+        try:
+            report_obj = Report(name=report['name'],
+                                current_time=report["current_time"],
+                                render_content=report["render_content"],
+                                tester=report["tester"],
+                                description=report["description"],
+                                project_id=report["project_id"])
+            session.add(report_obj)
+            session.commit()
+            return True, "Report创建成功！"
+        except Exception as e:
+            print(e)
+            session.rollback()
+            return False, "Report创建失败！" + str(e)
+
     def add_variable(self, config_id, variable):
         try:
             # 注意：这里variable是字符串（传进来需要json转换）
@@ -109,9 +126,11 @@ class CURD(object):
             comparator = validate['comparator']
             check = validate["check"]
             expected = validate["expected"]
+            expected_type = validate["expected_type"]
             validate_obj = Validate(comparator=comparator,
                                     check=check,
                                     expected=expected,
+                                    expected_type=expected_type,
                                     stepcase_id=step_id)
             session.add(validate_obj)
             session.commit()
@@ -148,6 +167,15 @@ class CURD(object):
         except Exception as e:
             session.rollback()
             return False, "Project删除失败！" + str(e)
+
+    def delete_report(self, report_id):
+        try:
+            session.query(Report).filter_by(id=report_id).delete()
+            session.commit()
+            return True, "Report删除成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "Report删除成功！" + str(e)
 
     def delete_case(self, case_id):
         # session.query(TestCase).filter_by(id=case_id).delete()  # 只是这样，删不了，因为有config和stepcase通过外键引用
@@ -259,14 +287,26 @@ class CURD(object):
             session.rollback()
             return False, "用例名称更新失败！" + str(e)
 
+    def update_report(self, report):
+        try:
+            id = report['id']
+            description = report['description']
+            report_obj = session.query(Report).filter(Report.id == id).first()
+            report_obj.description = description
+            session.add(report_obj)
+            session.commit()
+            return True, "报告更新成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "报告更新失败！" + str(e)
+
     def update_step(self, step):
         try:
             id = step['id']
-            name = step['name']
+            api_name = step['api_name']
             step_obj = session.query(StepCase).filter(StepCase.id == id).first()
-            step_obj.name = name
             body = json.loads(step_obj.body)
-            body["test"]["name"] = name
+            body["test"]["api"] = api_name
             step_obj.body = json.dumps(body)
             session.add(step_obj)
             session.commit()
@@ -311,10 +351,12 @@ class CURD(object):
             comparator = validate['comparator']
             check = validate["check"]
             expected = validate["expected"]
+            expected_type = validate["expected_type"]
             validate_obj = session.query(Validate).filter(Validate.id == id).first()
             validate_obj.comparator = comparator
             validate_obj.check = check
             validate_obj.expected = expected
+            validate_obj.expected_type = expected_type
             session.add(validate_obj)
             session.commit()
             return True, "Validate更新成功！"
@@ -473,7 +515,10 @@ class CURD(object):
                     comparator = item.comparator
                     check = item.check
                     expected = item.expected
+                    expected_type = item.expected_type
                     if expected in ["200", "404", "500", "401"]:
+                        expected = int(expected)
+                    if expected_type == "int":
                         expected = int(expected)
                     element = {comparator: [check, expected]}
                     validate_list.append(element)
@@ -546,7 +591,7 @@ class CURD(object):
                 else:
                     value = item.value
 
-                element = {"id": item.id, "config_id": config_obj.id,  "key": item.key, "value": value}
+                element = {"id": item.id, "config_id": config_obj.id, "key": item.key, "value": value}
                 variable_list.append(element)
             case_config["config"].update({"variables": variable_list})
             case_config.update({"config_id": config_obj.id})
@@ -584,9 +629,13 @@ class CURD(object):
                     comparator = item.comparator
                     check = item.check
                     expected = item.expected
+                    expected_type = item.expected_type
                     if expected in ["200", "404", "500", "401"]:
                         expected = int(expected)
-                    element = {"id": item.id, "step_id": step_obj.id,  "comparator": comparator, "check": check, "expected": expected}
+                    if expected_type == "int":
+                        expected = int(expected)
+                    element = {"id": item.id, "step_id": step_obj.id, "comparator": comparator, "check": check,
+                               "expected": expected}
                     validate_list.append(element)
                 step["test"].update({"validate": validate_list})  # teststep中的validate可能会add\update\delete，所以要update
 
@@ -596,7 +645,7 @@ class CURD(object):
                 print("extracts: ", extracts_obj)
                 extract_list = []
                 for item in extracts_obj:
-                    element = {"id": item.id, "step_id": step_obj.id,  "key": item.key, "value": item.value}
+                    element = {"id": item.id, "step_id": step_obj.id, "key": item.key, "value": item.value}
                     extract_list.append(element)
                 step["test"].update({"extract": extract_list})  # teststep中的extract可能会add\update\delete，所以要update
                 step.update({"step_id": step_obj.id})

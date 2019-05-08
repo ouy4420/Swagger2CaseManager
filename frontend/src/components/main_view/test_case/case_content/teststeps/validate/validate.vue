@@ -20,7 +20,12 @@
             <el-input v-model="validateForm.check" clearable></el-input>
           </el-form-item>
           <el-form-item label="期望值" prop="expected">
-            <el-input v-model="validateForm.expected"></el-input>
+            <el-input placeholder="输入期望值前，请选择好参数类型" v-model="validateForm.expected" class="input-with-select">
+              <el-select v-model="validateForm.expected_type" slot="prepend" placeholder="参数类型" style="width: 110px">
+                <el-option label="int" value="int"></el-option>
+                <el-option label="str" value="str"></el-option>
+              </el-select>
+            </el-input>
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
@@ -46,7 +51,7 @@
       style="width: 100%;"
     >
       <el-table-column
-        label="key"
+        label="断言类型"
         width="200"
         align="center"
       >
@@ -59,7 +64,7 @@
       </el-table-column>
 
       <el-table-column
-        label="value"
+        label="校验值"
         width="300"
         align="center"
       >
@@ -68,7 +73,7 @@
         </template>
       </el-table-column>
       <el-table-column
-        label="value"
+        label="期望值"
         width="300"
         align="center"
       >
@@ -110,20 +115,21 @@
           comparator: '',
           check: '',
           expected: '',
+          expected_type: '',
           id: '',
           step_id: ''
         },
         rules: {
           comparator: [
-            {required: true, message: '请输入变量名称', trigger: 'blur'},
+            {required: true, message: '请输入校验类型', trigger: 'blur'},
             {min: 1, max: 50, message: '最多不超过50个字符', trigger: 'blur'}
           ],
           check: [
-            {required: true, message: '请输入变量值', trigger: 'blur'},
+            {required: true, message: '请输入校验值', trigger: 'blur'},
             {min: 1, max: 50, message: '最多不超过50个字符', trigger: 'blur'}
           ],
           expected: [
-            {required: true, message: '请输入变量值', trigger: 'blur'},
+            {required: true, message: '请输入期望值', trigger: 'blur'},
             {min: 1, max: 50, message: '最多不超过50个字符', trigger: 'blur'}
           ]
         }
@@ -163,6 +169,7 @@
           comparator: '',
           check: '',
           expected: '',
+          expected_type: '',
           id: '',
           step_id: ''
         };
@@ -176,9 +183,9 @@
             if (this.validateForm.id === '') {
               console.log("this.stepItem: ", this.stepItem)
               this.validateForm.step_id = this.stepItem.step_id;
-              obj = this.$api.addValidate(this.validateForm);     // 没有就新建
+              obj = this.$api.addValidate({"validateForm": this.validateForm});     // 没有就新建
             } else {
-              obj = this.$api.updateValidate(this.validateForm);  // 有就更新
+              obj = this.$api.updateValidate({"validateForm": this.validateForm});  // 有就更新
             }
             // 给http response挂载一个处理的钩子
             obj.then(resp => {
