@@ -94,8 +94,8 @@ class Parameters(Base):
         return "<class %s %s-%s-%s>" % (Extract.__name__, self.id, self.key, self.value)
 
 
-class Variables(Base):
-    __tablename__ = 'variables'
+class VariablesGlobal(Base):
+    __tablename__ = 'variables_global'
     id = Column(Integer, nullable=False, autoincrement=True)
     key = Column(VARCHAR(100), nullable=False, comment="变量名")
     value = Column(TEXT, nullable=False, comment="变量值")  # 注意：这里与parameters的不同，需要json库转换
@@ -103,7 +103,7 @@ class Variables(Base):
 
     __table_args__ = (
         PrimaryKeyConstraint("id"),
-        ForeignKeyConstraint(('config_id',), ('config.id',), name='fk_variables_config')
+        ForeignKeyConstraint(('config_id',), ('config.id',), name='fk_varGlobal_config')
     )
 
     def __repr__(self):
@@ -129,24 +129,20 @@ class StepCase(Base):
         return "<class %s %s-%s>" % (StepCase.__name__, self.id, self.name)
 
 
-class API(Base):
-    __tablename__ = 'test_api'
-
+class VariablesLocal(Base):
+    __tablename__ = 'variables_local'
     id = Column(Integer, nullable=False, autoincrement=True)
-    name = Column(VARCHAR(100), nullable=False)
-    url = Column(VARCHAR(100), nullable=False, comment="请求地址")
-    method = Column(VARCHAR(100), nullable=False, comment="请求方式")
-    body = Column(TEXT, nullable=False, comment="API 主体信息")
-    project_id = Column(Integer, nullable=False, comment="project外键")
+    key = Column(VARCHAR(100), nullable=False, comment="变量名")
+    value = Column(TEXT, nullable=False, comment="变量值")
+    stepcase_id = Column(Integer, nullable=False, comment="stepcase外键")
 
     __table_args__ = (
         PrimaryKeyConstraint("id"),
-        # UniqueConstraint('name', name='unique_name'),  # 同名没关系，属于不同project就行
-        ForeignKeyConstraint(('project_id',), ('project.id',), name='fk_testapi_project')
+        ForeignKeyConstraint(('stepcase_id',), ('stepcase.id',), name='fk_varLocal_stepcase')
     )
 
     def __repr__(self):
-        return "<class %s %s-%s>" % (API.__name__, self.id, self.name)
+        return "<class %s %s-%s-%s>" % (Extract.__name__, self.id, self.key, self.value)
 
 
 class Validate(Base):
@@ -201,3 +197,55 @@ class Report(Base):
 
     def __repr__(self):
         return "<class %s %s-%s>" % (TestCase.__name__, self.id, self.name)
+
+
+class VariablesEnv(Base):
+    __tablename__ = 'variables_env'
+    id = Column(Integer, nullable=False, autoincrement=True)
+    key = Column(VARCHAR(100), nullable=False, comment="变量名")
+    value = Column(TEXT, nullable=False, comment="变量值")
+    project_id = Column(Integer, nullable=False, comment="project外键")
+
+    __table_args__ = (
+        PrimaryKeyConstraint("id"),
+        ForeignKeyConstraint(('project_id',), ('project.id',), name='fk_varEnv_project')
+    )
+
+    def __repr__(self):
+        return "<class %s %s-%s-%s>" % (Extract.__name__, self.id, self.key, self.value)
+
+
+class API(Base):
+    __tablename__ = 'test_api'
+
+    id = Column(Integer, nullable=False, autoincrement=True)
+    name = Column(VARCHAR(100), nullable=False)
+    url = Column(VARCHAR(100), nullable=False, comment="请求地址")
+    method = Column(VARCHAR(100), nullable=False, comment="请求方式")
+    body = Column(TEXT, nullable=False, comment="API 主体信息")
+    project_id = Column(Integer, nullable=False, comment="project外键")
+
+    __table_args__ = (
+        PrimaryKeyConstraint("id"),
+        # UniqueConstraint('name', name='unique_name'),  # 同名没关系，属于不同project就行
+        ForeignKeyConstraint(('project_id',), ('project.id',), name='fk_testapi_project')
+    )
+
+    def __repr__(self):
+        return "<class %s %s-%s>" % (API.__name__, self.id, self.name)
+
+
+class DebugTalk(Base):
+    __tablename__ = 'debugtalk'
+
+    id = Column(Integer, nullable=False, autoincrement=True)
+    code = Column(TEXT, nullable=False, comment="驱动代码")
+    project_id = Column(Integer, nullable=False, comment="project外键")
+
+    __table_args__ = (
+        PrimaryKeyConstraint("id"),
+        ForeignKeyConstraint(('project_id',), ('project.id',), name='fk_debugtalk_project')
+    )
+
+    def __repr__(self):
+        return "<class %s %s-%s>" % (API.__name__, self.id, self.project_id)
