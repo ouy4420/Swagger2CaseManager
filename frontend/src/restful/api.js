@@ -72,18 +72,17 @@ export const login = params => {
 
 // ------------------------------------- waykichain api ---------------------------------------
 
-// project
+// project -------------------------------------------------------------------------------------------------------------
 export const addProject = body => {
-  console.log("project body: ", body)
   return axios.post('/api/waykichain/project/', body).then(res => res.data)
 };
 
 export const deleteProject = data => {
-  return axios.delete('/api/waykichain/project/', {"data": data}).then(res => res.data)
+  return axios.delete('/api/waykichain/project/' + data.id + "/", {"data": data}).then(res => res.data)
 };
 
 export const updateProject = body => {
-  return axios.patch('/api/waykichain/project/', body).then(res => res.data)
+  return axios.patch('/api/waykichain/project/' + body.id + "/", body).then(res => res.data)
 };
 
 export const getProjectList = params => {
@@ -93,6 +92,8 @@ export const getProjectList = params => {
 export const getProjectDetail = project_id => {
   return axios.get('/api/waykichain/project/' + project_id + '/').then(res => res.data)
 };
+// ------------------------------------------------------------------------------------------------------------- project
+
 
 export const getPagination_api = params => {
   return axios.get('/api/waykichain/api/', {"params": params}).then(res => res.data)
