@@ -1,9 +1,8 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import Project, TestCase, Config
-from backend.models.curd import CURD, session
+from backend.models.curd import TestCaseCURD, session
 
-curd = CURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=int)
 parser.add_argument('page', type=int)
@@ -101,8 +100,9 @@ class CaseList(Resource):
 
 class CaseItem(Resource):
     def get(self, case_id):
-        curd = CURD()
-        case_name, case = curd.retrieve_one_case_ui(case_id)[1]
+        curd = TestCaseCURD()
+        case_ids, testapis, testcases = curd.retrieve_part_cases([case_id], flag="UI")
+        case = testcases[0][1]  # 默认显示第一个测试用例的信息
         config = case.pop(0)
         teststeps = case
         return make_response(jsonify({"success": True, "msg": "", "teststeps": teststeps, "config": config}))
