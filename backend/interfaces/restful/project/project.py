@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
-from backend.models.models import Project, TestCase,  API
+from backend.models.models import Project, TestCase,  API, Report
 from backend.models.curd import CURD, session
 
 curd = CURD()
@@ -23,12 +23,13 @@ class ProjectItem(Resource):
             project = session.query(Project).filter_by(id=project_id).first()
             test_apis = session.query(API).filter_by(project_id=project_id).all()
             test_cases = session.query(TestCase).filter_by(project_id=project_id).all()
+            test_reports = session.query(Report).filter_by(project_id=project_id).all()
             rst = make_response(jsonify({"success": True,
                                          "msg": "",
                                          "len_apis": len(test_apis),
                                          "len_cases": len(test_cases),
                                          "len_envir": 0,
-                                         "len_report": 0,
+                                         "len_report": len(test_reports),
                                          "name": project.name,
                                          "desc": project.desc
                                          }))
@@ -39,10 +40,19 @@ class ProjectItem(Resource):
             return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!"}))
 
     def delete(self, project_id):
-        pass
+        args = parser.parse_args()
+        project_id = int(args["id"])
+        status, msg = curd.delete_project(project_id)
+        rst = make_response(jsonify({"success": status, "msg": msg}))
+        return rst
 
-    def put(self, project_id):
-        pass
+    def patch(self, project_id):
+        args = parser.parse_args()
+        project_id = int(args["id"])
+        args["owner"] = args["responsible"]
+        status, msg = curd.update_project(project_id, args)
+        rst = make_response(jsonify({"success": status, "msg": msg}))
+        return rst
 
 
 class ProjectList(Resource):
@@ -54,7 +64,6 @@ class ProjectList(Resource):
             print("args: ", args)
             owner = args["owner"]
             project_list = []
-            # session.flush()
             projects_obj = session.query(Project).filter_by(owner=owner).all()
             for pro in projects_obj:
                 project_list.append(
@@ -65,21 +74,6 @@ class ProjectList(Resource):
             session.rollback()
             return make_response(jsonify({"success": False, "msg": "projectList获取失败！" + str(e)}))
 
-    def delete(self):
-        args = parser.parse_args()
-        project_id = int(args["id"])
-        status, msg = curd.delete_project(project_id)
-        rst = make_response(jsonify({"success": status, "msg": msg}))
-        return rst
-
-    def patch(self):
-        args = parser.parse_args()
-        project_id = int(args["id"])
-        args["owner"] = args["responsible"]
-        status, msg = curd.update_project(project_id, args)
-        rst = make_response(jsonify({"success": status, "msg": msg}))
-        return rst
-
     def post(self):
         args = parser.parse_args()
         args["owner"] = args["responsible"]
@@ -89,3 +83,4 @@ class ProjectList(Resource):
             status, msg = execute(args)
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
+
