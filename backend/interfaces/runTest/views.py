@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from . import run_test
 
-from backend.models.curd import CURD, session
+from backend.models.curd import ReportCURD, TestCaseCURD, session
 from backend.models.models import Project
 
 from SwaggerToCase.dumper import DumpFile
@@ -23,8 +23,9 @@ def run_test():
     config["api_file"] = os.path.join(cwd, r"SwaggerToCase\TestProject\api\{}".format(project_name))
     config["file_type"] = "YAML"
 
-    curd = CURD()
-    case_ids, test_apis, test_cases = curd.retrieve_part_cases(case_list)
+    case_curd = TestCaseCURD()
+    report_curd = ReportCURD()
+    case_ids, test_apis, test_cases = case_curd.retrieve_part_cases(case_list)
     dumper = DumpFile(config, test_apis, test_cases)
     dumper.dump_api_file()  # 写入api文件
     dumper.dump_testcases_files()  # 写入testcase文件
@@ -39,6 +40,6 @@ def run_test():
             "description": "",
             "render_content": render_content
         }
-        curd.add_report(report_dict)
+        report_curd.add_report(report_dict)
     file_name, current_time, render_content = report_list[0]
     return jsonify({'success': True, 'msg': '用例执行成功！', "render_content": render_content})
