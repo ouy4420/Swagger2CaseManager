@@ -1,9 +1,9 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import Report, Project
-from backend.models.curd import CURD, session
+from backend.models.curd import ReportCURD, session
 
-curd = CURD()
+curd = ReportCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=int)
 parser.add_argument('page', type=int)
@@ -23,9 +23,8 @@ class ReportItem(Resource):
                                          }))
             return rst
         except Exception as e:
-            print('InternalError:', e)
             session.rollback()
-            return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!"}))
+            return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!" + str(e)}))
 
     def delete(self, report_id):
         status, msg = curd.delete_report(report_id)
