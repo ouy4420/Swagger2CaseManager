@@ -140,7 +140,15 @@ class DumpDB(object):
         parameters = config_field.get("parameters")
         for item in parameters:
             key, value = tuple(item.items())[0]
-            parameter_obj = Parameters(key=key, value=value, config_id=config_obj.id)
+            try:
+                value = json.loads(value)
+                value_type = "json_list"
+            except Exception as e:
+                value_type = "defined_func"
+            parameter_obj = Parameters(key=key,
+                                       value=value,
+                                       value_type=value_type,
+                                       config_id=config_obj.id)
             session.add(parameter_obj)
             session.commit()
 
