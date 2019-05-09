@@ -21,12 +21,14 @@
           inputErrorMessage: '请勿输入中文！！'
         }).then(({value}) => {
           // 提示成功消息
+
           this.$message({
             type: 'success',
             message: '新的用例名称是: ' + value
           });
           // 更新测试API调用名称
           this.updateTestStep(value);
+          console.log(this.stepItem)
         }).catch(() => {
           this.$message({
             type: 'info',
@@ -37,7 +39,7 @@
       updateTestStep(api_name) {
         var body = {
           "id": this.stepItem.step_id,
-          "api_name": step_name
+          "api_name": api_name
         };
         this.$api.updateStepAPIName(body).then(resp => {
           if (resp['success']) {
