@@ -2,10 +2,10 @@ from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
 from backend.models.models import Extract
-from backend.models.curd import CURD, session
+from backend.models.curd import ExtractCURD, session
 
 
-curd = CURD()
+curd = ExtractCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=str)
 parser.add_argument('step_id', type=str)
