@@ -17,7 +17,12 @@
             <el-input v-model="parameterForm.key" clearable></el-input>
           </el-form-item>
           <el-form-item label="变量值" prop="value">
-            <el-input type="textarea" v-model="parameterForm.value"></el-input>
+            <el-input placeholder="指定参数列表还是自定义函数" v-model="parameterForm.value" class="input-with-select">
+              <el-select v-model="parameterForm.value_type" slot="prepend" placeholder="参数类型" style="width: 110px">
+                <el-option label="参数列表" value="json_list"></el-option>
+                <el-option label="自定义函数" value="defined_func"></el-option>
+              </el-select>
+            </el-input>
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
@@ -99,6 +104,7 @@
         parameterForm: {
           key: '',
           value: '',
+          value_type: '',
           id: '',
           config_id: ''
         },
