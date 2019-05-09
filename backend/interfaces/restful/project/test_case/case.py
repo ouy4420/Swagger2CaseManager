@@ -37,10 +37,10 @@ class CaseListPage(Resource):
         try:
             all_rets, page_rets, pages = get_page(page)
             for case in page_rets:
-                parsed_api = parse_api_body(case)
-                parsed_api["index"] = all_rets.index(case) + 1
-                parsed_api["id"] = case.id
-                case_list.append(parsed_api)
+                parsed_case = parse_case_body(case)
+                parsed_case["index"] = all_rets.index(case) + 1
+                parsed_case["id"] = case.id
+                case_list.append(parsed_case)
 
             page_previous, page_next = None, None
             if page > 1:
