@@ -1,11 +1,11 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
-from backend.models.curd import CURD
+from backend.models.curd import StepCURD
 
-curd = CURD()
+curd = StepCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=str)
-parser.add_argument('step_name', type=str)
+parser.add_argument('api_name', type=str)
 
 
 class StepItem(Resource):
