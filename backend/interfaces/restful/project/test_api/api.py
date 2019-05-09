@@ -1,10 +1,10 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import API, Project
-from backend.models.curd import CURD, session
+from backend.models.curd import APICURD, session
 import json
 
-curd = CURD()
+curd = APICURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=int)
 parser.add_argument('page', type=int)
