@@ -15,7 +15,7 @@ def gen_api_case(config):
 
 
 def main(swagger_name, file_type, url_or_file, project, specified_cases):
-    log_init()
+    # log_init()
 
     cwd = os.getcwd()
     # test_pro_path = os.path.join(cwd, 'TestProject')
