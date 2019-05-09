@@ -136,7 +136,12 @@ class TestCaseCURD:
             parameter_list = []
             for item in parameters_obj:
                 if flag == "UI":
-                    element = {"id": item.id, "config_id": config_obj.id, "key": item.key, "value": item.value}
+                    element = {"id": item.id,
+                               "config_id": config_obj.id,
+                               "key": item.key,
+                               "value": item.value,
+                               "value_type": item.value_type
+                               }
                 else:
                     element = {item.key: item.value}
                 parameter_list.append(element)
@@ -297,6 +302,7 @@ class ParametersCURD:
         try:
             parameter_obj = Parameters(key=parameter['key'],
                                        value=parameter["value"],
+                                       value_type=parameter["value_type"],
                                        config_id=config_id)
             session.add(parameter_obj)
             session.commit()
@@ -321,6 +327,7 @@ class ParametersCURD:
             parameter_obj = session.query(Parameters).filter(Parameters.id == parameter['id']).first()
             parameter_obj.key = parameter['key']
             parameter_obj.value = parameter["value"]
+            parameter_obj.value = parameter["value_type"]
             session.add(parameter_obj)
             session.commit()
             return True, "更新parameter成功！"
@@ -335,6 +342,7 @@ class ParametersCURD:
             "id": parameter.id,
             "key": parameter.key,
             "value": parameter.value,
+            "value_type": parameter.value_type,
             "config_id": parameter.config_id
         }
         return element
