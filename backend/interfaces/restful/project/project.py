@@ -2,9 +2,9 @@ from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
 from backend.models.models import Project, TestCase,  API, Report
-from backend.models.curd import CURD, session
+from backend.models.curd import ProjectCURD, session
 
-curd = CURD()
+curd = ProjectCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=str)
 parser.add_argument('name', type=str)
@@ -40,15 +40,12 @@ class ProjectItem(Resource):
             return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!"}))
 
     def delete(self, project_id):
-        args = parser.parse_args()
-        project_id = int(args["id"])
         status, msg = curd.delete_project(project_id)
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
 
     def patch(self, project_id):
         args = parser.parse_args()
-        project_id = int(args["id"])
         args["owner"] = args["responsible"]
         status, msg = curd.update_project(project_id, args)
         rst = make_response(jsonify({"success": status, "msg": msg}))
