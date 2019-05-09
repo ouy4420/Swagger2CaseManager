@@ -2,10 +2,10 @@ from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from sqlalchemy.exc import InternalError, InterfaceError
 from backend.models.models import Parameters
-from backend.models.curd import CURD, session
+from backend.models.curd import ParametersCURD, session
 
 
-curd = CURD()
+curd = ParametersCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=str)
 parser.add_argument('config_id', type=str)
