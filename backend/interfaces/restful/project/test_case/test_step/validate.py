@@ -2,9 +2,9 @@ from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
 from backend.models.models import Validate
-from backend.models.curd import CURD, session
+from backend.models.curd import ValidateCURD, session
 
-curd = CURD()
+curd = ValidateCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=str)
 parser.add_argument('validateForm', type=dict)
