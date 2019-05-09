@@ -1,6 +1,10 @@
 <template>
   <el-container>
-    <el-header style="background: #b4f196; padding: 0; height: 70px; margin-left: 0">
+    <el-header
+      style="background: #b4f196; padding: 0; height: 70px; margin-left: 0"
+      v-loading="loading_flag"
+      element-loading-text="拼命加载中，请稍后..."
+    >
       <div>
         <div style="padding-top: 20px; margin-left: 10px; padding-bottom: 20px;">
           <i class="el-icon-circle-plus"></i>
@@ -27,6 +31,7 @@
             :visible.sync="dialogVisible"
             width="30%"
             align="center"
+            @close="close_dialog"
           >
             <el-form :model="projectForm"
                      :rules="rules"
@@ -129,7 +134,7 @@
                 title="编辑项目"
                 :visible.sync="editVisible"
                 width="30%"
-                @close="close_edit_dialog"
+                @close="close_dialog"
               >
                 <el-form :model="projectForm"
                          :rules="rules"
@@ -197,6 +202,7 @@
     },
     data() {
       return {
+        loading_flag: false,
         fileVisible: false,
         urlVisible: false,
         dialogVisible: false,
@@ -240,7 +246,7 @@
         this.projectForm.desc = row['desc'];
         this.projectForm.id = row['id'];
       },
-      close_edit_dialog(){
+      close_dialog(){
         this.projectForm = {
           name: '',
           url: '',
@@ -260,7 +266,9 @@
           type: 'warning'
         }).then(() => {
           // delete 和 post/patch方法的参数不一样，需要加一层data
+          this.loading_flag = true;
           this.$api.deleteProject(row).then(resp => {
+            this.loading_flag = false;
             if (resp['success']) {
               this.success(resp);
               this.getProjectList();
@@ -276,13 +284,10 @@
             // 新建或编辑框中的数据校验通过后，将弹框隐藏掉
             this.dialogVisible = false;
             this.editVisible = false;
+            this.loading_flag = true;
             let obj;
-            console.log("1", this.projectForm);
             if (this.projectForm.id === '') {
-              console.log("2", this.projectForm);
               this.projectForm.file = this.$store.state.fileConent;
-              console.log("this.projectForm.file", this.projectForm.file);
-              console.log("this.$store.state.fileConent", this.$store.state.fileConent);
               obj = this.$api.addProject(this.projectForm);     // 没有就新建
             } else {
               obj = this.$api.updateProject(this.projectForm);  // 有就更新
@@ -295,7 +300,7 @@
               } else {
                 this.failure(resp);
               }
-
+              this.loading_flag = false;
               this.projectForm.name = '';
               this.projectForm.url = '';
               this.projectForm.file = "";
@@ -325,7 +330,7 @@
       failure(resp) {
         this.$notify.error({
           message: resp["msg"],
-          duration: 1000
+          duration: 30000
         });
       },
       getProjectList() {
