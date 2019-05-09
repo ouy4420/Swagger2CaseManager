@@ -117,7 +117,7 @@ class StepCase(Base):
     id = Column(Integer, nullable=False, autoincrement=True)
     name = Column(VARCHAR(100), nullable=False)
     step = Column(Integer, nullable=False, default=1, comment="顺序")
-    api_name = Column(VARCHAR(100), nullable=False)
+    api_name = Column(VARCHAR(100), nullable=False)  # ToDO: 建立唯一键
     body = Column(TEXT, nullable=False, comment="StepCase 主体信息")
     testcase_id = Column(Integer, nullable=False, comment="testcase外键")
 
@@ -220,7 +220,7 @@ class API(Base):
     __tablename__ = 'test_api'
 
     id = Column(Integer, nullable=False, autoincrement=True)
-    name = Column(VARCHAR(100), nullable=False)
+    api_func = Column(VARCHAR(100), nullable=False)
     url = Column(VARCHAR(100), nullable=False, comment="请求地址")
     method = Column(VARCHAR(100), nullable=False, comment="请求方式")
     body = Column(TEXT, nullable=False, comment="API 主体信息")
@@ -233,7 +233,7 @@ class API(Base):
     )
 
     def __repr__(self):
-        return "<class %s %s-%s>" % (API.__name__, self.id, self.name)
+        return "<class %s %s-%s>" % (API.__name__, self.id, self.api_func)
 
 
 class DebugTalk(Base):
