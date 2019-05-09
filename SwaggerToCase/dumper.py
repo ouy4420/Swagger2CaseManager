@@ -114,12 +114,12 @@ class DumpDB(object):
     def insert_api(self, project_obj):
         for api in self.test_apis:
             test_api = api["api"]
-            name = test_api["name"]
+            api_func = test_api["def"]
             request = test_api["request"]
             url = request["url"]
             method = request["method"]
             body = json.dumps(api)
-            api_obj = API(name=name, url=url, method=method, body=body, project_id=project_obj.id)
+            api_obj = API(api_func=api_func, url=url, method=method, body=body, project_id=project_obj.id)
             session.add(api_obj)
             session.commit()
 
@@ -203,4 +203,8 @@ class DumpDB(object):
 
     def dump_to_db(self, config):
         project = config["project"]
-        self.insert_project(project)
+        try:
+            self.insert_project(project)
+        except Exception as e:
+            session.rollback()
+            raise
