@@ -84,6 +84,7 @@ class Parameters(Base):
     id = Column(Integer, nullable=False, autoincrement=True)
     key = Column(VARCHAR(100), nullable=False, comment="变量名")
     value = Column(VARCHAR(100), nullable=False, comment="参数驱动数据，默认来自于debugtalk")
+    value_type = Column(VARCHAR(50), nullable=False, comment="指定参数列表、csv表格还是自定义函数")
     config_id = Column(Integer, nullable=False, comment="config外键")
 
     __table_args__ = (
