@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="form-title" style="margin-top: 120px">维基链 - 接口测试平台</div>
-    <el-form ref="loginForm" v-if="!isLogin" :model="loginForm" status-icon :rules="rules" label-width="80px"
+    <el-form ref="loginForm" :model="loginForm" status-icon  label-width="80px"
              class="login-form">
       <h2>用户登录</h2>
       <el-form-item label="用户名" prop="username">
