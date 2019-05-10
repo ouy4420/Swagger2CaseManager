@@ -18,7 +18,9 @@ axios.interceptors.request.use(
     if (config.url.indexOf("/api/waykichain/project/?cursor=\"") !== -1) {
 
     } else if (!config.url.startsWith("/api/user/")) {
-      config.url = config.url.indexOf('?') == '-1' ? config.url + "?token=" + store.token : config.url + "&token=" + store.token;
+      config.url = config.url.indexOf('?') == '-1' ?
+      config.url + "?token=" + store.token + "&user=" + store.user :
+        config.url + "&token=" + store.token + "&user=" + store.user;
     }
     return config;
   },
@@ -30,6 +32,18 @@ axios.interceptors.request.use(
 // after_response钩子操作
 axios.interceptors.response.use(
   function (response) {
+    if (response.data.hasOwnProperty("code")){
+      if (response.data.code === -1){
+        alert(response.data.msg);
+        // 切换到Login登录界面
+        router.replace({
+          name: 'Login'
+        })
+      }
+    }else{
+      console.log("token is ok!")
+    }
+
     return response;
   },
   function (error) {
