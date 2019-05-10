@@ -9,22 +9,22 @@
 
     <ul class="project_detail">
       <li class="pull-left" @click="trans_router('APIView')">
-        <p class="title-p"><i class="iconfont">&#xe74a;</i> &nbsp;{{projectInfo.len_apis}} 个接口</p>
+        <p class="title-p">{{projectInfo.len_apis}} 个接口</p>
         <p class="desc-p">接口总数</p>
       </li>
 
       <li class="pull-left"  @click="trans_router('AutoTest')">
-        <p class="title-p"><i class="iconfont">&#xe6da;</i> &nbsp;{{projectInfo.len_cases}} 个用例</p>
+        <p class="title-p"> {{projectInfo.len_cases}} 个用例</p>
         <p class="desc-p">用例集总数</p>
       </li>
 
       <li class="pull-left"  @click="trans_router('GlobalEnv')">
-        <p class="title-p"><i class="iconfont">&#xe609;</i> &nbsp;{{projectInfo.len_envir}} 套环境</p>
+        <p class="title-p">{{projectInfo.len_envir}} 套环境</p>
         <p class="desc-p">环境总数</p>
       </li>
 
       <li class="pull-left"  @click="trans_router('Reports')">
-        <p class="title-p"><i class="iconfont">&#xe66e;</i> &nbsp;{{projectInfo.len_report}} 个报告</p>
+        <p class="title-p">{{projectInfo.len_report}} 个报告</p>
         <p class="desc-p">测试报告总数</p>
       </li>
     </ul>
