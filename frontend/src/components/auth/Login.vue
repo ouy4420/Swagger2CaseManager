@@ -112,4 +112,10 @@
     line-height: 20px;
   }
 
+  #form-title {
+    font-size: 40px;
+    color: #172B4D;
+    text-align: center;
+    margin-top: 60px;
+}
 </style>
