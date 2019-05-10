@@ -34,11 +34,10 @@ axios.interceptors.response.use(
   function (response) {
     if (response.data.hasOwnProperty("code")){
       if (response.data.code === -1){
-        alert(response.data.msg);
         // 切换到Login登录界面
         router.replace({
           name: 'Login'
-        })
+        });
       }
     }else{
       console.log("token is ok!")
