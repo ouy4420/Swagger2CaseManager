@@ -8,7 +8,7 @@ from SwaggerToCase.dumper import DumpFile
 from SwaggerToCase.inherit import run
 
 import os
-
+import shutil
 
 @run_test.route('/api/waykichain/run_test/', methods=['POST'])
 @login_require
@@ -20,8 +20,15 @@ def run_test():
     project_name = project_obj.name
     cwd = os.getcwd()
     config = {}
-    config["testcase_dir"] = os.path.join(cwd, r"SwaggerToCase\TestProject\testcases\{}".format(project_name))
-    config["api_file"] = os.path.join(cwd, r"SwaggerToCase\TestProject\api\{}".format(project_name))
+    testcases_dir = os.path.join(cwd, r"SwaggerToCase\TestProject\testcases")
+    testapi_dir = os.path.join(cwd, r"SwaggerToCase\TestProject\api")
+    # 清空testcases_dir和testapi_dir
+    shutil.rmtree(testcases_dir)
+    shutil.rmtree(testapi_dir)
+    os.mkdir(testcases_dir)
+    os.mkdir(testapi_dir)
+    config["testcase_dir"] = os.path.join(testcases_dir, project_name)
+    config["api_file"] = os.path.join(testapi_dir, project_name)
     config["file_type"] = "YAML"
 
     case_curd = TestCaseCURD()
