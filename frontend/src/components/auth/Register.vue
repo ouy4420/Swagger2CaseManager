@@ -1,90 +1,31 @@
 <template>
-  <el-container class="login">
-    <el-header>
-      <el-row>
-        <el-col
-          :span="4"
-          :offset="1"
-        >
-          <div>
-
-          </div>
-        </el-col>
-      </el-row>
-    </el-header>
-    <el-main style="padding: 0px">
-      <el-row>
-        <el-col :span="7">
-          <div class="bottom-left">
-            <img src="../../assets/images/bottom-left.png">
-          </div>
-
-        </el-col>
-        <el-col :span="24">
-          <div>
-            <div id="form-title">维基链 - 接口测试平台</div>
-            <form id="submit-form">
-              <div id="form-content">
-                <div id="form-msg">注册账号</div>
-                <div id="form-inputs">
-                  <div class="form-input-div">
-                    <i class="iconfont"
-                       style="position: absolute; bottom: 375px; padding-left: 10px">&#xe61c;</i>
-                    <input placeholder="用户名" type="text" id="user"
-                           v-model="registerForm.username">
-                    <div class="err_msg" id="user_err" v-html="usernameInvalid"
-                         @mouseover="usernameInvalid=''"></div>
-                  </div>
-                  <div class="form-input-div">
-                    <i class="iconfont"
-                       style="position: absolute; bottom: 312px; padding-left: 10px">&#xe652;</i>
-                    <input placeholder="密码" type="password" id="pwd"
-                           v-model="registerForm.password">
-                    <div class="err_msg" id="pwd_err" v-html="passwordInvalid"
-                         @mouseover="passwordInvalid= ''"></div>
-                  </div>
-                  <div class="form-input-div">
-                    <i class="iconfont"
-                       style="position: absolute; bottom: 250px; padding-left: 10px">&#xe652;</i>
-                    <input placeholder="确认密码" type="password" id="repwd" v-model="registerForm.repwd">
-                    <div class="err_msg" id="repwd_err" v-html="repwdInvalid"
-                         @mouseover="repwdInvalid= ''"></div>
-                  </div>
-                  <div class="form-input-div">
-                    <i class="iconfont"
-                       style="position: absolute; bottom: 190px; padding-left: 10px">&#xe668;</i>
-                    <input placeholder="邮箱" type="email" id="email" v-model="registerForm.email">
-                    <div class="err_msg" id="email_err" v-html="emailInvalid"
-                         @mouseover="emailInvalid= ''"></div>
-                  </div>
-                  <div class="form-submit">
-                    <button type="button" class="btn btn-primary" id="submitBtn"
-                            @click="submitForm">立即注册
-                    </button>
-                  </div>
-                </div>
-                <div class="form-foot">
-                  <span>已有账户，<router-link to="/waykichain/login">立即登陆</router-link></span>
-                </div>
-
-              </div>
-            </form>
-
-          </div>
-
-        </el-col>
-        <el-col :span="7">
-          <div class="bottom-right">
-            <img src="../../assets/images/bottom-right.png">
-          </div>
-        </el-col>
-      </el-row>
-
-    </el-main>
-  </el-container>
-
+  <div>
+    <div id="form-title" style="margin-top: 120px">维基链 - 接口测试平台</div>
+    <el-form ref="regForm" :model="regForm" status-icon :rules="rules" label-width="80px" class="reg-form">
+      <h2>用户注册</h2>
+      <el-form-item label="用户名" prop="username">
+        <el-input v-model="registerForm.username"></el-input>
+        <div class="err_msg" id="user_err" v-html="usernameInvalid" @mouseover="usernameInvalid=''"></div>
+      </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input type="password" v-model="registerForm.password" auto-complete="off"></el-input>
+        <div class="err_msg" id="pwd_err" v-html="passwordInvalid" @mouseover="passwordInvalid= ''"></div>
+      </el-form-item>
+      <el-form-item label="确认密码" prop="password_confirm">
+        <el-input type="password" v-model="registerForm.repwd" auto-complete="off"></el-input>
+        <div class="err_msg" id="repwd_err" v-html="repwdInvalid" @mouseover="repwdInvalid= ''"></div>
+      </el-form-item>
+      <el-form-item label="邮箱" prop="email">
+        <el-input v-model="registerForm.email"></el-input>
+        <div class="err_msg" id="email_err" v-html="emailInvalid" @mouseover="emailInvalid= ''"></div>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="submitForm">注册</el-button>
+        <router-link to="/waykichain/login">已有账号？去登录</router-link>
+      </el-form-item>
+    </el-form>
+  </div>
 </template>
-
 
 <script>
   export default {
@@ -151,12 +92,11 @@
         if (resp['success']) {
           this.$router.push('/waykichain/login/');  // 这里的this是？$router属性内容又是什么？
           this.$message.success({
-                      message: resp.msg,
-                      duration: 2000,
-                      center: true
-                    })
-        }
-        else {
+            message: resp.msg,
+            duration: 2000,
+            center: true
+          })
+        } else {
           this.$message.error({
             message: resp["msg"],
             duration: 2000,
@@ -170,5 +110,25 @@
 </script>
 
 <style scoped>
+  .reg-form {
+    width: 400px;
+    margin: 20px auto auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+  }
+
+  .reg-form h2 {
+    font-size: 24px;
+    text-align: center;
+    margin: 30px 0;
+  }
+
+  .err_msg {
+    position: relative;
+    color: #fc4949;
+    height: 20px;
+    line-height: 20px;
+  }
+
 
 </style>

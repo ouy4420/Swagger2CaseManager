@@ -1,71 +1,23 @@
 <template>
-
-  <el-container class="login">
-    <el-header>
-      <el-row>
-        <el-col
-          :span="4"
-          :offset="1"
-        >
-          <div>
-
-          </div>
-        </el-col>
-      </el-row>
-    </el-header>
-    <el-main style="padding: 0px">
-      <el-row>
-        <el-col :span="7">
-          <div class="bottom-left">
-            <img src="../../assets/images/bottom-left.png">
-          </div>
-
-        </el-col>
-        <el-col :span="24">
-          <div>
-            <div id="form-title">维基链 - 接口测试平台</div>
-            <form id="submit-form">
-              <div id="form-content">
-                <div id="form-msg">登录账号</div>
-                <div id="form-inputs">
-                  <div class="form-input-div">
-                    <i class="iconfont"
-                       style="position: absolute; bottom: 250px; padding-left: 10px">&#xe61c;</i>
-                    <input placeholder="用户名" type="text" id="email" v-model="loginForm.username">
-                    <div class="err_msg" id="email_err" v-html="usernameInvalid" @mouseover="usernameInvalid=''"></div>
-                  </div>
-                  <div class="form-input-div">
-                    <i class="iconfont"
-                       style="position: absolute; bottom: 190px; padding-left: 10px">&#xe652;</i>
-                    <input placeholder="密码" type="password" id="pwd" v-model="loginForm.password">
-                    <div class="err_msg" id="pwd_err" v-html="passwordInvalid" @mouseover="passwordInvalid= ''"></div>
-                  </div>
-                  <div class="form-submit">
-                    <button type="button" class="btn btn-primary" id="submitBtn"
-                            @click="submitForm">立即登录
-                    </button>
-                  </div>
-                </div>
-                <div class="form-foot">
-                  <span>没有账户，<router-link to="/waykichain/register">立即注册</router-link></span>
-                </div>
-
-              </div>
-            </form>
-
-          </div>
-
-        </el-col>
-        <el-col :span="7">
-          <div class="bottom-right">
-            <img src="../../assets/images/bottom-right.png">
-          </div>
-        </el-col>
-      </el-row>
-
-    </el-main>
-  </el-container>
-
+  <div>
+    <div id="form-title" style="margin-top: 120px">维基链 - 接口测试平台</div>
+    <el-form ref="loginForm" v-if="!isLogin" :model="loginForm" status-icon :rules="rules" label-width="80px"
+             class="login-form">
+      <h2>用户登录</h2>
+      <el-form-item label="用户名" prop="username">
+        <el-input v-model="loginForm.username"></el-input>
+        <div class="err_msg" id="email_err" v-html="usernameInvalid" @mouseover="usernameInvalid=''"></div>
+      </el-form-item>
+      <el-form-item label="密码" prop="password">
+        <el-input type="password" v-model="loginForm.password" auto-complete="off"></el-input>
+        <div class="err_msg" id="pwd_err" v-html="passwordInvalid" @mouseover="passwordInvalid= ''"></div>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="submitForm">登录</el-button>
+        <router-link to="/waykichain/register">还没有账号？去注册</router-link>
+      </el-form-item>
+    </el-form>
+  </div>
 </template>
 
 <script>
@@ -122,16 +74,12 @@
           this.setLocalValue("user", resp.user);
           this.setLocalValue("routerName", 'ProjectList');
 
-
           this.$message.success({
-                      message: resp.msg,
-                      duration: 2000,
-                      center: true
-                    })
-        }
-        else {
-          console.log(11,this);
-          console.log(22, this.$message);
+            message: resp.msg,
+            duration: 2000,
+            center: true
+          })
+        } else {
           this.$message.error({
             message: resp.msg,
             duration: 2000,
@@ -144,5 +92,24 @@
 </script>
 
 <style scoped>
+  .login-form {
+    width: 400px;
+    margin: 20px auto auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+  }
+
+  .login-form h2 {
+    font-size: 24px;
+    text-align: center;
+    margin: 30px 0;
+  }
+
+  .err_msg {
+    position: relative;
+    color: #fc4949;
+    height: 20px;
+    line-height: 20px;
+  }
 
 </style>
