@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from . import run_test
-
+from backend.interfaces.auth.auth_decrator import login_require
 from backend.models.curd import ReportCURD, TestCaseCURD, session
 from backend.models.models import Project
 
@@ -11,6 +11,7 @@ import os
 
 
 @run_test.route('/api/waykichain/run_test/', methods=['POST'])
+@login_require
 def run_test():
     case_list = request.json.get('case_list')
     project_id = request.json.get('project_id')

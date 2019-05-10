@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_cors import CORS
+from backend.interfaces.auth.auth_decrator import login_require
 import requests
 from backend.interfaces.restful.project.project import ProjectList, ProjectItem
 from backend.interfaces.restful.project.test_api.api import APILIst
@@ -26,7 +27,7 @@ app.register_blueprint(runTest_blueprint)
 
 from flask_restful import Api
 
-api = Api(app)
+api = Api(app, decorators=[login_require])
 api.add_resource(ProjectList, '/api/waykichain/project/')
 api.add_resource(ProjectItem, '/api/waykichain/project/<int:project_id>/')
 api.add_resource(APILIst, '/api/waykichain/api/')
@@ -45,12 +46,13 @@ api.add_resource(ReportItem, '/api/waykichain/report/<int:report_id>/')
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
+@login_require
 def catch_all(path):
     if app.debug:
-        return requests.get('http://localhost:8081/{}'.format(path)).text
+        return requests.get('http://127.0.0.1:8081/waykichain{}'.format(path)).text
+        # return 'token ok'
     return render_template("index.html")
 
 
 if __name__ == '__main__':
-    print(app.url_map)
     app.run(debug=True, host='192.168.161.1')
