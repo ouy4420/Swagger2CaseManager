@@ -11,6 +11,7 @@ engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?char
                        # echo=True,
                        isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
                        max_overflow=5)
+
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -135,15 +136,19 @@ class TestCaseCURD:
             # print("parameters: ", parameters_obj)
             parameter_list = []
             for item in parameters_obj:
+                if item.value_type == "json_list":
+                    value = json.loads(item.value)
+                else:
+                    value = item.value
                 if flag == "UI":
                     element = {"id": item.id,
                                "config_id": config_obj.id,
                                "key": item.key,
-                               "value": item.value,
+                               "value": value,
                                "value_type": item.value_type
                                }
                 else:
-                    element = {item.key: item.value}
+                    element = {item.key: value}
                 parameter_list.append(element)
             case_config["config"].update({"parameters": parameter_list})
 
@@ -327,7 +332,7 @@ class ParametersCURD:
             parameter_obj = session.query(Parameters).filter(Parameters.id == parameter['id']).first()
             parameter_obj.key = parameter['key']
             parameter_obj.value = parameter["value"]
-            parameter_obj.value = parameter["value_type"]
+            parameter_obj.value_type = parameter["value_type"]
             session.add(parameter_obj)
             session.commit()
             return True, "更新parameter成功！"
