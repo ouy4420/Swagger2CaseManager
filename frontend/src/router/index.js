@@ -58,6 +58,26 @@ const router = new Router({
             requireAuth: true,
           }
         },
+        {
+          name: 'APIView',
+          path: 'api_record/:id',
+          component: APIView,
+          meta: {
+            title: 'API接口',
+            requireAuth: true
+          }
+
+        },
+        {
+          name: 'AutoTest',
+          path: 'auto_test/:id',
+          component: AutoTest,
+          meta: {
+            title: '测试用例',
+            requireAuth: true
+          }
+
+        },
         // {
         //   name: 'DebugTalk',
         //   path: 'debugtalk/:id',
@@ -68,26 +88,6 @@ const router = new Router({
         //   }
         //
         // },
-        {
-          name: 'APIView',
-          path: 'api_record/:id',
-          component: APIView,
-          meta: {
-            title: '接口模板',
-            requireAuth: true
-          }
-
-        },
-        {
-          name: 'AutoTest',
-          path: 'auto_test/:id',
-          component: AutoTest,
-          meta: {
-            title: '自动化测试',
-            requireAuth: true
-          }
-
-        },
         // {
         //   name: 'RecordConfig',
         //   path: 'record_config/:id',
@@ -103,7 +103,7 @@ const router = new Router({
         //   path: 'global_env/:id',
         //   component: GlobalEnv,
         //   meta: {
-        //     title: '全局变量',
+        //     title: '环境变量',
         //     requireAuth: true
         //   }
         //
