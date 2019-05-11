@@ -157,8 +157,25 @@ class DumpDB(object):
         variables = step["test"]["variables"]
         for item in variables:
             key, value = tuple(item.items())[0]
-            value = json.dumps(value)
-            variable_obj = VariablesLocal(key=key, value=value, stepcase_id=case_obj.id)
+            # 其实经swagger2case的maker只有json类型
+            # 这里时为了规范，后面也要用到类似的逻辑
+            # 其实variables_global也应该有insert_variables_global，但是swagger2case没有global
+            if isinstance(value, int):
+                value_type = "int"
+            else:
+                try:
+                    int(value)
+                    value_type = "json"  # "123"/"[1,2,3]" 也是json的一种
+                except Exception as e:
+                    try:
+                        value = json.dumps(value)
+                        value_type = "json"
+                    except Exception as e:
+                        value_type = "str"
+            variable_obj = VariablesLocal(key=key,
+                                          value=value,
+                                          value_type=value_type,
+                                          stepcase_id=case_obj.id)
             session.add(variable_obj)
             session.commit()
 
