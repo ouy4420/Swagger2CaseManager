@@ -17,7 +17,7 @@
             <el-input v-model="parameterForm.key" clearable></el-input>
           </el-form-item>
           <el-form-item label="变量值" prop="value">
-            <el-input placeholder="指定参数列表还是自定义函数" v-model="parameterForm.value" class="input-with-select">
+            <el-input placeholder="指定参数列表还是自定义函数" v-model="parameterForm.value">
               <el-select v-model="parameterForm.value_type" slot="prepend" placeholder="参数类型" style="width: 110px">
                 <el-option label="参数列表" value="json_list"></el-option>
                 <el-option label="自定义函数" value="defined_func"></el-option>
@@ -130,7 +130,7 @@
         this.DialogTitle = '编辑Parameter';  // 设置dialog title
         // 显示要编辑的数据 ---------------------------------------
         this.parameterForm.key = row['key'];
-        this.parameterForm.value = row['value'];
+        this.parameterForm.value = JSON.stringify(row["value"], null, 0);  // 格式化显示, list不需要空格
         this.parameterForm.value_type = row["value_type"];
         this.parameterForm.id = row['id'];
         this.parameterForm.config_id = row['config_id'];
@@ -177,7 +177,7 @@
             // 参数校验之校验value_type对应的value --------------------------------------
             if (this.parameterForm.value_type === "json_list") {
               try {
-                this.parameterForm.value = JSON.stringify(JSON.parse(this.parameterForm.value), null, 2);
+                this.parameterForm.value = JSON.stringify(JSON.parse(this.parameterForm.value), null, 0);
               } catch (err) {
                 this.reset_parameter_form();
                 this.$notify.error({
@@ -207,8 +207,7 @@
               }
               this.reset_parameter_form()  // 重置表单数据
             })
-          }
-          else {
+          } else {
             this.DialogVisible = true;
             if (this.parameterForm.id !== '') {
               this.DialogTitle = "编辑Parameter";  // 已经存在显示编辑框
