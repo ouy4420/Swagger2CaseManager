@@ -6,10 +6,10 @@ from backend.models.curd import VarLocalCURD, session
 curd = VarLocalCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=str)
-parser.add_argument('config_id', type=str)
+parser.add_argument('step_id', type=str)
 parser.add_argument('key', type=str)
 parser.add_argument('value', type=str)
-
+parser.add_argument('value_type', type=str)
 
 class VariableLocalItem(Resource):
     def get(self):
@@ -19,7 +19,7 @@ class VariableLocalItem(Resource):
             variable = session.query(VariablesLocal).filter_by(id=variable_id).first()
             rst = make_response(jsonify({"success": True,
                                          "id": variable.id,
-                                         "config_id": variable.config_id,
+                                         "step_id": variable.config_id,
                                          "key": variable.key,
                                          "value": variable.value
                                          }))
@@ -43,8 +43,7 @@ class VariableLocalItem(Resource):
 
     def post(self):
         args = parser.parse_args()
-        config_id = int(args["config_id"])
-        variable = {"key": args["key"], "value": args["value"]}
-        status, msg = curd.add_variable_local(config_id, variable)
+        step_id = int(args["step_id"])
+        status, msg = curd.add_variable_local(step_id, args)
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
