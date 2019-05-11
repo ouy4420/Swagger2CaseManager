@@ -33,7 +33,7 @@
       <div style="">
         <el-button type="primary"
                    size="small"
-                   @click="DialogVisible = true; DialogTitle='添加Parameter'"
+                   @click="handleAdd"
                    icon="el-icon-circle-plus">
           添加Parameter
         </el-button>
@@ -121,16 +121,17 @@
       }
     },
     methods: {
+      handleAdd() {
+        this.DialogVisible = true;           // 弹出添加框
+        this.DialogTitle = '添加Parameter'     // 设置dialog title
+      },
       handleEdit(index, row) {
-        this.DialogVisible = true; // 弹出编辑框
-        this.DialogTitle = '编辑Parameter'; // 设置dialog title
+        this.DialogVisible = true;           // 弹出编辑框
+        this.DialogTitle = '编辑Parameter';  // 设置dialog title
+        // 显示要编辑的数据 ---------------------------------------
         this.parameterForm.key = row['key'];
-        this.parameterForm.value = JSON.stringify(JSON.parse(row['value']), null, 2);
-        // if (typeof row['value'] == "object") {
-        //   this.parameterForm.value = JSON.stringify(row['value']);
-        // } else {
-        //   this.parameterForm.value = row['value'];
-        // }
+        this.parameterForm.value = row['value'];
+        this.parameterForm.value_type = row["value_type"];
         this.parameterForm.id = row['id'];
         this.parameterForm.config_id = row['config_id'];
       },
@@ -157,6 +158,7 @@
         this.parameterForm = {
           key: '',
           value: '',
+          value_type: '',
           id: '',
           config_id: ''
         };
@@ -164,14 +166,36 @@
       handleConfirm() {
         this.$refs["parameterForm"].validate((valid) => {
           if (valid) {
-            // 新建或编辑框中的数据校验通过后，将弹框隐藏掉
-            this.DialogVisible = false;
+            // 参数校验之选择value_type --------------------------------------
+            if (this.parameterForm["value_type"] === "") {
+              this.$notify.error({
+                message: "请选择变量值的参数类型！",
+                duration: 5000
+              });
+              return
+            }
+            // 参数校验之校验value_type对应的value --------------------------------------
+            if (this.parameterForm.value_type === "json_list") {
+              try {
+                this.parameterForm.value = JSON.stringify(JSON.parse(this.parameterForm.value), null, 2);
+              } catch (err) {
+                this.reset_parameter_form();
+                this.$notify.error({
+                  message: "数据格式错误，请校验后重新编辑！",
+                  duration: 5000
+                });
+                return
+              }
+            }
+            this.DialogVisible = false;  // 新建或编辑框中的数据校验通过后，将弹框隐藏掉
             let obj;
             if (this.parameterForm.id === '') {
+              // 没有就新建
               this.parameterForm.config_id = this.$store.state.currentCase['config'].config_id;
-              obj = this.$api.addParameter(this.parameterForm);     // 没有就新建
+              obj = this.$api.addParameter(this.parameterForm);
             } else {
-              obj = this.$api.updateParameter(this.parameterForm);  // 有就更新
+              // 有就更新
+              obj = this.$api.updateParameter(this.parameterForm);
             }
             // 给http response挂载一个处理的钩子
             obj.then(resp => {
@@ -183,7 +207,8 @@
               }
               this.reset_parameter_form()  // 重置表单数据
             })
-          } else {
+          }
+          else {
             this.DialogVisible = true;
             if (this.parameterForm.id !== '') {
               this.DialogTitle = "编辑Parameter";  // 已经存在显示编辑框
