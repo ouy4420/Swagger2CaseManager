@@ -13,12 +13,17 @@
                  ref="variableForm"
                  label-width="110px"
                  class="project"
-                  close >
+                 close>
           <el-form-item label="变量名称" prop="key">
-            <el-input v-model="variableForm.key" clearable></el-input>
+            <el-input v-model="variableForm.key" clearable>
+              <el-select v-model="variableForm.value_type" slot="prepend" placeholder="参数类型" style="width: 110px">
+                <el-option label="json" value="json"></el-option>
+                <el-option label="int" value="int"></el-option>
+                <el-option label="str" value="str"></el-option>
+              </el-select>
+            </el-input>
           </el-form-item>
           <el-form-item label="变量值" prop="value">
-
             <el-input type="textarea" v-model="variableForm.value"></el-input>
           </el-form-item>
 
@@ -32,7 +37,7 @@
       <div style="">
         <el-button type="primary"
                    size="small"
-                   @click="DialogVisible = true; DialogTitle='添加Variable'"
+                   @click="handleAdd"
                    icon="el-icon-circle-plus">
           添加Variable
         </el-button>
@@ -95,9 +100,7 @@
 
   export default {
     name: "Variables",
-    components: {
-
-    },
+    components: {},
     props: ["stepItem"],
     data() {
       return {
@@ -107,8 +110,9 @@
         variableForm: {
           key: '',
           value: '',
+          value_type: '',
           id: '',
-          config_id: ''
+          step_id: ''
         },
         rules: {
           key: [
@@ -123,16 +127,18 @@
       }
     },
     methods: {
+      handleAdd(){
+        this.DialogVisible = true; // 弹出编辑框
+        this.DialogTitle = '新增Variable'; // 设置dialog title
+      },
       handleEdit(index, row) {
-
+        this.DialogVisible = true; // 弹出编辑框
         this.DialogTitle = '编辑Variable'; // 设置dialog title
         this.variableForm.key = row['key'];
-        this.variableForm.value = JSON.stringify(JSON.parse(row['value']), null, 2);
-
+        this.variableForm.value = JSON.stringify(JSON.parse(row['value']), null, 2); // 格式化显示
         this.variableForm.id = row['id'];
-        this.variableForm.config_id = row['config_id'];
-
-        this.DialogVisible = true; // 弹出编辑框
+        this.variableForm.step_id = row['step_id'];
+        this.variableForm.value_type = row['value_type'];
       },
       handleDelete(index, row) {
         // 弹出确认警告提示框
@@ -157,19 +163,58 @@
         this.variableForm = {
           key: '',
           value: '',
+          value_type: '',
           id: '',
-          config_id: ''
+          step_id: ''
         };
       },
+      check_value_type() {
+        if (this.variableForm["value_type"] === "") {
+          this.$notify.error({
+            message: "请选择变量值的参数类型！",
+            duration: 5000
+          });
+          return false
+        }
+        var value_type = this.variableForm["value_type"];
+        if (value_type === "json") {
+          try {
+            JSON.stringify(JSON.parse(this.variableForm.value), null, 2);
+          } catch (err) {
+            this.reset_variable_form();
+            this.$notify.error({
+              message: "非Json格式数据，请校验后重新编辑！",
+              duration: 5000
+            });
+            return false
+          }
+        }
+        else if (value_type === "int") {
+          var value = Number(this.variableForm.value);
+          if (window.isNaN(value)) {
+            this.reset_variable_form();
+            this.$notify.error({
+              message: "非Int类型格式数据，请校验后重新编辑！",
+              duration: 5000
+            });
+            return false
+          }
+        }
+        return true
+      },
       handleConfirm() {
-        console.log(1111, this.$refs["variableForm"])
         this.$refs["variableForm"].validate((valid) => {
           if (valid) {
+            // 参数校验之选择value_type --------------------------------------
+            var flag = this.check_value_type();
+            if (flag === false){
+              return
+            }
             // 新建或编辑框中的数据校验通过后，将弹框隐藏掉
             this.DialogVisible = false;
             let obj;
             if (this.variableForm.id === '') {
-              this.variableForm.config_id = this.$store.state.currentCase['config'].config_id;
+              this.variableForm.step_id = this.stepItem.step_id;
               obj = this.$api.addVariableLocal(this.variableForm);     // 没有就新建
             } else {
               obj = this.$api.updateVariableLocal(this.variableForm);  // 有就更新
