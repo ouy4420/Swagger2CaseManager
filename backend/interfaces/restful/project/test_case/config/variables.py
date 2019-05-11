@@ -9,6 +9,7 @@ parser.add_argument('id', type=str)
 parser.add_argument('config_id', type=str)
 parser.add_argument('key', type=str)
 parser.add_argument('value', type=str)
+parser.add_argument('value_type', type=str)
 
 
 class VariableItem(Resource):
@@ -44,7 +45,6 @@ class VariableItem(Resource):
     def post(self):
         args = parser.parse_args()
         config_id = int(args["config_id"])
-        variable = {"key": args["key"], "value": args["value"]}
-        status, msg = curd.add_variable_global(config_id, variable)
+        status, msg = curd.add_variable_global(config_id, args)
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
