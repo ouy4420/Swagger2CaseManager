@@ -93,14 +93,15 @@ class Parameters(Base):
     )
 
     def __repr__(self):
-        return "<class %s %s-%s-%s>" % (Extract.__name__, self.id, self.key, self.value)
+        return "<class %s %s-%s-%s>" % (Parameters.__name__, self.id, self.key, self.value)
 
 
 class VariablesGlobal(Base):
     __tablename__ = 'variables_global'
     id = Column(Integer, nullable=False, autoincrement=True)
     key = Column(VARCHAR(100), nullable=False, comment="变量名")
-    value = Column(TEXT, nullable=False, comment="变量值")  # 注意：这里与parameters的不同，需要json库转换
+    value = Column(TEXT, nullable=False, comment="变量值")
+    value_type = Column(VARCHAR(100), nullable=False, comment="变量类型")
     config_id = Column(Integer, nullable=False, comment="config外键")
 
     __table_args__ = (
@@ -109,7 +110,7 @@ class VariablesGlobal(Base):
     )
 
     def __repr__(self):
-        return "<class %s %s-%s-%s>" % (Extract.__name__, self.id, self.key, self.value)
+        return "<class %s %s-%s-%s>" % (VariablesGlobal.__name__, self.id, self.key, self.value)
 
 
 class StepCase(Base):
@@ -136,6 +137,7 @@ class VariablesLocal(Base):
     id = Column(Integer, nullable=False, autoincrement=True)
     key = Column(VARCHAR(100), nullable=False, comment="变量名")
     value = Column(TEXT, nullable=False, comment="变量值")
+    value_type = Column(VARCHAR(100), nullable=False, comment="变量类型")
     stepcase_id = Column(Integer, nullable=False, comment="stepcase外键")
 
     __table_args__ = (
@@ -144,7 +146,7 @@ class VariablesLocal(Base):
     )
 
     def __repr__(self):
-        return "<class %s %s-%s-%s>" % (Extract.__name__, self.id, self.key, self.value)
+        return "<class %s %s-%s-%s>" % (VariablesLocal.__name__, self.id, self.key, self.value)
 
 
 class Validate(Base):
@@ -198,7 +200,7 @@ class Report(Base):
     )
 
     def __repr__(self):
-        return "<class %s %s-%s>" % (TestCase.__name__, self.id, self.name)
+        return "<class %s %s-%s>" % (Report.__name__, self.id, self.name)
 
 
 class VariablesEnv(Base):
@@ -214,7 +216,7 @@ class VariablesEnv(Base):
     )
 
     def __repr__(self):
-        return "<class %s %s-%s-%s>" % (Extract.__name__, self.id, self.key, self.value)
+        return "<class %s %s-%s-%s>" % (VariablesEnv.__name__, self.id, self.key, self.value)
 
 
 class API(Base):
@@ -250,4 +252,4 @@ class DebugTalk(Base):
     )
 
     def __repr__(self):
-        return "<class %s %s-%s>" % (API.__name__, self.id, self.project_id)
+        return "<class %s %s-%s>" % (DebugTalk.__name__, self.id, self.project_id)
