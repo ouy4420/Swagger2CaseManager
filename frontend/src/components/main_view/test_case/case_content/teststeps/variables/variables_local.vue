@@ -135,10 +135,15 @@
         this.DialogVisible = true; // 弹出编辑框
         this.DialogTitle = '编辑Variable'; // 设置dialog title
         this.variableForm.key = row['key'];
-        this.variableForm.value = JSON.stringify(JSON.parse(row['value']), null, 2); // 格式化显示
+        this.variableForm.value_type = row['value_type'];
         this.variableForm.id = row['id'];
         this.variableForm.step_id = row['step_id'];
-        this.variableForm.value_type = row['value_type'];
+
+        if (row['value_type'] === "json"){
+          this.variableForm.value = JSON.stringify(row["value"], null, 2);  // 格式化显示
+        }else{
+          this.variableForm.value = row['value']
+        }
       },
       handleDelete(index, row) {
         // 弹出确认警告提示框
@@ -179,7 +184,7 @@
         var value_type = this.variableForm["value_type"];
         if (value_type === "json") {
           try {
-            JSON.stringify(JSON.parse(this.variableForm.value), null, 2);
+            JSON.parse(this.variableForm.value);
           } catch (err) {
             this.reset_variable_form();
             this.$notify.error({

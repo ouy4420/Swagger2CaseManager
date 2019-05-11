@@ -14,15 +14,15 @@
                  label-width="110px"
                  class="project">
           <el-form-item label="变量名称" prop="key">
-            <el-input v-model="parameterForm.key" clearable></el-input>
-          </el-form-item>
-          <el-form-item label="变量值" prop="value">
-            <el-input placeholder="指定参数列表还是自定义函数" v-model="parameterForm.value">
-              <el-select v-model="parameterForm.value_type" slot="prepend" placeholder="参数类型" style="width: 110px">
+            <el-input v-model="parameterForm.key" clearable>
+              <el-select v-model="parameterForm.value_type" slot="prepend" placeholder="变量类型" style="width: 110px">
                 <el-option label="参数列表" value="json_list"></el-option>
                 <el-option label="自定义函数" value="defined_func"></el-option>
               </el-select>
             </el-input>
+          </el-form-item>
+          <el-form-item label="变量值" prop="value">
+            <el-input placeholder="请输入对应变量类型值" v-model="parameterForm.value"></el-input>
           </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
@@ -130,10 +130,15 @@
         this.DialogTitle = '编辑Parameter';  // 设置dialog title
         // 显示要编辑的数据 ---------------------------------------
         this.parameterForm.key = row['key'];
-        this.parameterForm.value = JSON.stringify(row["value"], null, 0);  // 格式化显示, list不需要空格
         this.parameterForm.value_type = row["value_type"];
         this.parameterForm.id = row['id'];
         this.parameterForm.config_id = row['config_id'];
+
+        if (row['value_type'] === "json_list"){
+          this.parameterForm.value = JSON.stringify(row["value"], null, 0);  // 格式化显示, list不需要空格
+        }else{
+          this.parameterForm.value = row['value']
+        }
       },
       handleDelete(index, row) {
         // 弹出确认警告提示框
@@ -163,29 +168,36 @@
           config_id: ''
         };
       },
-      handleConfirm() {
-        this.$refs["parameterForm"].validate((valid) => {
-          if (valid) {
-            // 参数校验之选择value_type --------------------------------------
+      check_value_type(){
+        // 参数校验之选择value_type --------------------------------------
             if (this.parameterForm["value_type"] === "") {
               this.$notify.error({
                 message: "请选择变量值的参数类型！",
                 duration: 5000
               });
-              return
+              return false
             }
             // 参数校验之校验value_type对应的value --------------------------------------
             if (this.parameterForm.value_type === "json_list") {
               try {
-                this.parameterForm.value = JSON.stringify(JSON.parse(this.parameterForm.value), null, 0);
+                JSON.stringify(JSON.parse(this.parameterForm.value), null, 0);
               } catch (err) {
                 this.reset_parameter_form();
                 this.$notify.error({
-                  message: "数据格式错误，请校验后重新编辑！",
+                  message: "非Json_list格式数据，请校验后重新编辑！",
                   duration: 5000
                 });
-                return
+                return false
               }
+            }
+            return true
+      },
+      handleConfirm() {
+        this.$refs["parameterForm"].validate((valid) => {
+          if (valid) {
+            var flag = this.check_value_type()
+            if (flag === false){
+              return
             }
             this.DialogVisible = false;  // 新建或编辑框中的数据校验通过后，将弹框隐藏掉
             let obj;
