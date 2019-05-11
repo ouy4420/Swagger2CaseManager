@@ -132,7 +132,11 @@
             var newWin = window.open("", "_blank");
             newWin.document.write(render_content)
           } else {
-            this.failure(resp);
+            this.$notify.error({
+            position: "top-left",
+            message: resp["msg"],
+            duration: 6000
+          });
           }
         });
       },
@@ -146,7 +150,7 @@
       failure(resp) {
         this.$notify.error({
           message: resp["msg"],
-          duration: 3000
+          duration: 2000
         });
       }
     },
