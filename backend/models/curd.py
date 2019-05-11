@@ -158,14 +158,21 @@ class TestCaseCURD:
             # print("variablesGlobal: ", variables_obj)
             variable_list = []
             for item in variables_obj:
-                if flag == "UI":
-                    if not isinstance(item.value, str):
-                        value = json.loads(item.value)
-                    else:
-                        value = item.value
-                    element = {"id": item.id, "config_id": config_obj.id, "key": item.key, "value": value}
+                value_type = item.value_type
+                if value_type == "int":
+                    value = int(item.value)
+                elif value_type == "json":
+                    value = json.loads(item.value)
                 else:
-                    element = {item.key: json.loads(item.value)}
+                    value = item.value
+                if flag == "UI":
+                    element = {"id": item.id,
+                               "config_id": config_obj.id,
+                               "key": item.key,
+                               "value": value,
+                               "value_type": value_type}
+                else:
+                    element = {item.key: value}
                 variable_list.append(element)
             case_config["config"].update({"variables": variable_list})
             if flag == "UI":
@@ -202,14 +209,22 @@ class TestCaseCURD:
                 # print("VariablesLocal: ", variables_obj)
                 variable_list = []
                 for item in variables_obj:
-                    if flag == "UI":
-                        if not isinstance(item.value, str):
-                            value = json.loads(item.value)
-                        else:
-                            value = item.value
-                        element = {"id": item.id, "config_id": config_obj.id, "key": item.key, "value": value}
+                    value_type = item.value_type
+                    if value_type == "int":
+                        value = int(item.value)
+                    elif value_type == "json":
+                        value = json.loads(item.value)
                     else:
-                        element = {item.key: json.loads(item.value)}
+                        value = item.value
+                    if flag == "UI":
+                        element = {"id": item.id,
+                                   "step_id": step_obj.id,
+                                   "key": item.key,
+                                   "value": value,
+                                   "value_type": value_type
+                                   }
+                    else:
+                        element = {item.key: value}
                     variable_list.append(element)
                 step["test"].update({"variables": variable_list})
 
@@ -359,10 +374,11 @@ class VarGlobalCURD:
 
     @staticmethod
     def add_variable_global(config_id, variable):
+        # 前端根据value_type做好类型校验
         try:
-            # 注意：这里variable是字符串（传进来需要json转换）
             variable_obj = VariablesGlobal(key=variable['key'],
                                            value=variable["value"],
+                                           value_type=variable["value_type"],
                                            config_id=config_id)
             session.add(variable_obj)
             session.commit()
@@ -387,6 +403,7 @@ class VarGlobalCURD:
             variable_obj = session.query(VariablesGlobal).filter(VariablesGlobal.id == variable['id']).first()
             variable_obj.key = variable['key']
             variable_obj.value = variable["value"]
+            variable_obj.value_type = variable["value_type"]
             session.add(variable_obj)
             session.commit()
             return True, "全局变量更新成功！"
@@ -406,6 +423,7 @@ class VarGlobalCURD:
             "id": variable.id,
             "key": variable.key,
             "value": value,
+            "value_type": variable.value_type,
             "config_id": variable.config_id
         }
         return element
@@ -500,6 +518,7 @@ class VarLocalCURD:
             # 注意：这里variable是字符串（传进来需要json转换）
             variable_obj = VariablesLocal(key=variable['key'],
                                           value=variable["value"],
+                                          value_type=variable["value_type"],
                                           stepcase_id=stepcase_id)
             session.add(variable_obj)
             session.commit()
@@ -524,6 +543,7 @@ class VarLocalCURD:
             variable_obj = session.query(VariablesLocal).filter(VariablesLocal.id == variable['id']).first()
             variable_obj.key = variable['key']
             variable_obj.value = variable["value"]
+            variable_obj.value_type = variable["value_type"]
             session.add(variable_obj)
             session.commit()
             return True, "局部变量更新成功！"
@@ -533,11 +553,17 @@ class VarLocalCURD:
 
     @staticmethod
     def retrieve_variable_local(variable_id):
+        """
+        这个函数没用上！
+        :param variable_id:
+        :return:
+        """
         variable = session.query(VariablesLocal).filter_by(id=variable_id).first()
         element = {
             "id": variable.id,
             "key": variable.key,
             "value": json.loads(variable.value),
+            "value_type": json.loads(variable.value),
             "stepcase_id": variable.stepcase_id
         }
         return element
