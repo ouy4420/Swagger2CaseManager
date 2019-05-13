@@ -3,7 +3,12 @@
   <div>
     <div v-for="(item, index) in $store.state.currentCase['teststeps']" style="margin-bottom: 20px">
       <div style="margin-bottom: 5px">
-        <el-button type="danger" icon="el-icon-delete" circle @click="delete_step(item.step_id)"></el-button>
+        <el-button type="danger"
+                   icon="el-icon-delete"
+                   circle @click="delete_step(item.step_id)"
+                   v-if="index !== 0"
+        >
+        </el-button>
         <span style="font-size: 25px">TestStep{{index + 1}}: {{item.test.api}}</span>
       </div>
       <div>
