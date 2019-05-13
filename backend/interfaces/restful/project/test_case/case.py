@@ -6,7 +6,8 @@ curd = TestCaseCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=int)
 parser.add_argument('page', type=int)
-
+parser.add_argument('project_id', type=str)
+parser.add_argument('case_name', type=str)
 
 
 def parse_case_body(case):
@@ -96,7 +97,10 @@ class CaseList(Resource):
         pass
 
     def post(self):
-        pass
+        args = parser.parse_args()
+        status, msg = curd.add_case(args)
+        rst = make_response(jsonify({"success": status, "msg": msg}))
+        return rst
 
 
 class CaseItem(Resource):
@@ -128,3 +132,5 @@ class CaseItem(Resource):
 
     def put(self, case_id):
         pass
+
+
