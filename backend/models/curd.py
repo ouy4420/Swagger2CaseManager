@@ -566,7 +566,7 @@ class StepCURD:
         try:
             step_obj = session.query(StepCase).filter(StepCase.id == step['id']).first()
             body = json.loads(step_obj.body)
-            body["test"]["name"] = step['api_name']
+            body["test"]["name"] = step['step_name']
             step_obj.body = json.dumps(body)
             session.add(step_obj)
             session.commit()
