@@ -193,13 +193,20 @@ class TestCaseCURD:
             for step_obj in teststeps_obj:
                 # print("step: ", step_obj)
 
-                step = json.loads(step_obj.body)  # teststep的主体信息
+                step = {
+                    "test": {
+                        "name": step_obj.name,
+                        "api": step_obj.api_name,
+                        "variables": [],
+                        "validate": [],
+                        "extract": []
+                    }
+                }
 
                 # testcase corresponding api
                 case_id = step_obj.testcase_id
                 case_obj = session.query(TestCase).filter_by(id=case_id).first()
                 project_id = case_obj.project_id
-                # step_api_name = step["test"]["api"]
                 step_api_name = step_obj.api_name
                 names = [test_api["api"]["def"] for test_api in testapis]
                 if step_api_name not in names:
@@ -446,10 +453,9 @@ class StepCURD:
             # 获取所有调用api_name的API的TestStep,选用第一个作为模板
             old_step_obj = session.query(StepCase).filter_by(api_name=api_name).first()
             try:
-                new_step_obj = StepCase(name=old_step_obj.name,
+                new_step_obj = StepCase(name="Input Step Name",
                                         step=step_pos,
                                         api_name=api_name,
-                                        body=old_step_obj.body,
                                         testcase_id=case_id)
                 session.add(new_step_obj)
                 session.commit()
@@ -461,48 +467,51 @@ class StepCURD:
                 # 继续上抛错误，是作为add_step过程中某一个出错的点
                 raise e
 
-            try:
-                var_locals = session.query(VariablesLocal).filter(VariablesLocal.stepcase_id == old_step_obj.id).all()
-                for var_local in var_locals:
-                    element = {"key": var_local.key,
-                               "value": var_local.value,
-                               "value_type": var_local.value_type
-                               }
-                    self.var_local.add_variable_local(new_step_obj.id, element)
-                mylogger.info("TestStep创建过程： VarLocal添加成功！")
-            except Exception as e:
-                error_decription = "TestStep补充VarLocal数据失败！\n"
-                error_location = traceback.format_exc()
-                mylogger.error(error_decription + error_location)
-                raise e
+            if old_step_obj is not None:
+                try:
+                    var_locals = session.query(VariablesLocal).filter(
+                        VariablesLocal.stepcase_id == old_step_obj.id).all()
+                    for var_local in var_locals:
+                        element = {"key": var_local.key,
+                                   "value": var_local.value,
+                                   "value_type": var_local.value_type
+                                   }
+                        self.var_local.add_variable_local(new_step_obj.id, element)
+                    mylogger.info("TestStep创建过程： VarLocal添加成功！")
+                except Exception as e:
+                    error_decription = "TestStep补充VarLocal数据失败！\n"
+                    error_location = traceback.format_exc()
+                    mylogger.error(error_decription + error_location)
+                    raise e
 
-            try:
-                validates = session.query(Validate).filter(Validate.stepcase_id == old_step_obj.id).all()
-                for validate in validates:
-                    element = {"comparator": validate.comparator,
-                               "check": validate.check,
-                               "expected": validate.expected,
-                               "expected_type": validate.expected_type}
-                    self.validate.add_validate(new_step_obj.id, element)
-                mylogger.info("TestStep创建过程： Validate添加成功！")
-            except Exception as e:
-                error_decription = "TestStep创建过程：添加Validate数据失败！\n"
-                error_location = traceback.format_exc()
-                mylogger.error(error_decription + error_location)
-                raise e
+                try:
+                    validates = session.query(Validate).filter(Validate.stepcase_id == old_step_obj.id).all()
+                    for validate in validates:
+                        element = {"comparator": validate.comparator,
+                                   "check": validate.check,
+                                   "expected": validate.expected,
+                                   "expected_type": validate.expected_type}
+                        self.validate.add_validate(new_step_obj.id, element)
+                    mylogger.info("TestStep创建过程： Validate添加成功！")
+                except Exception as e:
+                    error_decription = "TestStep创建过程：添加Validate数据失败！\n"
+                    error_location = traceback.format_exc()
+                    mylogger.error(error_decription + error_location)
+                    raise e
 
-            try:
-                extracts = session.query(Extract).filter(Extract.stepcase_id == old_step_obj.id).all()
-                for extract in extracts:
-                    element = {"key": extract.key,
-                               "value": extract.value}
-                    self.extract.add_extract(new_step_obj.id, element)
-                mylogger.info("TestStep创建过程： Extract添加成功！")
-            except Exception as e:
-                error_decription = "TestStep创建过程：添加Extract数据失败！\n"
-                error_location = traceback.format_exc()
-                mylogger.error(error_decription + error_location)
-                raise e
+                try:
+                    extracts = session.query(Extract).filter(Extract.stepcase_id == old_step_obj.id).all()
+                    for extract in extracts:
+                        element = {"key": extract.key,
+                                   "value": extract.value}
+                        self.extract.add_extract(new_step_obj.id, element)
+                    mylogger.info("TestStep创建过程： Extract添加成功！")
+                except Exception as e:
+                    error_decription = "TestStep创建过程：添加Extract数据失败！\n"
+                    error_location = traceback.format_exc()
+                    mylogger.error(error_decription + error_location)
+                    raise e
+
             mylogger.info("TestStep创建过程成功！")
             return True, "TestStep创建过程成功！"
         except Exception as e:
@@ -555,7 +564,8 @@ class StepCURD:
                 error_location = traceback.format_exc()
                 mylogger.error(error_decription + error_location)
                 raise e
-            return False, "TestStep删除过程成功！"
+            mylogger.info("TestStep删除过程成功！")
+            return True, "TestStep删除过程成功！"
         except Exception as e:
             session.rollback()
             mylogger.error("TestStep删除过程失败！")
@@ -565,9 +575,7 @@ class StepCURD:
     def update_step(step):
         try:
             step_obj = session.query(StepCase).filter(StepCase.id == step['id']).first()
-            body = json.loads(step_obj.body)
-            body["test"]["name"] = step['step_name']
-            step_obj.body = json.dumps(body)
+            step_obj.name = step['step_name']
             session.add(step_obj)
             session.commit()
             return True, "Step名称更新成功！"
