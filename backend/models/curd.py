@@ -97,8 +97,49 @@ class TestCaseCURD:
         self.config = ConfigCURD()
         self.step = StepCURD()
 
-    def add_case(self):
-        pass
+    def add_case(self, args):
+        try:
+            try:
+                case_obj = TestCase(name=args["case_name"], project_id=args["project_id"])
+                session.add(case_obj)
+                session.commit()
+            except Exception as e:
+                error_decription = "空的TestCase创建失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
+
+            try:
+                config = {
+                    "config": {
+                        "name": args["case_name"],
+                        "request": {
+                            "base_url": "$base_url",
+                            "headers": {
+                                "Content-Type": "application/json;charset=UTF-8"
+                            }
+                        },
+                        "parameters": [],
+                        "variables": []
+                    }
+                }
+                name = config["config"]["name"]
+                body = json.dumps(config)
+                config_obj = Config(name=name, body=body, testcase_id=case_obj.id)
+                session.add(config_obj)
+                session.commit()
+            except Exception as e:
+                error_decription = "TestCase添加config失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
+            mylogger.info("TestCase创建过程成功！")
+            return True, "TestCase创建过程成功！"
+        except Exception as e:
+            session.rollback()
+            mylogger.error("TestCase创建过程：失败！")
+            return False, "TestCase创建过程：失败！" + str(e)
+
 
     def delete_case(self, case_id):
         # session.query(TestCase).filter_by(id=case_id).delete()  # 只是这样，删不了，因为有config和stepcase通过外键引用
