@@ -119,8 +119,7 @@ class StepCase(Base):
     id = Column(Integer, nullable=False, autoincrement=True)
     name = Column(VARCHAR(100), nullable=False)
     step = Column(Integer, nullable=False, default=1, comment="顺序")
-    api_name = Column(VARCHAR(100), nullable=False)  # ToDO: 建立唯一键
-    body = Column(TEXT, nullable=False, comment="StepCase 主体信息")
+    api_name = Column(VARCHAR(100), nullable=False)
     testcase_id = Column(Integer, nullable=False, comment="testcase外键")
 
     __table_args__ = (
