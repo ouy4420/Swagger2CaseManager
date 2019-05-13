@@ -2,10 +2,11 @@ from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import Project, TestCase, Config
 from backend.models.curd import TestCaseCURD, session
-
+curd = TestCaseCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=int)
 parser.add_argument('page', type=int)
+
 
 
 def parse_case_body(case):
@@ -100,15 +101,30 @@ class CaseList(Resource):
 
 class CaseItem(Resource):
     def get(self, case_id):
-        curd = TestCaseCURD()
-        case_ids, testapis, testcases = curd.retrieve_part_cases([case_id], flag="UI")
-        case = testcases[0][1]  # 默认显示第一个测试用例的信息
-        config = case.pop(0)
-        teststeps = case
-        return make_response(jsonify({"success": True, "msg": "", "teststeps": teststeps, "config": config}))
+        try:
+            case_ids, testapis, testcases = curd.retrieve_part_cases([case_id], flag="UI")
+            case = testcases[0][1]  # 默认显示第一个测试用例的信息
+            config = case.pop(0)
+            teststeps = case
+            # 确认最后一个teststep的step_pos
+            if len(teststeps) > 0:
+                last_step_pos = teststeps[-1]["step_pos"]
+            else:
+                last_step_pos = 1
+            return make_response(jsonify({"success": True,
+                                          "msg": "获取Case信息成功！",
+                                          "teststeps": teststeps,
+                                          "last_step_pos": last_step_pos,
+                                          "config": config,
+                                          "case_id": case_id}))
+        except Exception as e:
+            session.rollback()
+            return make_response(jsonify({"success": False,
+                                          "msg": "获取Case信息失败！" + str(e)}
+                                         ))
 
-    def delete(self, project_id):
+    def delete(self, case_id):
         pass
 
-    def put(self, project_id):
+    def put(self, case_id):
         pass
