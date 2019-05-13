@@ -1,10 +1,13 @@
 <template>
 
   <div>
-    <div v-for="(item, index) in $store.state.currentCase['teststeps']">
-      <span>TestStep{{index + 1}}:</span>
+    <div v-for="(item, index) in $store.state.currentCase['teststeps']" style="margin-bottom: 20px">
+      <div style="margin-bottom: 5px">
+        <el-button type="danger" icon="el-icon-delete" circle @click="delete_step(item.step_id)"></el-button>
+        <span style="font-size: 25px">TestStep{{index + 1}}: {{item.test.api}}</span>
+      </div>
       <div>
-        <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
+        <el-tabs v-model="item.step_pos" type="card" @tab-click="handleClick">
           <el-tab-pane label="API描述" name="api_description">
             <step_name :stepItem="item"></step_name>
           </el-tab-pane>
@@ -12,7 +15,7 @@
             <span>{{item.test.api}}</span>
           </el-tab-pane>
           <el-tab-pane label="局部变量" name="local_variables">
-              <variables_local :stepItem="item"></variables_local>
+            <variables_local :stepItem="item"></variables_local>
           </el-tab-pane>
           <el-tab-pane label="断言校验" name="assert_validate">
             <validate v-bind:stepItem="item"></validate>
@@ -42,18 +45,51 @@
       "variables_local": VariableLocal
     },
     data() {
-      return {
-        activeName: 'api_description',
-        test_steps: null
-      }
+      return {}
     },
     methods: {
+      delete_step(step_id) {
+        // 弹出确认警告提示框
+        this.$confirm('此操作将永久删除该TestStep, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$api.deleteStep({"step_id": step_id}).then(resp => {
+            if (resp['success']) {
+              this.success(resp);       // 弹出成功提示消息
+              this.get_case();          // 重新刷新当前case数据
+            } else {
+              this.failure(resp);
+            }
+          })
+        })
+      },
       handleClick(tab, event) {
-        // console.log(tab, event);
+        console.log(12345, tab, event);
+      },
+      success(resp) {
+        this.$notify({
+          message: resp["msg"],
+          type: 'success',
+          duration: 1000
+        });
+      },
+      failure(resp) {
+        this.$notify.error({
+          message: resp["msg"],
+          duration: 1000
+        });
+      },
+      get_case() {
+        var currentCaseID = this.$store.state.currentCase['config'].case_id;
+        this.$api.getCaseDetail(currentCaseID).then(resp => {
+          this.$store.commit('setCurrentCase', resp);
+        });
       }
     },
     created() {
-      this.test_steps = this.$store.state.currentCase['teststeps']
+
     }
   }
 </script>
