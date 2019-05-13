@@ -7,7 +7,7 @@ parser = reqparse.RequestParser()
 parser.add_argument('id', type=str)
 parser.add_argument('case_id', type=int)
 parser.add_argument('api_name', type=str)
-parser.add_argument('step_num', type=int)
+parser.add_argument('step_pos', type=int)
 
 
 class StepItem(Resource):
@@ -25,7 +25,7 @@ class StepItem(Resource):
 
     def post(self):
         args = parser.parse_args()
-        case_id, api_name, step_num = args["case_id"], args["api_name"], args["step_num"]
-        status, msg = curd.add_step(case_id, api_name, step_num)
+        case_id, api_name, step_pos = args["case_id"], args["api_name"], args["step_pos"]
+        status, msg = curd.add_step(case_id, api_name, step_pos)
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
