@@ -5,6 +5,7 @@ from backend.models.curd import StepCURD
 curd = StepCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=str)
+parser.add_argument('step_name', type=str)
 parser.add_argument('case_id', type=int)
 parser.add_argument('api_name', type=str)
 parser.add_argument('step_pos', type=int)
