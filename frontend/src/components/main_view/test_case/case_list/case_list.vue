@@ -1,7 +1,28 @@
 <template>
 
   <div>
+     <el-dialog
+      title="添加TestCase"
+      :visible.sync="DialogVisible"
+      width="30%"
+      align="center"
+    >
+      <el-form :model="caseForm"
+               :rules="rules"
+               label-width="110px"
+               class="project"
+               close>
+        <el-form-item label="用例名称" prop="case_name">
+          <el-input v-model="caseForm.case_name"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="DialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleConfirm()">确 定</el-button>
+      </div>
+    </el-dialog>
     <div style="padding: 10px; text-align: right; margin-bottom: 20px">
+      <el-button type="primary" plain icon="el-icon-circle-plus" @click="DialogVisible=true">新增用例</el-button>
       <el-button type="success" round @click="runTest">执行测试</el-button>
     </div>
     <el-table
@@ -39,6 +60,10 @@
     name: "CASEList",
     data() {
       return {
+        DialogVisible: false,
+        caseForm: {
+          "case_name": ""
+        },
         loading_flag: false,
         multipleSelection: [],
         page: {
@@ -46,10 +71,47 @@
           page_previous: null,
           page_next: 2
         },
-        arrID: []
+        arrID: [],
+        rules: {
+          case_name: [
+            {required: true, message: '请输入Case名称', trigger: 'blur'},
+            {min: 1, max: 50, message: '最多不超过50个字符', trigger: 'blur'}
+          ]
+        }
       }
     },
     methods: {
+      handleConfirm() {
+        if (this.caseForm.case_name === "") {
+          this.$alert('请填写用例名称', '提示', {
+            confirmButtonText: '确定',
+            callback: action => {
+
+            }
+          });
+          return
+        }
+
+       const project_id = this.$route.params.id;
+        var rquest_data = {
+          "project_id": project_id,
+          "case_name": this.caseForm.case_name
+        };
+        this.$api.addCase(rquest_data).then(resp => {
+            if (resp['success']) {
+              this.success(resp);       // 弹出成功提示消息
+              this.getCaseList();       // 重新刷新CaseList
+            } else {
+              this.failure(resp);
+            }
+          }
+        );
+        this.caseForm = {
+          case_name: ""
+        };
+        this.DialogVisible = false;
+
+      },
       removeByValue(arr, val) {
         for (var i = 0; i < arr.length; i++) {
           if (arr[i] === val) {
