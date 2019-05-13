@@ -270,6 +270,7 @@ class TestCaseCURD:
                 step["test"].update({"extract": extract_list})  # teststep中的extract可能会add\update\delete，所以要update
                 if flag == "UI":
                     step.update({"step_id": step_obj.id})
+                    step.update({"step_pos": step_obj.step})
                 case_steps.append(step)
 
             test_case = test_case + case_steps
@@ -442,7 +443,6 @@ class StepCURD:
 
     def add_step(self, case_id, api_name, step_pos=1):
         try:
-            mylogger.info("start make new test_tesp!")
             # 获取所有调用api_name的API的TestStep,选用第一个作为模板
             old_step_obj = session.query(StepCase).filter_by(api_name=api_name).first()
             try:
@@ -468,8 +468,8 @@ class StepCURD:
                                "value": var_local.value,
                                "value_type": var_local.value_type
                                }
-                    status, msg = self.var_local.add_variable_local(new_step_obj.id, element)
-                    print(status, msg)
+                    self.var_local.add_variable_local(new_step_obj.id, element)
+                mylogger.info("TestStep创建过程： VarLocal添加成功！")
             except Exception as e:
                 error_decription = "TestStep补充VarLocal数据失败！\n"
                 error_location = traceback.format_exc()
@@ -483,10 +483,10 @@ class StepCURD:
                                "check": validate.check,
                                "expected": validate.expected,
                                "expected_type": validate.expected_type}
-                    status, msg = self.validate.add_validate(new_step_obj.id, element)
-                    print(status, msg)
+                    self.validate.add_validate(new_step_obj.id, element)
+                mylogger.info("TestStep创建过程： Validate添加成功！")
             except Exception as e:
-                error_decription = "TestStep补充Validate数据失败！\n"
+                error_decription = "TestStep创建过程：添加Validate数据失败！\n"
                 error_location = traceback.format_exc()
                 mylogger.error(error_decription + error_location)
                 raise e
@@ -496,37 +496,70 @@ class StepCURD:
                 for extract in extracts:
                     element = {"key": extract.key,
                                "value": extract.value}
-                    status, msg = self.extract.add_extract(new_step_obj.id, element)
-                    print(status, msg)
+                    self.extract.add_extract(new_step_obj.id, element)
+                mylogger.info("TestStep创建过程： Extract添加成功！")
             except Exception as e:
-                error_decription = "TestStep补充Extract数据失败！\n"
+                error_decription = "TestStep创建过程：添加Extract数据失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
+            mylogger.info("TestStep创建过程成功！")
+            return True, "TestStep创建过程成功！"
+        except Exception as e:
+            session.rollback()
+            mylogger.error("TestStep创建过程：失败！")
+            return False, "TestStep创建过程：失败！" + str(e)
+
+    def delete_setp(self, step_id):
+        try:
+            step_obj = session.query(StepCase).filter(StepCase.id == step_id).first()
+
+            try:
+                variables_obj = session.query(VariablesLocal). \
+                    filter(VariablesLocal.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
+                [self.var_local.delete_variable_local(variable.id) for variable in variables_obj]
+                mylogger.info("TestStep删除过程： VarLocal数据成功！\n")
+            except Exception as e:
+                error_decription = "TestStep删除过程： VarLocal数据失败！\n"
                 error_location = traceback.format_exc()
                 mylogger.error(error_decription + error_location)
                 raise e
 
-            return True, "Step新建成功！"
+            try:
+                validates_obj = session.query(Validate). \
+                    filter(Validate.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
+                [self.validate.delete_validate(validate.id) for validate in validates_obj]
+                mylogger.info("TestStep删除过程：Validate数据成功！\n")
+            except Exception as e:
+                error_decription = "TestStep删除过程： Validate数据失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
+
+            try:
+                extracts_obj = session.query(Extract). \
+                    filter(Extract.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
+                [self.extract.delete_extract(extract.id) for extract in extracts_obj]
+                mylogger.info("TestStep删除过程：Extract数据删除成功！\n")
+            except Exception as e:
+                error_decription = "TestStep删除过程：Extract数据删除失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
+
+            try:
+                session.query(StepCase).filter_by(id=step_id).delete()
+                session.commit()
+            except Exception as e:
+                error_decription = "TestStep删除失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
+            return False, "TestStep删除过程成功！"
         except Exception as e:
             session.rollback()
-            mylogger.error("Step新建失败！")
-            return False, "Step新建失败！" + str(e)
-
-    def delete_setp(self, step_id):
-        step_obj = session.query(StepCase).filter(StepCase.id == step_id).first()
-
-        variables_obj = session.query(VariablesLocal). \
-            filter(VariablesLocal.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
-        [self.var_local.delete_variable_local(variable.id) for variable in variables_obj]
-
-        validates_obj = session.query(Validate). \
-            filter(Validate.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
-        [self.validate.delete_validate(validate.id) for validate in validates_obj]
-
-        extracts_obj = session.query(Extract). \
-            filter(Extract.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
-        [self.extract.delete_extract(extract.id) for extract in extracts_obj]
-
-        session.query(StepCase).filter_by(id=step_id).delete()
-        session.commit()
+            mylogger.error("TestStep删除过程失败！")
+            return False, "TestStep删除过程失败！" + str(e)
 
     @staticmethod
     def update_step(step):
