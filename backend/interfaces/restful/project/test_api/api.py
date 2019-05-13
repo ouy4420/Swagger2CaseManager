@@ -39,35 +39,44 @@ class APILIst(Resource):
     def get(self):
         args = parser.parse_args()
         print("args: ", args)
-        id, page = args["id"], args["page"]
-        api_list = []
-        all_rets, page_rets, pages = get_page(page, id)
-        for api in page_rets:
-            api_body = json.loads(api.body)
-            request = api_body["api"]["request"]
-            if "params" not in request:
-                request["params"] = {}
-            if "headers" not in request:
-                request["headers"] = {}
-            if "json" not in request:
-                request["json"] = ""
-            parsed_api = parse_api_body(api_body)
-            parsed_api["index"] = all_rets.index(api) + 1
-            api_list.append(parsed_api)
+        if args["page"] is not None:
+            id, page = args["id"], args["page"]
+            api_list = []
+            all_rets, page_rets, pages = get_page(page, id)
+            for api in page_rets:
+                api_body = json.loads(api.body)
+                request = api_body["api"]["request"]
+                if "params" not in request:
+                    request["params"] = {}
+                if "headers" not in request:
+                    request["headers"] = {}
+                if "json" not in request:
+                    request["json"] = ""
+                parsed_api = parse_api_body(api_body)
+                parsed_api["index"] = all_rets.index(api) + 1
+                api_list.append(parsed_api)
 
-        page_previous, page_next = None, None
-        if page > 1:
-            page_previous = page - 1
-        if page + 1 <= pages:
-            page_next = page + 1
+            page_previous, page_next = None, None
+            if page > 1:
+                page_previous = page - 1
+            if page + 1 <= pages:
+                page_next = page + 1
 
-        project = session.query(Project).filter_by(id=id).first()
-        rst = make_response(jsonify({"apiList": api_list,
-                                     "projectInfo": {"name": project.name, "desc": project.desc},
-                                     "page": {"page_now": page,
-                                              "page_previous": page_previous,
-                                              "page_next": page_next}}))
-        return rst
+            project = session.query(Project).filter_by(id=id).first()
+            rst = make_response(jsonify({"apiList": api_list,
+                                         "projectInfo": {"name": project.name, "desc": project.desc},
+                                         "page": {"page_now": page,
+                                                  "page_previous": page_previous,
+                                                  "page_next": page_next}}))
+            return rst
+        else:
+            project_id = args["id"]
+            apis_obj = session.query(API).filter_by(project_id=project_id).all()
+            api_list = []
+            for api in apis_obj:
+                api_list.append(api.api_func)
+            rst = make_response(jsonify({"api_list": api_list}))
+            return rst
 
     def delete(self):
         pass
