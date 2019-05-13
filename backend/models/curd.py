@@ -1,4 +1,8 @@
 import json
+import traceback
+import logging
+mylogger = logging.getLogger("Swagger2CaseManager")
+
 from backend.models.models import Project, \
     TestCase, Config, StepCase, API, Validate, Extract, \
     Parameters, VariablesGlobal, Report, VariablesLocal, VariablesEnv, DebugTalk
@@ -195,7 +199,8 @@ class TestCaseCURD:
                 case_id = step_obj.testcase_id
                 case_obj = session.query(TestCase).filter_by(id=case_id).first()
                 project_id = case_obj.project_id
-                step_api_name = step["test"]["api"]
+                # step_api_name = step["test"]["api"]
+                step_api_name = step_obj.api_name
                 names = [test_api["api"]["def"] for test_api in testapis]
                 if step_api_name not in names:
                     api_obj = session.query(API).filter(
@@ -436,41 +441,74 @@ class StepCURD:
         self.extract = ExtractCURD()
 
     def add_step(self, case_id, api_name, step_pos=1):
-        obj = session.query(StepCase).filter_by(api_name=api_name).first()
-        var_locals = session.query(VariablesLocal).filter(VariablesLocal.stepcase_id == obj.id).join(StepCase,
-                                                                                                     isouter=True).all()
-        validates = session.query(Validate).filter(Validate.stepcase_id == obj.id).join(StepCase, isouter=True).all()
-        extracts = session.query(Extract).filter(Extract.stepcase_id == obj.id).join(StepCase, isouter=True).all()
+        try:
+            mylogger.info("start make new test_tesp!")
+            # 获取所有调用api_name的API的TestStep,选用第一个作为模板
+            old_step_obj = session.query(StepCase).filter_by(api_name=api_name).first()
+            try:
+                new_step_obj = StepCase(name=old_step_obj.name,
+                                        step=step_pos,
+                                        api_name=api_name,
+                                        body=old_step_obj.body,
+                                        testcase_id=case_id)
+                session.add(new_step_obj)
+                session.commit()
+            except Exception as e:
+                # log中记录错误信息，方便定位错误
+                error_decription = "空的TestStep创建失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                # 继续上抛错误，是作为add_step过程中某一个出错的点
+                raise e
 
-        step_obj = StepCase(name=obj.name,
-                            step=step_pos,
-                            api_name=api_name,
-                            body=obj.body,
-                            testcase_id=case_id)
-        session.add(step_obj)
-        session.commit()
+            try:
+                var_locals = session.query(VariablesLocal).filter(VariablesLocal.stepcase_id == old_step_obj.id).all()
+                for var_local in var_locals:
+                    element = {"key": var_local.key,
+                               "value": var_local.value,
+                               "value_type": var_local.value_type
+                               }
+                    status, msg = self.var_local.add_variable_local(new_step_obj.id, element)
+                    print(status, msg)
+            except Exception as e:
+                error_decription = "TestStep补充VarLocal数据失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
 
-        for var_local in var_locals:
-            element = {"key": var_local.key, "value": var_local.value}
-            var_obj = self.var_local.add_variable_local(obj.id, element)
-            session.add(var_obj)
-            session.commit()
+            try:
+                validates = session.query(Validate).filter(Validate.stepcase_id == old_step_obj.id).all()
+                for validate in validates:
+                    element = {"comparator": validate.comparator,
+                               "check": validate.check,
+                               "expected": validate.expected,
+                               "expected_type": validate.expected_type}
+                    status, msg = self.validate.add_validate(new_step_obj.id, element)
+                    print(status, msg)
+            except Exception as e:
+                error_decription = "TestStep补充Validate数据失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
 
-        for validate in validates:
-            element = {"comparator": validate.comparator,
-                       "check": validate.check,
-                       "expected": validate.expected,
-                       "expected_type": validate.expected_type}
-            validate_obj = self.validate.add_validate(obj.id, element)
-            session.add(validate_obj)
-            session.commit()
+            try:
+                extracts = session.query(Extract).filter(Extract.stepcase_id == old_step_obj.id).all()
+                for extract in extracts:
+                    element = {"key": extract.key,
+                               "value": extract.value}
+                    status, msg = self.extract.add_extract(new_step_obj.id, element)
+                    print(status, msg)
+            except Exception as e:
+                error_decription = "TestStep补充Extract数据失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
 
-        for extract in extracts:
-            element = {"key": extract.key,
-                       "value": extract.value}
-            extract_obj = self.extract.add_extract(obj.id, element)
-            session.add(extract_obj)
-            session.commit()
+            return True, "Step新建成功！"
+        except Exception as e:
+            session.rollback()
+            mylogger.error("Step新建失败！")
+            return False, "Step新建失败！" + str(e)
 
     def delete_setp(self, step_id):
         step_obj = session.query(StepCase).filter(StepCase.id == step_id).first()
