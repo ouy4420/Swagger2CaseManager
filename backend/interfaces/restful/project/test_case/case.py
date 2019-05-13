@@ -110,7 +110,7 @@ class CaseItem(Resource):
             if len(teststeps) > 0:
                 last_step_pos = teststeps[-1]["step_pos"]
             else:
-                last_step_pos = 1
+                last_step_pos = 0
             return make_response(jsonify({"success": True,
                                           "msg": "获取Case信息成功！",
                                           "teststeps": teststeps,
