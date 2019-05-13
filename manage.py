@@ -1,7 +1,23 @@
+import requests
+
 from flask import Flask, render_template
 from flask_cors import CORS
+app = Flask(__name__,
+            static_folder="./dist/static",
+            template_folder="./dist")
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+import logging
+from log_record.mylog import log_config
+log_config("log_record\\my_log", "Swagger2CaseManager", level=logging.DEBUG)
+
+from backend.interfaces.auth import auth as auth_blueprint
+from backend.interfaces.runTest import run_test as runTest_blueprint
+
+app.register_blueprint(auth_blueprint)
+app.register_blueprint(runTest_blueprint)
+
 from backend.interfaces.auth.auth_decrator import login_require
-import requests
 from backend.interfaces.restful.project.project import ProjectList, ProjectItem
 from backend.interfaces.restful.project.test_api.api import APILIst
 from backend.interfaces.restful.project.test_case.case import CaseList, CaseItem
@@ -14,19 +30,7 @@ from backend.interfaces.restful.project.test_case.test_step.validate import Vali
 from backend.interfaces.restful.project.test_case.test_step.extract import ExtractItem
 from backend.interfaces.restful.project.report.report import ReportList, ReportItem
 
-app = Flask(__name__,
-            static_folder="./dist/static",
-            template_folder="./dist")
-cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
-
-from backend.interfaces.auth import auth as auth_blueprint
-from backend.interfaces.runTest import run_test as runTest_blueprint
-
-app.register_blueprint(auth_blueprint)
-app.register_blueprint(runTest_blueprint)
-
 from flask_restful import Api
-
 api = Api(app, decorators=[login_require])
 api.add_resource(ProjectList, '/api/waykichain/project/')
 api.add_resource(ProjectItem, '/api/waykichain/project/<int:project_id>/')
