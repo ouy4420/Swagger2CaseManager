@@ -448,15 +448,13 @@ class StepCURD:
         self.validate = ValidateCURD()
         self.extract = ExtractCURD()
 
-    def add_step(self, case_id, api_name, step_pos=1):
+    def add_step(self, args):
         try:
-            # 获取所有调用api_name的API的TestStep,选用第一个作为模板
-            old_step_obj = session.query(StepCase).filter_by(api_name=api_name).first()
             try:
-                new_step_obj = StepCase(name="Input Step Name",
-                                        step=step_pos,
-                                        api_name=api_name,
-                                        testcase_id=case_id)
+                new_step_obj = StepCase(name=args["name"],
+                                        step=args["step_pos"],
+                                        api_name=args["api_name"],
+                                        testcase_id=args["case_id"])
                 session.add(new_step_obj)
                 session.commit()
             except Exception as e:
@@ -467,6 +465,9 @@ class StepCURD:
                 # 继续上抛错误，是作为add_step过程中某一个出错的点
                 raise e
 
+            # 获取所有调用api_name的API的TestStep,选用第一个作为模板
+            # 若没有step引用这个API，old_step_obj=None
+            old_step_obj = session.query(StepCase).filter_by(api_name=args["api_name"]).first()
             if old_step_obj is not None:
                 try:
                     var_locals = session.query(VariablesLocal).filter(
