@@ -106,8 +106,16 @@
       },
       setCaseItem(case_id) {
         this.$api.getCaseDetail(case_id).then(resp => {
-          this.$store.commit('setCurrentCase', resp);
-          window.scrollTo(0, 0); // 滚动条弹到顶端
+          if (resp['success']) {
+            this.$store.commit('setCurrentCase', resp);
+            window.scrollTo(0, 0); // 滚动条弹到顶端
+          } else {
+            this.$notify.error({
+              position: "top-left",
+              message: resp["msg"],
+              duration: 6000
+            });
+          }
           this.$refs.multipleTable.clearSelection(); // 清空checkbox所有选中
         });
       },
@@ -122,10 +130,10 @@
           return
         }
         this.loading_flag = true;
-        this.$emit('e-autotest',this.loading_flag);
+        this.$emit('e-autotest', this.loading_flag);
         this.$api.runTestcases({"case_list": this.arrID, "project_id": project_id}).then(resp => {
           this.loading_flag = false;
-          this.$emit('e-autotest',this.loading_flag);
+          this.$emit('e-autotest', this.loading_flag);
           if (resp['success']) {
             var render_content = resp.render_content;
             this.success(resp);       // 弹出成功提示消息
@@ -133,10 +141,10 @@
             newWin.document.write(render_content)
           } else {
             this.$notify.error({
-            position: "top-left",
-            message: resp["msg"],
-            duration: 6000
-          });
+              position: "top-left",
+              message: resp["msg"],
+              duration: 6000
+            });
           }
         });
       },
