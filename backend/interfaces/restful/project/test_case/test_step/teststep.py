@@ -5,6 +5,7 @@ from backend.models.curd import StepCURD
 curd = StepCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=str)
+parser.add_argument('step_id', type=str)
 parser.add_argument('step_name', type=str)
 parser.add_argument('case_id', type=int)
 parser.add_argument('api_name', type=str)
@@ -16,7 +17,10 @@ class StepItem(Resource):
         pass
 
     def delete(self):
-        pass
+        args = parser.parse_args()
+        status, msg = curd.delete_setp(args["step_id"])
+        rst = make_response(jsonify({"success": status, "msg": msg}))
+        return rst
 
     def patch(self):
         args = parser.parse_args()
