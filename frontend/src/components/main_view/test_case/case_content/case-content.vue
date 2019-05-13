@@ -69,7 +69,7 @@
           "api_name": api_name,
           "step_pos": last_step_pos
         };
-        this.$api.addCase(rquest_data).then(resp => {
+        this.$api.addStep(rquest_data).then(resp => {
               if (resp['success']) {
               this.success(resp);       // 弹出成功提示消息
               this.get_case();          // 重新刷新当前case数据
