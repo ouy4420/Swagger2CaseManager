@@ -128,8 +128,10 @@ class DumpDB(object):
         step_case = step["test"]
         name = step_case["name"]
         api_name = step_case["api"]
-        body = json.dumps(step)
-        step_obj = StepCase(name=name, step=1, api_name=api_name, body=body, testcase_id=case_obj.id)
+        step_obj = StepCase(name=name,
+                            step=1,
+                            api_name=api_name,
+                            testcase_id=case_obj.id)
         session.add(step_obj)
         session.commit()
         return step_obj
