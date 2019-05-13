@@ -43,11 +43,8 @@
     },
     methods: {
       getProjectDetail() {
-        console.log("step1");
         const project_id = this.$route.params.id;
-        console.log("step2", project_id);
         this.$api.getProjectDetail(project_id).then(res => {
-          console.log("step3", res);
           this.projectInfo = res
         })
       },
