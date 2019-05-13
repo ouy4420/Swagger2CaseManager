@@ -36,10 +36,10 @@
           });
         });
       },
-      updateTestStep(api_name) {
+      updateTestStep(step_name) {
         var body = {
           "id": this.stepItem.step_id,
-          "api_name": api_name
+          "step_name": step_name
         };
         this.$api.updateStepAPIName(body).then(resp => {
           if (resp['success']) {
