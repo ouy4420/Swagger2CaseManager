@@ -25,14 +25,16 @@ def parse_api_body(api):
 
 def get_page(page, project_id):
     all_rets = session.query(API).filter_by(project_id=project_id).all()
+    all_rets_reverse = all_rets[::-1]
     length = len(all_rets)
-    per_page = 5
+    per_page = 10
     pages = length // per_page
     if length % per_page > 0:
         pages += 1
     offset = per_page * (page - 1)
-    page_rets = session.query(API).filter_by(project_id=project_id).limit(per_page).offset(offset).all()
-    return all_rets, page_rets, pages
+    # page_rets = session.query(API).filter_by(project_id=project_id).limit(per_page).offset(offset).all()
+    page_rets = all_rets_reverse[offset:offset+per_page]
+    return all_rets_reverse, page_rets, pages
 
 
 class APILIst(Resource):
@@ -42,7 +44,7 @@ class APILIst(Resource):
         if args["page"] is not None:
             id, page = args["id"], args["page"]
             api_list = []
-            all_rets, page_rets, pages = get_page(page, id)
+            all_rets_reverse, page_rets, pages = get_page(page, id)
             for api in page_rets:
                 api_body = json.loads(api.body)
                 request = api_body["api"]["request"]
@@ -53,7 +55,7 @@ class APILIst(Resource):
                 if "json" not in request:
                     request["json"] = ""
                 parsed_api = parse_api_body(api_body)
-                parsed_api["index"] = all_rets.index(api) + 1
+                parsed_api["index"] = all_rets_reverse.index(api) + 1
                 api_list.append(parsed_api)
 
             page_previous, page_next = None, None
