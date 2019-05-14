@@ -140,20 +140,45 @@ class TestCaseCURD:
             mylogger.error("TestCase创建过程：失败！")
             return False, "TestCase创建过程：失败！" + str(e)
 
-
     def delete_case(self, case_id):
         # session.query(TestCase).filter_by(id=case_id).delete()  # 只是这样，删不了，因为有config和stepcase通过外键引用
         # 要想删除testcase, 先删除config和teststep
         # 同理，要想删除config，先删除parameters和variables
         # 要想删除teststep，先删除api(这个不合适)、validate和extract
-        config_obj = session.query(Config).filter(Config.testcase_id == case_id).join(TestCase).first()
-        self.config.delete_config(config_obj.id)
+        try:
+            try:
+                config_obj = session.query(Config).filter(Config.testcase_id == case_id).join(TestCase).first()
+                self.config.delete_config(config_obj.id)
+            except Exception as e:
+                error_decription = "删除Case过程： 删除config失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
 
-        teststeps_obj = session.query(StepCase).filter(StepCase.testcase_id == case_id).join(TestCase).all()
-        [self.step.delete_setp(teststep.id) for teststep in teststeps_obj]
+            try:
+                teststeps_obj = session.query(StepCase).filter(StepCase.testcase_id == case_id).join(TestCase).all()
+                [self.step.delete_setp(teststep.id) for teststep in teststeps_obj]
+            except Exception as e:
+                error_decription = "删除Case过程： 删除teststeps失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
 
-        session.query(TestCase).filter_by(id=case_id).delete()
-        session.commit()
+            try:
+                session.query(TestCase).filter_by(id=case_id).delete()
+                session.commit()
+            except Exception as e:
+                error_decription = "删除Case过程： 删除testcase失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
+            mylogger.info("TestCase删除过程成功！")
+            return True, "TestCase删除过程成功！"
+        except Exception as e:
+            session.rollback()
+            mylogger.error("TestCase删除过程：失败！")
+            return False, "TestCase删除过程：失败！" + str(e)
+
 
     def retrieve_part_cases(self, case_ids, flag=None):
         '''
