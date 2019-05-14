@@ -1,7 +1,7 @@
 <template>
 
   <div>
-     <el-dialog
+    <el-dialog
       title="添加TestCase"
       :visible.sync="DialogVisible"
       width="30%"
@@ -39,14 +39,24 @@
       </el-table-column>
       <el-table-column
         prop="index"
-        label="用例编号"
-        width="100">
+        label="编号"
+        width="50">
       </el-table-column>
       <el-table-column
-        label="用例描述"
+
+        label="用例"
         width="280">
+        <template slot-scope="scope" style="text-align: center">
+          <!--<a @click="getCaseItem(scope.row.id)">{{ scope.row.name }}</a>-->
+          {{ scope.row.name }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        width="80">
         <template slot-scope="scope">
-          <a @click="setCaseItem(scope.row.id)">{{ scope.row.name }}</a>
+          <a><i class="el-icon-edit" style="margin-right: 10px" @click="getCaseItem(scope.row.id)"></i></a>
+          <a><i class="el-icon-delete" @click="deleteCaseItem(scope.row.id)"></i></a>
         </template>
       </el-table-column>
     </el-table>
@@ -92,7 +102,7 @@
           return
         }
 
-       const project_id = this.$route.params.id;
+        const project_id = this.$route.params.id;
         var rquest_data = {
           "project_id": project_id,
           "case_name": this.caseForm.case_name
@@ -163,10 +173,10 @@
         const project_id = this.$route.params.id;
         this.$api.getCaseList({"id": project_id}).then(resp => {
           this.$store.commit("setCaseList", resp["caseList"]);
-          this.setCaseItem(this.$store.state.caseList[0].id);
+          this.getCaseItem(this.$store.state.caseList[0].id);
         })
       },
-      setCaseItem(case_id) {
+      getCaseItem(case_id) {
         this.$api.getCaseDetail(case_id).then(resp => {
           if (resp['success']) {
             this.$store.commit('setCurrentCase', resp);
@@ -180,6 +190,25 @@
           }
           this.$refs.multipleTable.clearSelection(); // 清空checkbox所有选中
         });
+      },
+      deleteCaseItem(case_id) {
+        // 弹出确认警告提示框
+        this.$confirm('此操作将永久删除该测试用例, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+          showClose: false
+        }).then(() => {
+          this.$api.deleteCase({"case_id": case_id}).then(resp => {
+            if (resp['success']) {
+              this.success(resp);       // 弹出成功提示消息
+              this.getCaseList();       // 重新刷新CaseList
+            } else {
+              this.failure(resp);
+            }
+          });
+        });
+        this.$refs.multipleTable.clearSelection(); // 清空checkbox所有选中
       },
       runTest() {
         const project_id = this.$route.params.id;
@@ -231,7 +260,6 @@
         // obj.getPagination(1)
         obj.getCaseList()
       }
-
       setTimeout(temp_func, 500)
     }
   }
