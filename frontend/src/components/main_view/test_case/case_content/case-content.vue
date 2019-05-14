@@ -23,7 +23,7 @@
           <el-input v-model="stepForm.name"></el-input>
         </el-form-item>
         <el-form-item label="API调用" prop="api_name">
-          <el-select style="width: 350px" v-model="stepForm.api_name" placeholder="选择API调用">
+          <el-select style="width: 425px" v-model="stepForm.api_name" placeholder="选择API调用">
             <el-option
               v-for="api in apiList"
               :key="api"
