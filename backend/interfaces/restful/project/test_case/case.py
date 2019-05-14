@@ -8,6 +8,7 @@ parser.add_argument('id', type=int)
 parser.add_argument('page', type=int)
 parser.add_argument('project_id', type=str)
 parser.add_argument('case_name', type=str)
+parser.add_argument('case_id', type=str)
 
 
 def parse_case_body(case):
@@ -91,7 +92,10 @@ class CaseList(Resource):
             return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!" + str(e)}))
 
     def delete(self):
-        pass
+        args = parser.parse_args()
+        status, msg = curd.delete_case(args["case_id"])
+        rst = make_response(jsonify({"success": status, "msg": msg}))
+        return rst
 
     def patch(self):
         pass
