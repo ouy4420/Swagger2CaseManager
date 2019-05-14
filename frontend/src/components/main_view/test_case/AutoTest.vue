@@ -12,7 +12,7 @@
       </ul>
     </el-header>
     <el-container style="margin-bottom: 20px">
-      <el-aside style="width: 450px; margin-left:10px; margin-top: 40px; border: solid">
+      <el-aside style="width: 470px; margin-left:10px; margin-top: 40px; border: solid">
         <case_list @e-autotest="getData"></case_list>
       </el-aside>
       <el-main style="margin-left:10px; margin-top: 40px; margin-right: 20px; border: solid;">
