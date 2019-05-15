@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
-from backend.models.models import Project, TestCase,  API, Report
+from backend.models.models import Project, TestCase, API, Report
 from backend.models.curd import ProjectCURD, session
 
 curd = ProjectCURD()
@@ -13,7 +13,6 @@ parser.add_argument('file', type=dict)
 parser.add_argument('desc', type=str)
 parser.add_argument('responsible', type=str)
 
-
 from SwaggerToCase.run import execute
 
 
@@ -24,18 +23,20 @@ class ProjectItem(Resource):
             test_apis = session.query(API).filter_by(project_id=project_id).all()
             test_cases = session.query(TestCase).filter_by(project_id=project_id).all()
             test_reports = session.query(Report).filter_by(project_id=project_id).all()
+            detail = [
+                {"length": "{}个接口".format(len(test_apis)), "desc": "接口总数", "routerName": "APIView"},
+                {"length": "{}个用例".format(len(test_cases)), "desc": "用例总数", "routerName": "AutoTest"},
+                {"length": "{}套环境".format(0), "desc": "环境总数", "routerName": "GlobalEnv"},
+                {"length": "{}个报告".format(len(test_reports)), "desc": "报告总数", "routerName": "Reports"}
+            ]
             rst = make_response(jsonify({"success": True,
                                          "msg": "",
-                                         "len_apis": len(test_apis),
-                                         "len_cases": len(test_cases),
-                                         "len_envir": 0,
-                                         "len_report": len(test_reports),
+                                         "detail": detail,
                                          "name": project.name,
                                          "desc": project.desc
                                          }))
             return rst
         except Exception as e:
-            print('InternalError:', e)
             session.rollback()
             return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!"}))
 
@@ -80,4 +81,3 @@ class ProjectList(Resource):
             status, msg = execute(args)
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
-
