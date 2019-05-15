@@ -33,4 +33,33 @@
   .el-message {
     margin-top: 60px;
   }
+
+    .project_detail li {
+    margin-top: 10px;
+    text-indent: 20px;
+    display: inline-block;
+    height: 90px;
+    width: calc(20% - 1.5px);
+    border: 1px solid #ddd;
+  }
+
+  .title-project {
+    margin-top: 20px;
+    margin-left: 10px;
+  }
+
+  ul li {
+    list-style: none;
+  }
+
+  .title-li {
+    font-size: 44px;
+    color: #607d8b;
+  }
+
+  .desc-li {
+    margin-top: 30px;
+    color: #b6b6b6;
+    font-size: 14px;
+  }
 </style>
