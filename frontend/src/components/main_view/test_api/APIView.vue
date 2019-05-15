@@ -7,8 +7,10 @@
       </li>
     </ul>
     <div>
-      <div style="padding: 10px; text-align: right;">
-        <el-button style="margin-left: 50px"
+
+      <div style="padding: 10px; text-align: right; margin-right: 60px">
+        <el-button
+                   style="margin-left: 50px"
                    type="info"
                    round
                    size="small"
@@ -19,7 +21,8 @@
           上一页
         </el-button>
 
-        <el-button type="info"
+        <el-button
+                   type="info"
                    round
                    size="small"
                    :disabled="page.page_next === null"
@@ -30,13 +33,14 @@
         </el-button>
       </div>
     </div>
-    <api_list :apiList="apiList"></api_list>
+    <api_list :apiList="apiList" @refresh="refresh_api_list"></api_list>
   </div>
 
 </template>
 
 <script>
   import APIList from "./api_list/APIList"
+
 
   export default {
     name: "APIView",
@@ -54,10 +58,13 @@
           page_previous: null,
           page_next: 2
         },
-        apiList: []
+        apiList: [],
       }
     },
     methods: {
+      refresh_api_list(refresh){
+        this.getPagination(1);
+      },
       getPagination(page) {
         const project_id = this.$route.params.id;
         this.$api.getPagination_api({"id": project_id, "page": page}).then(resp => {
@@ -75,24 +82,5 @@
 </script>
 
 <style scoped>
-  .title-project {
-    margin-top: 40px;
-    margin-left: 10px;
-  }
-
-  ul li {
-    list-style: none;
-  }
-
-  .title-li {
-    font-size: 24px;
-    color: #607d8b;
-  }
-
-  .desc-li {
-    margin-top: 10px;
-    color: #b6b6b6;
-    font-size: 14px;
-  }
 
 </style>
