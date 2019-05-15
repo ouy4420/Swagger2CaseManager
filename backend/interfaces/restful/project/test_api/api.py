@@ -8,6 +8,8 @@ curd = APICURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=int)
 parser.add_argument('page', type=int)
+parser.add_argument('api_obj', type=dict)
+parser.add_argument('api_id', type=str)
 
 
 def parse_api_body(api):
@@ -16,8 +18,9 @@ def parse_api_body(api):
         "url": api["api"]["request"]["url"],
         "method": api["api"]["request"]["method"],
         "headers": api["api"]["request"]["headers"],
-        "params": json.dumps(api["api"]["request"]["params"]),
-        "jsondata": api["api"]["request"]["json"],
+        "params": api["api"]["request"]["params"],
+        "json": api["api"]["request"]["json"],
+        "data": api["api"]["request"]["data"],
         "defname": api["api"]["def"],
     }
     return parsed_api
@@ -33,7 +36,7 @@ def get_page(page, project_id):
         pages += 1
     offset = per_page * (page - 1)
     # page_rets = session.query(API).filter_by(project_id=project_id).limit(per_page).offset(offset).all()
-    page_rets = all_rets_reverse[offset:offset+per_page]
+    page_rets = all_rets_reverse[offset:offset + per_page]
     return all_rets_reverse, page_rets, pages
 
 
@@ -54,8 +57,17 @@ class APILIst(Resource):
                     request["headers"] = {}
                 if "json" not in request:
                     request["json"] = ""
+                if "data" not in request:
+                    request["data"] = ""
                 parsed_api = parse_api_body(api_body)
                 parsed_api["index"] = all_rets_reverse.index(api) + 1
+                parsed_api["id"] = api.id
+                if parsed_api["json"]:
+                    parsed_api["body_type"] = "Json"
+                elif parsed_api["data"]:
+                    parsed_api["body_type"] = "Form"
+                else:
+                    parsed_api["body_type"] = "Null"
                 api_list.append(parsed_api)
 
             page_previous, page_next = None, None
@@ -81,10 +93,60 @@ class APILIst(Resource):
             return rst
 
     def delete(self):
-        pass
+        args = parser.parse_args()
+        status, msg = curd.delete_api(args["api_id"])
+        rst = make_response(jsonify({"success": status, "msg": msg}))
+        return rst
 
     def patch(self):
-        pass
+        args = parser.parse_args()
+        apiForm = args["api_obj"]
+        api = {
+            "api":
+                {"request": {"method": apiForm["method"],
+                             "url": apiForm["url"],
+                             "headers": json.loads(apiForm["headers"]),
+                             "params": json.loads(apiForm["params"]),
+                             "json": "",
+                             "data": ""},
+                 "name": apiForm["name"],
+                 "def": apiForm["def"]}
+        }
+        if apiForm["body_type"] == "Json":
+            api["api"]["request"]["json"] = "$data"
+        elif apiForm["body_type"] == "Null":
+            pass
+        else:
+            api["api"]["request"]["data"] = "$data"
+        status, msg = curd.update_api(apiForm["id"], api)
+        rst = make_response(jsonify({"success": status, "msg": msg}))
+        return rst
 
     def post(self):
-        pass
+        args = parser.parse_args()
+        apiForm = args["api_obj"]
+        api_func, project_id = apiForm["def"], apiForm["project_id"]
+        obj = session.query(API).filter(API.api_func == api_func and API.project_id == project_id).first()
+        if obj is not None:
+            rst = make_response(jsonify({"success": False, "msg": "该项目中已存在同名API调用！！！"}))
+            return rst
+        api = {
+            "api":
+                {"request": {"method": apiForm["method"],
+                             "url": apiForm["url"],
+                             "headers": json.loads(apiForm["headers"]),
+                             "params": json.loads(apiForm["params"]),
+                             "json": "",
+                             "data": ""},
+                 "name": apiForm["name"],
+                 "def": apiForm["def"]}
+        }
+        if apiForm["body_type"] == "Json":
+            api["api"]["request"]["json"] = "$data"
+        elif apiForm["body_type"] == "Null":
+            pass
+        else:
+            api["api"]["request"]["data"] = "$data"
+        status, msg = curd.add_api(apiForm["project_id"], api)
+        rst = make_response(jsonify({"success": status, "msg": msg}))
+        return rst
