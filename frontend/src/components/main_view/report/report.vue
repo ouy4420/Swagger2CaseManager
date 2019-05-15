@@ -236,25 +236,5 @@
 </script>
 
 <style scoped>
-  .title-project {
-    margin-top: 40px;
-    margin-left: 10px;
-  }
-
-  ul li {
-    list-style: none;
-  }
-
-  .title-li {
-    font-size: 24px;
-    color: #607d8b;
-  }
-
-  .desc-li {
-    margin-top: 10px;
-    color: #b6b6b6;
-    font-size: 14px;
-  }
-
 
 </style>
