@@ -14,7 +14,11 @@ engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?char
                        encoding='utf-8',
                        # echo=True,
                        isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
-                       max_overflow=5)
+                       max_overflow=5,
+                       pool_size=4,
+                       pool_recycle=60 * 60 * 2,  # 设置pool_recycle参数在超时设定的时间(秒)后自动重新建立连接, 每过两小时建立一个新连接
+                       pool_pre_ping=True
+                       )
 
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -178,7 +182,6 @@ class TestCaseCURD:
             session.rollback()
             mylogger.error("TestCase删除过程：失败！")
             return False, "TestCase删除过程：失败！" + str(e)
-
 
     def retrieve_part_cases(self, case_ids, flag=None):
         '''
@@ -829,6 +832,26 @@ class APICURD:
     def __init__(self):
         pass
 
+    def add_api(self, project_id, api):
+        try:
+            test_api = api["api"]
+            api_func = test_api["def"]
+            request = test_api["request"]
+            url = request["url"]
+            method = request["method"]
+            body = json.dumps(api)
+            api_obj = API(api_func=api_func,
+                          url=url,
+                          method=method,
+                          body=body,
+                          project_id=project_id)
+            session.add(api_obj)
+            session.commit()
+            return True, "API新增成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "API新增失败！" + str(e)
+
     def delete_api(self, api_id):
         try:
             session.query(API).filter_by(id=api_id).delete()
@@ -837,6 +860,22 @@ class APICURD:
         except Exception as e:
             session.rollback()
             return False, "API删除失败！" + str(e)
+
+    def update_api(self, api_id, api):
+        try:
+            api_obj = session.query(API).filter(API.id == api_id).first()
+            test_api = api["api"]
+            api_obj.api_func = test_api["def"]
+            request = test_api["request"]
+            api_obj.url = request["url"]
+            api_obj.method = request["method"]
+            api_obj.body = json.dumps(api)
+            session.add(api_obj)
+            session.commit()
+            return True, "API更新成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "API更新失败！" + str(e)
 
 
 class DebugTalkCURD:
