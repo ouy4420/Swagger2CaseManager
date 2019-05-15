@@ -230,7 +230,7 @@ class API(Base):
 
     __table_args__ = (
         PrimaryKeyConstraint("id"),
-        # UniqueConstraint('name', name='unique_name'),  # 同名没关系，属于不同project就行
+        # UniqueConstraint('name', name='unique_name'),  # 同名没关系，属于不同project就行, 但同一项目中不允许存在同名api_func
         ForeignKeyConstraint(('project_id',), ('project.id',), name='fk_testapi_project')
     )
 
