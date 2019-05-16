@@ -75,6 +75,10 @@ class ProjectList(Resource):
     def post(self):
         args = parser.parse_args()
         args["owner"] = args["responsible"]
+        obj = session.query(Project).filter_by(name=args["name"]).first()
+        if obj is not None:
+            rst = make_response(jsonify({"success": False, "msg": "项目名称已存在，请重新编辑！"}))
+            return rst
         if args["url"] == "" and args["file"] == {}:
             status, msg = curd.add_project(args)
         else:
