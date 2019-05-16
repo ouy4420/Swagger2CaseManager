@@ -1,7 +1,5 @@
 from backend.models.models import Base
-from sqlalchemy import create_engine
-
-engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8", encoding='utf-8', echo=True, max_overflow=5)
+from backend.models.curd import engine
 
 
 def init_db():
