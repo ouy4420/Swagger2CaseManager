@@ -29,6 +29,7 @@ from backend.interfaces.restful.project.test_case.config.parameters import Param
 from backend.interfaces.restful.project.test_case.test_step.validate import ValidateItem
 from backend.interfaces.restful.project.test_case.test_step.extract import ExtractItem
 from backend.interfaces.restful.project.report.report import ReportList, ReportItem
+from backend.interfaces.restful.project.env.env import VarEnv
 
 from flask_restful import Api
 api = Api(app, decorators=[login_require])
@@ -46,6 +47,7 @@ api.add_resource(ValidateItem, '/api/waykichain/validate/')
 api.add_resource(ExtractItem, '/api/waykichain/extract/')
 api.add_resource(ReportList, '/api/waykichain/report/')
 api.add_resource(ReportItem, '/api/waykichain/report/<int:report_id>/')
+api.add_resource(VarEnv, '/api/waykichain/variable_env/')
 
 
 @app.route('/', defaults={'path': ''})
