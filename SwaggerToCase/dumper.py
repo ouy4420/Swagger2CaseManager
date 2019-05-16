@@ -4,17 +4,9 @@ import logging
 import os
 import shutil
 from SwaggerToCase.encoder import JSONEncoder
-from sqlalchemy.orm import sessionmaker
 from backend.models.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters, \
     VariablesLocal
-from sqlalchemy import create_engine
-
-engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
-                       encoding='utf-8',
-                       # echo=True,
-                       max_overflow=5)
-Session = sessionmaker(bind=engine)
-session = Session()
+from backend.models.curd import session
 
 
 class DumpFile(object):
@@ -22,6 +14,7 @@ class DumpFile(object):
         self.testcase_dir = config["testcase_dir"]
         self.api_file = config["api_file"]
         self.file_type = config["file_type"]
+        self.env_file = config["env_file"]
         self.test_apis = test_apis
         self.test_cases = test_cases
 
@@ -68,6 +61,11 @@ class DumpFile(object):
                         my_json_str = my_json_str.decode("utf-8")
                     outfile.write(my_json_str)
                 logging.debug("Generate JSON testcase successfully: {}".format(case_path))
+
+    def dump_env_file(self, env_content):
+        with open(self.env_file, 'w', encoding="utf-8") as outfile:
+            outfile.write(env_content)
+        logging.debug("Generate env_file successfully: {}".format(self.api_file))
 
     def dump_to_file(self):
         self.dump_api_file()  # 写入api文件
