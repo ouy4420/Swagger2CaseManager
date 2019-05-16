@@ -9,6 +9,7 @@ import ProjectDetail from '../components/main_view/project/ProjectDetail'
 import APIView from '../components/main_view/test_api/APIView'
 import AutoTest from '../components/main_view/test_case/AutoTest'
 import ReportList from '../components/main_view/report/report'
+import GlobalEnv from '../components/main_view/var_env/var_env'
 
 Vue.use(Router);  // Vue 导入vue-router插件
 
@@ -98,16 +99,15 @@ const router = new Router({
         //   }
         //
         // },
-        // {
-        //   name: 'GlobalEnv',
-        //   path: 'global_env/:id',
-        //   component: GlobalEnv,
-        //   meta: {
-        //     title: '环境变量',
-        //     requireAuth: true
-        //   }
-        //
-        // },
+        {
+          name: 'GlobalEnv',
+          path: 'var_env/:id',
+          component: GlobalEnv,
+          meta: {
+            title: '环境变量',
+            requireAuth: true
+          }
+        },
         {
           name: 'Reports',
           path: 'reports/:id',
@@ -158,9 +158,10 @@ router.beforeEach((to, from, next) => {
             var routerNameObject = {
               "项目列表": 'ProjectList',
               "项目预览": 'ProjectDetail',
-              "接口模板": 'APIView',
-              "自动化测试": 'AutoTest',
+              "API接口": 'APIView',
+              "测试用例": 'AutoTest',
               "历史报告": 'Reports',
+              "环境变量": 'GlobalEnv'
             };
             store.state.routerName = routerNameObject[to.meta.title];
             // this.setLocalValue("routerName",routerNameObject[to.meta.title]);
