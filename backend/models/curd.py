@@ -189,104 +189,48 @@ class TestCaseCURD:
         :param case_ids:
         :return:
         '''
-        test_cases = session.query(TestCase).filter(TestCase.id.in_(case_ids)).all()
-        testcases = []  # 要执行的测试用例
-        testapis = []  # 测试用例执行相关的api
-        for case_obj in test_cases:
-            case_name = case_obj.name
-            test_case = []  # testcase, include config and teststeps
-            # print("case : ", case_obj)
 
-            # ----------------------------测试用例的config数据 ----------------------------
-            config_obj = session.query(Config).filter(Config.testcase_id == case_obj.id).join(TestCase).first()
-            # print("config: ", config_obj)
-            case_config = json.loads(config_obj.body)
+        try:
+            test_cases = session.query(TestCase).filter(TestCase.id.in_(case_ids)).all()
+            testcases = []  # 要执行的测试用例
+            testapis = []  # 测试用例执行相关的api
+            for case_obj in test_cases:
+                case_name = case_obj.name
+                test_case = []  # testcase, include config and teststeps
+                # print("case : ", case_obj)
 
-            # parameters of config
-            parameters_obj = session.query(Parameters). \
-                filter(Parameters.config_id == config_obj.id).join(Config, isouter=True).all()
-            # print("parameters: ", parameters_obj)
-            parameter_list = []
-            for item in parameters_obj:
-                if item.value_type == "json_list":
-                    value = json.loads(item.value)
-                else:
-                    value = item.value
-                if flag == "UI":
-                    element = {"id": item.id,
-                               "config_id": config_obj.id,
-                               "key": item.key,
-                               "value": value,
-                               "value_type": item.value_type
-                               }
-                else:
-                    element = {item.key: value}
-                parameter_list.append(element)
-            case_config["config"].update({"parameters": parameter_list})
+                # ----------------------------测试用例的config数据 ----------------------------
+                config_obj = session.query(Config).filter(Config.testcase_id == case_obj.id).join(TestCase).first()
+                # print("config: ", config_obj)
+                case_config = json.loads(config_obj.body)
 
-            # variables of config
-            variables_obj = session.query(VariablesGlobal). \
-                filter(VariablesGlobal.config_id == config_obj.id).join(Config, isouter=True).all()
-            # print("variablesGlobal: ", variables_obj)
-            variable_list = []
-            for item in variables_obj:
-                value_type = item.value_type
-                if value_type == "int":
-                    value = int(item.value)
-                elif value_type == "json":
-                    value = json.loads(item.value)
-                else:
-                    value = item.value
-                if flag == "UI":
-                    element = {"id": item.id,
-                               "config_id": config_obj.id,
-                               "key": item.key,
-                               "value": value,
-                               "value_type": value_type}
-                else:
-                    element = {item.key: value}
-                variable_list.append(element)
-            case_config["config"].update({"variables": variable_list})
-            if flag == "UI":
-                case_config.update({"config_id": config_obj.id})
-                case_config.update({"case_id": case_obj.id})
+                # parameters of config
+                parameters_obj = session.query(Parameters). \
+                    filter(Parameters.config_id == config_obj.id).join(Config, isouter=True).all()
 
-            test_case.append(case_config)
+                # print("parameters: ", parameters_obj)
+                parameter_list = []
+                for item in parameters_obj:
+                    if item.value_type == "json_list":
+                        value = json.loads(item.value)
+                    else:
+                        value = item.value
+                    if flag == "UI":
+                        element = {"id": item.id,
+                                   "config_id": config_obj.id,
+                                   "key": item.key,
+                                   "value": value,
+                                   "value_type": item.value_type
+                                   }
+                    else:
+                        element = {item.key: value}
+                    parameter_list.append(element)
+                case_config["config"].update({"parameters": parameter_list})
 
-            # ----------------------------测试用例的teststeps数据 ----------------------------
-            teststeps_obj = session.query(StepCase).filter(StepCase.testcase_id == case_obj.id).join(TestCase).all()
-            # print(type(teststeps_obj), teststeps_obj)
-            case_steps = []  # teststeps
-            teststeps_obj = sorted(teststeps_obj, key=lambda x: x.step)
-            for step_obj in teststeps_obj:
-                # print("step: ", step_obj)
-
-                step = {
-                    "test": {
-                        "name": step_obj.name,
-                        "api": step_obj.api_name,
-                        "variables": [],
-                        "validate": [],
-                        "extract": []
-                    }
-                }
-
-                # testcase corresponding api
-                case_id = step_obj.testcase_id
-                case_obj = session.query(TestCase).filter_by(id=case_id).first()
-                project_id = case_obj.project_id
-                step_api_name = step_obj.api_name
-                names = [test_api["api"]["def"] for test_api in testapis]
-                if step_api_name not in names:
-                    api_obj = session.query(API).filter(
-                        API.api_func == step_api_name and project_id == project_id).first()
-                    api = json.loads(api_obj.body)  # api的主体信息
-                    testapis.append(api)
-
-                # variables of teststep
-                variables_obj = session.query(VariablesLocal). \
-                    filter(VariablesLocal.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
-                # print("VariablesLocal: ", variables_obj)
+                # variables of config
+                variables_obj = session.query(VariablesGlobal). \
+                    filter(VariablesGlobal.config_id == config_obj.id).join(Config, isouter=True).all()
+                # print("variablesGlobal: ", variables_obj)
                 variable_list = []
                 for item in variables_obj:
                     value_type = item.value_type
@@ -298,58 +242,125 @@ class TestCaseCURD:
                         value = item.value
                     if flag == "UI":
                         element = {"id": item.id,
-                                   "step_id": step_obj.id,
+                                   "config_id": config_obj.id,
                                    "key": item.key,
                                    "value": value,
-                                   "value_type": value_type
-                                   }
+                                   "value_type": value_type}
                     else:
                         element = {item.key: value}
                     variable_list.append(element)
-                step["test"].update({"variables": variable_list})
-
-                # validate of teststep
-                validates_obj = session.query(Validate).filter(Validate.stepcase_id == step_obj.id).join(StepCase,
-                                                                                                         isouter=True).all()
-                # if validates_obj is not None:
-                # print("validates: ", validates_obj)
-                validate_list = []
-                for item in validates_obj:
-                    comparator = item.comparator
-                    check = item.check
-                    expected = item.expected
-                    expected_type = item.expected_type
-                    if expected in ["200", "404", "500", "401"]:
-                        expected = int(expected)
-                    if expected_type == "int":
-                        expected = int(expected)
-                    if flag == "UI":
-                        element = {"id": item.id, "step_id": step_obj.id, "comparator": comparator, "check": check,
-                                   "expected": expected}
-                    else:
-                        element = {comparator: [check, expected]}
-                    validate_list.append(element)
-                step["test"].update({"validate": validate_list})  # teststep中的validate可能会add\update\delete，所以要update
-
-                # extract of teststep
-                extracts_obj = session.query(Extract). \
-                    filter(Extract.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
-                # print("extracts: ", extracts_obj)
-                extract_list = []
-                for item in extracts_obj:
-                    if flag == "UI":
-                        element = {"id": item.id, "step_id": step_obj.id, "key": item.key, "value": item.value}
-                    else:
-                        element = {item.key: item.value}
-                    extract_list.append(element)
-                step["test"].update({"extract": extract_list})  # teststep中的extract可能会add\update\delete，所以要update
+                case_config["config"].update({"variables": variable_list})
                 if flag == "UI":
-                    step.update({"step_id": step_obj.id})
-                    step.update({"step_pos": step_obj.step})
-                case_steps.append(step)
+                    case_config.update({"config_id": config_obj.id})
+                    case_config.update({"case_id": case_obj.id})
 
-            test_case = test_case + case_steps
-            testcases.append((case_name, test_case))
+                test_case.append(case_config)
+
+                # ----------------------------测试用例的teststeps数据 ----------------------------
+                teststeps_obj = session.query(StepCase).filter(StepCase.testcase_id == case_obj.id).join(TestCase).all()
+                # print(type(teststeps_obj), teststeps_obj)
+                case_steps = []  # teststeps
+                teststeps_obj = sorted(teststeps_obj, key=lambda x: x.step)
+                for step_obj in teststeps_obj:
+                    # print("step: ", step_obj)
+
+                    step = {
+                        "test": {
+                            "name": step_obj.name,
+                            "api": step_obj.api_name,
+                            "variables": [],
+                            "validate": [],
+                            "extract": []
+                        }
+                    }
+
+                    # testcase corresponding api
+                    case_id = step_obj.testcase_id
+                    case_obj = session.query(TestCase).filter_by(id=case_id).first()
+                    project_id = case_obj.project_id
+                    step_api_name = step_obj.api_name
+                    names = [test_api["api"]["def"] for test_api in testapis]
+                    if step_api_name not in names:
+                        api_obj = session.query(API).filter(
+                            API.api_func == step_api_name and project_id == project_id).first()
+                        api = json.loads(api_obj.body)  # api的主体信息
+                        testapis.append(api)
+
+                    # variables of teststep
+                    variables_obj = session.query(VariablesLocal). \
+                        filter(VariablesLocal.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
+                    # print("VariablesLocal: ", variables_obj)
+                    variable_list = []
+                    for item in variables_obj:
+                        value_type = item.value_type
+                        if value_type == "int":
+                            value = int(item.value)
+                        elif value_type == "json":
+                            value = json.loads(item.value)
+                        else:
+                            value = item.value
+                        if flag == "UI":
+                            element = {"id": item.id,
+                                       "step_id": step_obj.id,
+                                       "key": item.key,
+                                       "value": value,
+                                       "value_type": value_type
+                                       }
+                        else:
+                            element = {item.key: value}
+                        variable_list.append(element)
+                    step["test"].update({"variables": variable_list})
+
+                    # validate of teststep
+
+                    validates_obj = session.query(Validate).filter(Validate.stepcase_id == step_obj.id).join(StepCase,
+                                                                                                             isouter=True).all()
+
+                    # if validates_obj is not None:
+                    # print("validates: ", validates_obj)
+                    validate_list = []
+                    for item in validates_obj:
+                        comparator = item.comparator
+                        check = item.check
+                        expected = item.expected
+                        expected_type = item.expected_type
+                        if expected in ["200", "404", "500", "401"]:
+                            expected = int(expected)
+                        if expected_type == "int":
+                            expected = int(expected)
+                        if flag == "UI":
+                            element = {"id": item.id, "step_id": step_obj.id, "comparator": comparator, "check": check,
+                                       "expected": expected}
+                        else:
+                            element = {comparator: [check, expected]}
+                        validate_list.append(element)
+                    step["test"].update({"validate": validate_list})  # teststep中的validate可能会add\update\delete，所以要update
+
+                    # extract of teststep
+                    extracts_obj = session.query(Extract). \
+                        filter(Extract.stepcase_id == step_obj.id).join(StepCase, isouter=True).all()
+                    # print("extracts: ", extracts_obj)
+                    extract_list = []
+                    for item in extracts_obj:
+                        if flag == "UI":
+                            element = {"id": item.id, "step_id": step_obj.id, "key": item.key, "value": item.value}
+                        else:
+                            element = {item.key: item.value}
+                        extract_list.append(element)
+                    step["test"].update({"extract": extract_list})  # teststep中的extract可能会add\update\delete，所以要update
+                    if flag == "UI":
+                        step.update({"step_id": step_obj.id})
+                        step.update({"step_pos": step_obj.step})
+                    case_steps.append(step)
+
+                test_case = test_case + case_steps
+                testcases.append((case_name, test_case))
+        except Exception as e:
+            try:
+                session.rollback()
+            except Exception as error:
+                pass
+            raise e
 
         return case_ids, testapis, testcases
 
@@ -363,15 +374,18 @@ class ConfigCURD:
         pass
 
     def delete_config(self, config_id):
-        config_obj = session.query(Config).filter(Config.id == config_id).first()
-        parameters_obj = session.query(Parameters). \
-            filter(Parameters.config_id == config_obj.id).join(Config, isouter=True).all()
-        [self.parameters.delete_parameter(parameter.id) for parameter in parameters_obj]
-        variables_obj = session.query(VariablesGlobal). \
-            filter(VariablesGlobal.config_id == config_obj.id).join(Config, isouter=True).all()
-        [self.var_global.delete_variable_global(variable.id) for variable in variables_obj]
-        session.query(Config).filter_by(id=config_id).delete()
-        session.commit()
+        try:
+            config_obj = session.query(Config).filter(Config.id == config_id).first()
+            parameters_obj = session.query(Parameters). \
+                filter(Parameters.config_id == config_obj.id).join(Config, isouter=True).all()
+            [self.parameters.delete_parameter(parameter.id) for parameter in parameters_obj]
+            variables_obj = session.query(VariablesGlobal). \
+                filter(VariablesGlobal.config_id == config_obj.id).join(Config, isouter=True).all()
+            [self.var_global.delete_variable_global(variable.id) for variable in variables_obj]
+            session.query(Config).filter_by(id=config_id).delete()
+            session.commit()
+        except Exception as e:
+            session.rollback()
 
     @staticmethod
     def update_config(config):
@@ -921,8 +935,14 @@ class DebugTalkCURD:
 
     @staticmethod
     def retrieve_debugtalk(project_id):
-        obj = session.query(DebugTalk).filter_by(project_id=project_id).first()
-        return obj.id, obj.code
+        try:
+            obj = session.query(DebugTalk).filter_by(project_id=project_id).first()
+            return obj.id, obj.code
+        except Exception as e:
+            error_decription = "获取debugtalk代码失败！\n"
+            error_location = traceback.format_exc()
+            mylogger.error(error_decription + error_location)
+            raise e
 
 
 class VarEnvCURD:
