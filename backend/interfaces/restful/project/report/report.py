@@ -49,12 +49,13 @@ class ReportItem(Resource):
 def get_page(page, project_id):
     all_rets = session.query(Report).filter_by(project_id=project_id).all()
     length = len(all_rets)
-    per_page = 5
+    per_page = 10
     pages = length // per_page
     if length % per_page > 0:
         pages += 1
     offset = per_page * (page - 1)
-    page_rets = session.query(Report).filter_by(project_id=project_id).limit(per_page).offset(offset).all()
+    # page_rets = session.query(Report).filter_by(project_id=project_id).limit(per_page).offset(offset).all()
+    page_rets = all_rets[offset:offset+per_page]
     return all_rets, page_rets, pages
 
 

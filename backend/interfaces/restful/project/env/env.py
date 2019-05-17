@@ -19,7 +19,8 @@ def get_page(page, project_id):
     if length % per_page > 0:
         pages += 1
     offset = per_page * (page - 1)
-    page_rets = session.query(VariablesEnv).filter_by(project_id=project_id).limit(per_page).offset(offset).all()
+    # page_rets = session.query(VariablesEnv).filter_by(project_id=project_id).limit(per_page).offset(offset).all()
+    page_rets = all_rets[offset:offset+per_page]
     return all_rets, page_rets, pages
 
 
