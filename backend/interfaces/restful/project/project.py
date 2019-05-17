@@ -1,8 +1,16 @@
+# ----------------------------------------------------------------------------------------------------------------------
+import traceback
+import logging
+
+mylogger = logging.getLogger("Swagger2CaseManager")
+
+# ----------------------------------------------------------------------------------------------------------------------
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
+# ----------------------------------------------------------------------------------------------------------------------
 from backend.models.models import Project, TestCase, API, Report
-from backend.models.curd import ProjectCURD, session
+from backend.models.curd import ProjectCURD
 
 curd = ProjectCURD()
 parser = reqparse.RequestParser()
@@ -15,14 +23,30 @@ parser.add_argument('responsible', type=str)
 
 from SwaggerToCase.run import execute
 
+# ----------------------------------------------------------------------------------------------------------------------
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
+                       encoding='utf-8',
+                       # echo=True,
+                       isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
+                       max_overflow=5,
+                       pool_size=4,
+                       pool_recycle=60 * 60 * 2,  # 设置pool_recycle参数在超时设定的时间(秒)后自动重新建立连接, 每过两小时建立一个新连接
+                       )
+
+Session = sessionmaker(bind=engine)
+session_in_pro = Session()
+
 
 class ProjectItem(Resource):
     def get(self, project_id):
         try:
-            project = session.query(Project).filter_by(id=project_id).first()
-            test_apis = session.query(API).filter_by(project_id=project_id).all()
-            test_cases = session.query(TestCase).filter_by(project_id=project_id).all()
-            test_reports = session.query(Report).filter_by(project_id=project_id).all()
+            project = session_in_pro.query(Project).filter_by(id=project_id).first()
+            test_apis = session_in_pro.query(API).filter_by(project_id=project_id).all()
+            test_cases = session_in_pro.query(TestCase).filter_by(project_id=project_id).all()
+            test_reports = session_in_pro.query(Report).filter_by(project_id=project_id).all()
             detail = [
                 {"length": "{}个接口".format(len(test_apis)), "desc": "接口总数", "routerName": "APIView"},
                 {"length": "{}个用例".format(len(test_cases)), "desc": "用例总数", "routerName": "AutoTest"},
@@ -37,8 +61,11 @@ class ProjectItem(Resource):
                                          }))
             return rst
         except Exception as e:
-            session.rollback()
-            return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!"}))
+            try:
+                session_in_pro.rollback()
+            except Exception as error:
+                pass
+            return make_response(jsonify({"success": False, "msg": "获取项目详情失败!"}))
 
     def delete(self, project_id):
         status, msg = curd.delete_project(project_id)
@@ -62,23 +89,33 @@ class ProjectList(Resource):
             print("args: ", args)
             owner = args["owner"]
             project_list = []
-            projects_obj = session.query(Project).filter_by(owner=owner).all()
+            projects_obj = session_in_pro.query(Project).filter_by(owner=owner).all()
             for pro in projects_obj:
                 project_list.append(
                     {"id": pro.id, "name": pro.name, "desc": pro.desc, "responsible": pro.owner, "mode": pro.mode})
             rst = make_response(jsonify({"success": True, "msg": "projectList获取成功！", "results": project_list}))
             return rst
         except Exception as e:
-            session.rollback()
+            try:
+                session_in_pro.rollback()
+            except Exception as error:
+                pass
+            mylogger.error("projectList获取失败！\n")
             return make_response(jsonify({"success": False, "msg": "projectList获取失败！" + str(e)}))
 
     def post(self):
         args = parser.parse_args()
         args["owner"] = args["responsible"]
-        obj = session.query(Project).filter_by(name=args["name"]).first()
+        try:
+            obj = session_in_pro.query(Project).filter_by(name=args["name"]).first()
+        except Exception as e:
+            session_in_pro.rollback()
+            rst = make_response(jsonify({"success": False, "msg": "项目新增失败！"}))
+            return rst
         if obj is not None:
             rst = make_response(jsonify({"success": False, "msg": "项目名称已存在，请重新编辑！"}))
             return rst
+
         if args["url"] == "" and args["file"] == {}:
             status, msg = curd.add_project(args)
         else:
