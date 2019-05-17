@@ -29,7 +29,7 @@
     <el-container>
       <el-main style="padding: 0; margin-left: 10px">
         <el-row>
-          <el-col :span="15">
+          <el-col :span="12">
             <editor
               v-model="content.code"
               @init="editorInit"
@@ -46,11 +46,11 @@
             </editor>
           </el-col>
 
-          <el-col :span="9">
+          <el-col :span="12">
             <editor
               v-model="resp.msg"
-              lang="text"
-              theme="monokai"
+              lang="python"
+              theme="eclipse"
               width="100%"
               :height="codeHeight"
             >
@@ -74,7 +74,7 @@
           id: ''
         },
         resp: {
-          msg: ''
+          msg: '# ----------the result of execting code---------'
         }
       }
     },
@@ -95,9 +95,8 @@
       handleRunCode() {
         console.log("this.content.code: ", this.content.code)
         this.$api.runDebugtalk({"code": this.content.code}).then(resp => {
-          this.resp.msg = this.make_format(resp.resp);
+          this.resp.msg = "# ----------the result of execting code---------\n\n" + resp.resp;
           this.$message.success(resp["msg"]);
-
         })
       },
 
@@ -112,6 +111,7 @@
         require('brace/ext/language_tools');
         require('brace/mode/python');
         require('brace/theme/eclipse');
+        require('brace/theme/monokai');
         require('brace/snippets/python');
       },
       getDebugTalk() {
