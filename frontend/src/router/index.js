@@ -10,6 +10,7 @@ import APIView from '../components/main_view/test_api/APIView'
 import AutoTest from '../components/main_view/test_case/AutoTest'
 import ReportList from '../components/main_view/report/report'
 import GlobalEnv from '../components/main_view/var_env/var_env'
+import DebugTalk from '../components/main_view/drive_code/drive_code'
 
 Vue.use(Router);  // Vue 导入vue-router插件
 
@@ -79,26 +80,16 @@ const router = new Router({
           }
 
         },
-        // {
-        //   name: 'DebugTalk',
-        //   path: 'debugtalk/:id',
-        //   component: DebugTalk,
-        //   meta: {
-        //     title: '编辑驱动',
-        //     requireAuth: true,
-        //   }
-        //
-        // },
-        // {
-        //   name: 'RecordConfig',
-        //   path: 'record_config/:id',
-        //   component: RecordConfig,
-        //   meta: {
-        //     title: '配置管理',
-        //     requireAuth: true
-        //   }
-        //
-        // },
+        {
+          name: 'DebugTalk',
+          path: 'debugtalk/:id',
+          component: DebugTalk,
+          meta: {
+            title: '驱动代码',
+            requireAuth: true,
+          }
+
+        },
         {
           name: 'GlobalEnv',
           path: 'var_env/:id',
@@ -118,6 +109,16 @@ const router = new Router({
           }
 
         },
+        // {
+        //   name: 'RecordConfig',
+        //   path: 'record_config/:id',
+        //   component: RecordConfig,
+        //   meta: {
+        //     title: '配置管理',
+        //     requireAuth: true
+        //   }
+        //
+        // },
         // {
         //   name: 'Task',
         //   path: 'tasks/:id',
@@ -161,7 +162,8 @@ router.beforeEach((to, from, next) => {
               "API接口": 'APIView',
               "测试用例": 'AutoTest',
               "历史报告": 'Reports',
-              "环境变量": 'GlobalEnv'
+              "环境变量": 'GlobalEnv',
+              "驱动代码": 'DebugTalk'
             };
             store.state.routerName = routerNameObject[to.meta.title];
             // this.setLocalValue("routerName",routerNameObject[to.meta.title]);
