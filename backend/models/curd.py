@@ -17,7 +17,6 @@ engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?char
                        max_overflow=5,
                        pool_size=4,
                        pool_recycle=60 * 60 * 2,  # 设置pool_recycle参数在超时设定的时间(秒)后自动重新建立连接, 每过两小时建立一个新连接
-                       pool_pre_ping=True
                        )
 
 Session = sessionmaker(bind=engine)
@@ -32,8 +31,7 @@ class ProjectCURD:
         self.debugtalk = DebugTalkCURD()
         self.report = ReportCURD()
 
-    @staticmethod
-    def add_project(project):
+    def add_project(self, project):
         try:
             name = project['name']
             desc = project["desc"]
@@ -44,6 +42,7 @@ class ProjectCURD:
                                   mode="common")
             session.add(project_obj)
             session.commit()
+            self.debugtalk.add_debugtalk(project_obj.id)
             return True, "Project创建成功！"
         except Exception as e:
             session.rollback()
@@ -882,14 +881,27 @@ class DebugTalkCURD:
     def __init__(self):
         pass
 
+    def add_debugtalk(self, project_id):
+        try:
+            debugtalk_obj = DebugTalk(
+                code="# drive code for your project",
+                project_id=project_id
+            )
+            session.add(debugtalk_obj)
+            session.commit()
+            return True, "debugtalk新增成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "debugtalk新增失败！" + str(e)
+
     @staticmethod
-    def save_debugtalk(project_id, debugtalk):
+    def update_debugtalk(project_id, code):
         try:
             obj = session.query(DebugTalk).filter_by(project_id=project_id).first()
             if obj:
-                obj.code = debugtalk["code"]
+                obj.code = code
             else:
-                obj = DebugTalk(code=debugtalk["code"], project_id=project_id)
+                obj = DebugTalk(code=code, project_id=project_id)
             session.add(obj)
             session.commit()
             return True, "DebugTalk保存成功！"
@@ -906,6 +918,11 @@ class DebugTalkCURD:
         except Exception as e:
             session.rollback()
             return False, "debugtalk删除失败！" + str(e)
+
+    @staticmethod
+    def retrieve_debugtalk(project_id):
+        obj = session.query(DebugTalk).filter_by(project_id=project_id).first()
+        return obj.id, obj.code
 
 
 class VarEnvCURD:
