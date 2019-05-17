@@ -35,7 +35,16 @@
     </el-dialog>
     <div style="padding: 10px; text-align: left; margin-top: 10px">
       <el-button type="primary" plain icon="el-icon-circle-plus" @click="DialogVisible=true">新增变量</el-button>
-      <el-button style="margin-left: 50px"
+       <el-button style="margin-left: 50px"
+                     type="info"
+                     round
+                     size="small"
+                     icon="el-icon-menu"
+                     @click="getPagination(1)"
+          >
+            首页
+          </el-button>
+      <el-button
                  type="info"
                  round
                  size="small"

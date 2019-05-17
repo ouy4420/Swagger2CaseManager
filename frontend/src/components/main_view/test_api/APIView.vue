@@ -9,8 +9,16 @@
     <div>
 
       <div style="padding: 10px; text-align: right; margin-right: 60px">
+        <el-button style="margin-left: 50px"
+                     type="info"
+                     round
+                     size="small"
+                     icon="el-icon-menu"
+                     @click="getPagination(1)"
+          >
+            首页
+          </el-button>
         <el-button
-                   style="margin-left: 50px"
                    type="info"
                    round
                    size="small"

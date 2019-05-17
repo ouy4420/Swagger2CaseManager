@@ -107,6 +107,15 @@
                      type="info"
                      round
                      size="small"
+                     icon="el-icon-menu"
+                     @click="getPagination(1)"
+          >
+            首页
+          </el-button>
+          <el-button
+                     type="info"
+                     round
+                     size="small"
                      icon="el-icon-d-arrow-left"
                      :disabled="page.page_previous === null "
                      @click="getPagination(page.page_previous)"
