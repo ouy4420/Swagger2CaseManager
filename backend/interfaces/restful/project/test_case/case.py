@@ -52,7 +52,7 @@ def get_page(page):
     if length % per_page > 0:
         pages += 1
     offset = per_page * (page - 1)
-    page_rets = session.query(TestCase).filter_by(project_id=1).limit(per_page).offset(offset).all()
+    page_rets = session_in_case.query(TestCase).filter_by(project_id=1).limit(per_page).offset(offset).all()
     return all_rets, page_rets, pages
 
 
