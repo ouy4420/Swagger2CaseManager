@@ -76,7 +76,12 @@
         this.DialogVisible = true;
         const project_id = this.$route.params.id;
         this.$api.getAPIList({"id": project_id}).then(resp => {
-            this.apiList = resp["api_list"];
+            if (resp.success) {
+                this.apiList = resp["api_list"];
+                this.success(resp);       // 弹出成功提示消息
+              } else {
+                this.failure(resp);
+              }
           }
         )
       },

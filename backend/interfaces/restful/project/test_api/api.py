@@ -3,6 +3,9 @@ from flask_restful import Resource, reqparse
 from backend.models.models import API, Project
 from backend.models.curd import APICURD, session
 import json
+import traceback
+import logging
+mylogger = logging.getLogger("Swagger2CaseManager")
 
 curd = APICURD()
 parser = reqparse.RequestParser()
@@ -42,55 +45,80 @@ def get_page(page, project_id):
 
 class APILIst(Resource):
     def get(self):
-        args = parser.parse_args()
-        print("args: ", args)
-        if args["page"] is not None:
-            id, page = args["id"], args["page"]
-            api_list = []
-            all_rets_reverse, page_rets, pages = get_page(page, id)
-            for api in page_rets:
-                api_body = json.loads(api.body)
-                request = api_body["api"]["request"]
-                if "params" not in request:
-                    request["params"] = {}
-                if "headers" not in request:
-                    request["headers"] = {}
-                if "json" not in request:
-                    request["json"] = ""
-                if "data" not in request:
-                    request["data"] = ""
-                parsed_api = parse_api_body(api_body)
-                parsed_api["index"] = all_rets_reverse.index(api) + 1
-                parsed_api["id"] = api.id
-                if parsed_api["json"]:
-                    parsed_api["body_type"] = "Json"
-                elif parsed_api["data"]:
-                    parsed_api["body_type"] = "Form"
-                else:
-                    parsed_api["body_type"] = "Null"
-                api_list.append(parsed_api)
+        try:
+            args = parser.parse_args()
+            if args["page"] is not None:
+                id, page = args["id"], args["page"]
+                api_list = []
+                try:
+                    all_rets_reverse, page_rets, pages = get_page(page, id)
+                except Exception as e:
+                    error_decription = "获取API分页数据失败！\n"
+                    error_location = traceback.format_exc()
+                    mylogger.error(error_decription + error_location)
+                    raise e
+                for api in page_rets:
+                    api_body = json.loads(api.body)
+                    request = api_body["api"]["request"]
+                    if "params" not in request:
+                        request["params"] = {}
+                    if "headers" not in request:
+                        request["headers"] = {}
+                    if "json" not in request:
+                        request["json"] = ""
+                    if "data" not in request:
+                        request["data"] = ""
+                    parsed_api = parse_api_body(api_body)
+                    parsed_api["index"] = all_rets_reverse.index(api) + 1
+                    parsed_api["id"] = api.id
+                    if parsed_api["json"]:
+                        parsed_api["body_type"] = "Json"
+                    elif parsed_api["data"]:
+                        parsed_api["body_type"] = "Form"
+                    else:
+                        parsed_api["body_type"] = "Null"
+                    api_list.append(parsed_api)
 
-            page_previous, page_next = None, None
-            if page > 1:
-                page_previous = page - 1
-            if page + 1 <= pages:
-                page_next = page + 1
+                page_previous, page_next = None, None
+                if page > 1:
+                    page_previous = page - 1
+                if page + 1 <= pages:
+                    page_next = page + 1
+                try:
+                    project = session.query(Project).filter_by(id=id).first()
+                except Exception as e:
+                    error_decription = "获取project失败！\n"
+                    error_location = traceback.format_exc()
+                    mylogger.error(error_decription + error_location)
+                    raise e
+                rst = make_response(jsonify({"success": True, "msg": "",
+                                             "apiList": api_list,
+                                             "projectInfo": {"name": project.name, "desc": project.desc},
+                                             "page": {"page_now": page,
+                                                      "page_previous": page_previous,
+                                                      "page_next": page_next}}))
+                return rst
+            else:
+                project_id = args["id"]
+                try:
+                    apis_obj = session.query(API).filter_by(project_id=project_id).all()
+                except Exception as e:
+                    error_decription = "获取APIL所有数据失败！\n"
+                    error_location = traceback.format_exc()
+                    mylogger.error(error_decription + error_location)
+                    raise e
+                api_list = []
+                for api in apis_obj:
+                    api_list.append(api.api_func)
+                rst = make_response(jsonify({"success": True, "msg": "", "api_list": api_list}))
+                return rst
+        except Exception as e:
+            # 捕捉上面出错继续上抛的异常（做好log记录，便于异常时候排查）和其它可能的异常
+            session.rollback()  # 出错时，及时回滚数据库
+            mylogger.error("获取APIList失败！\n")
+            rst = make_response(jsonify({"success": False, "msg": "获取APIList失败！" + str(e)}))
+            return rst
 
-            project = session.query(Project).filter_by(id=id).first()
-            rst = make_response(jsonify({"apiList": api_list,
-                                         "projectInfo": {"name": project.name, "desc": project.desc},
-                                         "page": {"page_now": page,
-                                                  "page_previous": page_previous,
-                                                  "page_next": page_next}}))
-            return rst
-        else:
-            project_id = args["id"]
-            apis_obj = session.query(API).filter_by(project_id=project_id).all()
-            api_list = []
-            for api in apis_obj:
-                api_list.append(api.api_func)
-            rst = make_response(jsonify({"api_list": api_list}))
-            return rst
 
     def delete(self):
         args = parser.parse_args()

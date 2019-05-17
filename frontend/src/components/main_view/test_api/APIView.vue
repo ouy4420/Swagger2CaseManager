@@ -76,11 +76,29 @@
       getPagination(page) {
         const project_id = this.$route.params.id;
         this.$api.getPagination_api({"id": project_id, "page": page}).then(resp => {
-            this.apiList = resp["apiList"];
-            this.projectInfo = resp["projectInfo"];
-            this.page = resp["page"];
+            if (resp.success) {
+                this.apiList = resp["apiList"];
+                this.projectInfo = resp["projectInfo"];
+                this.page = resp["page"];
+                this.success(resp);       // 弹出成功提示消息
+              } else {
+                this.failure(resp);
+              }
           }
         )
+      },
+      success(resp) {
+        this.$notify({
+          message: resp["msg"],
+          type: 'success',
+          duration: 2000
+        });
+      },
+      failure(resp) {
+        this.$notify.error({
+          message: resp["msg"],
+          duration: 5000
+        });
       }
     },
     mounted() {
