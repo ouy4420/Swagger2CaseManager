@@ -19,7 +19,7 @@ class DriverCode(Resource):
             rst = make_response(jsonify({"success": False, "msg": "", "code": code, "id": id}))
             return rst
         except Exception as e:
-            rst = make_response(jsonify({"success": False, "msg": e}))
+            rst = make_response(jsonify({"success": False, "msg": str(e)}))
             return rst
 
     def post(self):
