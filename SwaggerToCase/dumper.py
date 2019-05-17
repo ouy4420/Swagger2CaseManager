@@ -5,7 +5,7 @@ import os
 import shutil
 from SwaggerToCase.encoder import JSONEncoder
 from backend.models.models import Project, TestCase, Config, StepCase, API, Validate, Extract, Parameters, \
-    VariablesLocal
+    VariablesLocal, DebugTalk
 from backend.models.curd import session
 
 
@@ -15,6 +15,7 @@ class DumpFile(object):
         self.api_file = config["api_file"]
         self.file_type = config["file_type"]
         self.env_file = config["env_file"]
+        self.code_file = config["code_file"]
         self.test_apis = test_apis
         self.test_cases = test_cases
 
@@ -65,7 +66,12 @@ class DumpFile(object):
     def dump_env_file(self, env_content):
         with open(self.env_file, 'w', encoding="utf-8") as outfile:
             outfile.write(env_content)
-        logging.debug("Generate env_file successfully: {}".format(self.api_file))
+        logging.debug("Generate env_file successfully: {}".format(self.env_file))
+
+    def dump_code_file(self, code_content):
+        with open(self.code_file, 'w', encoding="utf-8") as outfile:
+            outfile.write(code_content)
+        logging.debug("Generate code_file successfully: {}".format(self.code_file))
 
     def dump_to_file(self):
         self.dump_api_file()  # 写入api文件
@@ -206,6 +212,12 @@ class DumpDB(object):
         owner = project["owner"]
         project_obj = Project(name=name, mode=mode, desc=desc, owner=owner)
         session.add(project_obj)
+        session.commit()
+        debugtalk_obj = DebugTalk(
+            code="# drive code for your project",
+            project_id=project_obj.id
+        )
+        session.add(debugtalk_obj)
         session.commit()
 
         # insert into testcase
