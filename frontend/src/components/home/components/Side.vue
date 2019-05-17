@@ -3,7 +3,7 @@
     <el-menu
         class="common-side-bar"
         :default-active="$store.state.routerName"
-        background-color="#304056"
+        background-color="#0c0800"
         text-color="#BFCBD9"
         active-text-color="#318DF1"
         @select="select"

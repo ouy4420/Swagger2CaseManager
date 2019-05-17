@@ -61,7 +61,7 @@
     .nav-header {
         position: fixed;
         z-index: 666666;
-        background: #242F42;
+        background: #0c0800;
         margin: 0 auto;
         font-size: 14px;
         width: 100%;
