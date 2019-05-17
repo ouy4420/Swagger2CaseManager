@@ -172,8 +172,13 @@
       getCaseList() {
         const project_id = this.$route.params.id;
         this.$api.getCaseList({"id": project_id}).then(resp => {
-          this.$store.commit("setCaseList", resp["caseList"]);
-          this.getCaseItem(this.$store.state.caseList[0].id);
+          if (resp.success) {
+            this.$store.commit("setCaseList", resp["caseList"]);
+            this.getCaseItem(this.$store.state.caseList[0].id);
+            // this.success(resp);       // 弹出成功提示消息
+          } else {
+            this.failure(resp);
+          }
         })
       },
       getCaseItem(case_id) {
@@ -249,7 +254,7 @@
       failure(resp) {
         this.$notify.error({
           message: resp["msg"],
-          duration: 2000
+          duration: 5000
         });
       }
     },
@@ -260,6 +265,7 @@
         // obj.getPagination(1)
         obj.getCaseList()
       }
+
       setTimeout(temp_func, 500)
     }
   }

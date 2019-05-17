@@ -1,3 +1,6 @@
+import traceback
+import logging
+mylogger = logging.getLogger("Swagger2CaseManager")
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import Project, TestCase, Config
@@ -33,32 +36,45 @@ def get_page(page):
 
 class CaseListPage(Resource):
     def get(self):
-        args = parser.parse_args()
-        id, page = args["id"], args["page"]
-        case_list = []
         try:
-            all_rets, page_rets, pages = get_page(page)
-            for case in page_rets:
-                parsed_case = parse_case_body(case)
-                parsed_case["index"] = all_rets.index(case) + 1
-                parsed_case["id"] = case.id
-                case_list.append(parsed_case)
+            args = parser.parse_args()
+            id, page = args["id"], args["page"]
+            case_list = []
 
+            try:
+                all_rets, page_rets, pages = get_page(page)
+                for case in page_rets:
+                    parsed_case = parse_case_body(case)
+                    parsed_case["index"] = all_rets.index(case) + 1
+                    parsed_case["id"] = case.id
+                    case_list.append(parsed_case)
+            except Exception as e:
+                error_decription = "获取case数据失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
             page_previous, page_next = None, None
             if page > 1:
                 page_previous = page - 1
             if page + 1 <= pages:
                 page_next = page + 1
-
-            project = session.query(Project).filter_by(id=id).first()
-            rst = make_response(jsonify({"caseList": case_list,
+            try:
+                project = session.query(Project).filter_by(id=id).first()
+            except Exception as e:
+                error_decription = "获取project失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
+            rst = make_response(jsonify({"success": True, "msg": "", "caseList": case_list,
                                          "projectInfo": {"name": project.name, "desc": project.desc},
                                          "page": {"page_now": page,
                                                   "page_previous": page_previous,
                                                   "page_next": page_next}}))
             return rst
         except Exception as e:
-            return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!" + str(e)}))
+            mylogger.error("获取CASEList失败！\n")
+            rst = make_response(jsonify({"success": False, "msg": "获取CASEList失败！" + str(e)}))
+            return rst
 
     def delete(self):
         pass
