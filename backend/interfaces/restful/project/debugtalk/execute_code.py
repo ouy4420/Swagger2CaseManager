@@ -13,6 +13,7 @@ class DebugCode(object):
         """ dumps driver_code.py and run
         """
         try:
+            exec(self.__code)
             with open(self.file_path, 'w', encoding='utf-8') as stream:
                 stream.write(self.__code)
             ret = os.popen("python {}".format(self.file_path))
