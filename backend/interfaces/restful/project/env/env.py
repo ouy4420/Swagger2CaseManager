@@ -54,7 +54,7 @@ class VarEnv(Resource):
                          "page_next": page_next}}))
             return rst
         except Exception as e:
-            rst = make_response(jsonify({"success": False, "msg": e}))
+            rst = make_response(jsonify({"success": False, "msg": str(e)}))
             return rst
 
     def post(self):
