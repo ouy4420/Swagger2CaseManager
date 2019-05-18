@@ -1,11 +1,12 @@
 import json
 import traceback
 import logging
+
 mylogger = logging.getLogger("Swagger2CaseManager")
 
 from backend.models.models import Project, \
     TestCase, Config, StepCase, API, Validate, Extract, \
-    Parameters, VariablesGlobal, Report, VariablesLocal, VariablesEnv, DebugTalk
+    Parameters, VariablesGlobal, Report, VariablesLocal, VariablesEnv, DebugTalk, BaseURL
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -15,7 +16,7 @@ engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?char
                        # echo=True,
                        isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
                        max_overflow=5,
-                       pool_size=4,
+                       pool_size=8,
                        pool_recycle=60 * 60 * 2,  # 设置pool_recycle参数在超时设定的时间(秒)后自动重新建立连接, 每过两小时建立一个新连接
                        )
 
@@ -30,6 +31,7 @@ class ProjectCURD:
         self.env = VarEnvCURD()
         self.debugtalk = DebugTalkCURD()
         self.report = ReportCURD()
+        self.base_url = BaseURLCURD
 
     def add_project(self, project):
         try:
@@ -64,6 +66,9 @@ class ProjectCURD:
 
             envs_obj = session.query(VariablesEnv).filter(VariablesEnv.project_id == project_id).join(Project).all()
             [self.env.delete_variable_env(var_env.id) for var_env in envs_obj]
+
+            base_urls_obj = session.query(BaseURL).filter(BaseURL.project_id == project_id).join(Project).all()
+            [self.base_url.delete_base_url(base_url.id) for base_url in base_urls_obj]
 
             reports_obj = session.query(Report).filter(Report.project_id == project_id).join(Project).all()
             [self.report.delete_report(test_report.id) for test_report in reports_obj]
@@ -1060,5 +1065,62 @@ class ReportCURD:
             "key": variable.key,
             "value": json.loads(variable.value),
             "project_id": variable.project_id
+        }
+        return element
+
+
+class BaseURLCURD:
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def add_base_url(project_id, env_config):
+        try:
+            base_url_obj = BaseURL(name=env_config['name'],
+                                   value=env_config["value"],
+                                   project_id=project_id)
+            session.add(base_url_obj)
+            session.commit()
+            return True, "环境添加成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "环境添加失败！" + str(e)
+
+    @staticmethod
+    def delete_base_url(url_id):
+        try:
+            session.query(BaseURL).filter_by(id=url_id).delete()
+            session.commit()
+            return True, "环境删除成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "环境删除失败！" + str(e)
+
+    @staticmethod
+    def update_base_url(env_config):
+        try:
+            base_url_obj = session.query(BaseURL).filter(BaseURL.id == env_config['id']).first()
+            base_url_obj.name = env_config['name']
+            base_url_obj.value = env_config["value"]
+            session.add(base_url_obj)
+            session.commit()
+            return True, "环境更新成功！"
+        except Exception as e:
+            session.rollback()
+            return False, "环境更新失败" + str(e)
+
+    @staticmethod
+    def retrieve_base_url(url_id):
+        '''
+        配合variable元素的update和delete
+        :param variable_id:
+        :return:
+        '''
+        base_url_obj = session.query(BaseURL).filter_by(id=url_id).first()
+        element = {
+            "id": base_url_obj.id,
+            "name": base_url_obj.name,
+            "value": json.loads(base_url_obj.value),
+            "project_id": base_url_obj.project_id
         }
         return element
