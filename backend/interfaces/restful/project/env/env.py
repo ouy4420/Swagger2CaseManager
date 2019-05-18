@@ -67,6 +67,9 @@ class VarEnv(Resource):
     def post(self):
         args = parser.parse_args()
         var_form = args["var_obj"]
+        if var_form["key"] == "base_url":
+            rst = make_response(jsonify({"success": False, "msg": "base_url请在环境配置中添加！！"}))
+            return rst
         status, msg = curd.add_variable_env(var_form["project_id"], var_form)
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
