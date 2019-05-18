@@ -21,9 +21,21 @@
         <el-button type="primary" @click="handleConfirm()">确 定</el-button>
       </div>
     </el-dialog>
-    <div style="padding: 10px; text-align: right; margin-bottom: 20px">
+    <div style="padding: 10px; text-align: right;">
+      <el-select
+        style="width: 344px"
+        v-model="base_url"
+        placeholder="请选择测试环境"
+        v-for="url in url_list">
+        <el-option :label="url.name + '-> ' + url.value" :value="url.value"></el-option>
+      </el-select>
+      <el-button
+        icon="el-icon-caret-right"
+        type="success"
+        round @click="runTest">Run</el-button>
+    </div>
+    <div style="margin-left: 13px">
       <el-button type="primary" plain icon="el-icon-circle-plus" @click="DialogVisible=true">新增用例</el-button>
-      <el-button type="success" round @click="runTest">执行测试</el-button>
     </div>
     <el-table
       @row-click="handleCurrentChange"
@@ -87,7 +99,9 @@
             {required: true, message: '请输入Case名称', trigger: 'blur'},
             {min: 1, max: 50, message: '最多不超过50个字符', trigger: 'blur'}
           ]
-        }
+        },
+        base_url: "",
+        url_list: []
       }
     },
     methods: {
@@ -179,7 +193,11 @@
           } else {
             this.failure(resp);
           }
-        })
+        });
+        this.$api.getBaseURLList({"project_id": project_id}).then(resp => {
+            this.url_list = resp["BaseURLList"];
+          }
+        );
       },
       getCaseItem(case_id) {
         this.$api.getCaseDetail(case_id).then(resp => {
@@ -216,6 +234,14 @@
         this.$refs.multipleTable.clearSelection(); // 清空checkbox所有选中
       },
       runTest() {
+        if (this.base_url === "") {
+          this.$notify({
+            message: "请选择测试环境",
+            type: 'warning',
+            duration: 2000
+          });
+          return
+        }
         const project_id = this.$route.params.id;
         if (this.arrID.length === 0) {
           this.$notify.error({
@@ -227,7 +253,11 @@
         }
         this.loading_flag = true;
         this.$emit('e-autotest', this.loading_flag);
-        this.$api.runTestcases({"case_list": this.arrID, "project_id": project_id}).then(resp => {
+        this.$api.runTestcases({
+          "case_list": this.arrID,
+          "project_id": project_id,
+          "base_url": this.base_url
+        }).then(resp => {
           this.loading_flag = false;
           this.$emit('e-autotest', this.loading_flag);
           if (resp['success']) {
@@ -243,6 +273,7 @@
             });
           }
         });
+        this.base_url = ""
       },
       success(resp) {
         this.$notify({
