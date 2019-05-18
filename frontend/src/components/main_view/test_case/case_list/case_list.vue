@@ -238,16 +238,16 @@
       },
       runTest() {
         if (this.base_url === "") {
-          this.$notify({
-            message: "请选择测试环境",
-            type: 'warning',
-            duration: 2000
+          this.$notify.warning({
+            position: "top-left",
+            message: "请选择测试环境！！！",
+            duration: 3000
           });
           return
         }
-        const project_id = this.$route.params.id;
+
         if (this.arrID.length === 0) {
-          this.$notify.error({
+          this.$notify.warning({
             position: "top-left",
             message: "请选择要执行的测试用例！！！",
             duration: 3000
@@ -256,6 +256,7 @@
         }
         this.loading_flag = true;
         this.$emit('e-autotest', this.loading_flag);
+        const project_id = this.$route.params.id;
         this.$api.runTestcases({
           "case_list": this.arrID,
           "project_id": project_id,
