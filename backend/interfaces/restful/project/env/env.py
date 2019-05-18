@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import VariablesEnv, Project
-from backend.models.curd import VarEnvCURD, session
+from backend.models.curd import VarEnvCURD, Session
 
 curd = VarEnvCURD()
 parser = reqparse.RequestParser()
@@ -10,16 +10,20 @@ parser.add_argument('var_id', type=int)
 parser.add_argument('page', type=int)
 parser.add_argument('var_obj', type=dict)
 
+session = Session()
 
 def get_page(page, project_id):
-    all_rets = session.query(VariablesEnv).filter_by(project_id=project_id).all()
+    try:
+        all_rets = session.query(VariablesEnv).filter_by(project_id=project_id).all()
+    except Exception as e:
+        session.rollback()
+        raise e
     length = len(all_rets)
     per_page = 10
     pages = length // per_page
     if length % per_page > 0:
         pages += 1
     offset = per_page * (page - 1)
-    # page_rets = session.query(VariablesEnv).filter_by(project_id=project_id).limit(per_page).offset(offset).all()
     page_rets = all_rets[offset:offset+per_page]
     return all_rets, page_rets, pages
 
@@ -28,7 +32,6 @@ class VarEnv(Resource):
     def get(self):
         try:
             args = parser.parse_args()
-            print("args: ", args)
             id, page = args["id"], args["page"]
             var_envList = []
             all_rets, page_rets, pages = get_page(page, id)
@@ -54,6 +57,10 @@ class VarEnv(Resource):
                          "page_next": page_next}}))
             return rst
         except Exception as e:
+            try:
+                session.rollback()
+            except Exception as error:
+                pass
             rst = make_response(jsonify({"success": False, "msg": str(e)}))
             return rst
 
