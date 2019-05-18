@@ -30,6 +30,7 @@ from backend.interfaces.restful.project.test_case.test_step.validate import Vali
 from backend.interfaces.restful.project.test_case.test_step.extract import ExtractItem
 from backend.interfaces.restful.project.report.report import ReportList, ReportItem
 from backend.interfaces.restful.project.env.env import VarEnv
+from backend.interfaces.restful.project.env.base_url import BaseUrl
 from backend.interfaces.restful.project.debugtalk.driver_code import DriverCode
 
 from flask_restful import Api
@@ -49,17 +50,18 @@ api.add_resource(ExtractItem, '/api/waykichain/extract/')
 api.add_resource(ReportList, '/api/waykichain/report/')
 api.add_resource(ReportItem, '/api/waykichain/report/<int:report_id>/')
 api.add_resource(VarEnv, '/api/waykichain/variable_env/')
+api.add_resource(BaseUrl, '/api/waykichain/base_url/')
 api.add_resource(DriverCode, '/api/waykichain/debugtalk/')
 
 
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-@login_require
-def catch_all(path):
-    if app.debug:
-        return requests.get('http://127.0.0.1:8081/waykichain{}'.format(path)).text
-        # return 'token ok'
-    return render_template("index.html")
+# @app.route('/', defaults={'path': ''})
+# @app.route('/<path:path>')
+# @login_require
+# def catch_all(path):
+#     if app.debug:
+#         return requests.get('http://127.0.0.1:8081/waykichain{}'.format(path)).text
+#         # return 'token ok'
+#     return render_template("index.html")
 
 
 if __name__ == '__main__':
