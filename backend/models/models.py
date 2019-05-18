@@ -252,3 +252,19 @@ class DebugTalk(Base):
 
     def __repr__(self):
         return "<class %s %s-%s>" % (DebugTalk.__name__, self.id, self.project_id)
+
+
+class BaseURL(Base):
+    __tablename__ = 'base_url'
+    id = Column(Integer, nullable=False, autoincrement=True)
+    name = Column(VARCHAR(100), nullable=False, comment="环境名")
+    value = Column(TEXT, nullable=False, comment="url")
+    project_id = Column(Integer, nullable=False, comment="project外键")
+
+    __table_args__ = (
+        PrimaryKeyConstraint("id"),
+        ForeignKeyConstraint(('project_id',), ('project.id',), name='fk_baseurl_project')
+    )
+
+    def __repr__(self):
+        return "<class %s %s-%s-%s>" % (BaseURL.__name__, self.id, self.name, self.value)
