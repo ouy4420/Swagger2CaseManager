@@ -22,6 +22,7 @@ def run_test():
         # 解析参数
         case_list = request.json.get('case_list')
         project_id = request.json.get('project_id')
+        base_url = request.json.get('base_url')
 
         cwd = os.getcwd()
 
@@ -69,6 +70,7 @@ def run_test():
         for var in vars_env:
             key, value = var.key, var.value
             apend_content += '{} = "{}"\n'.format(key, value)
+        apend_content += '{} = "{}"\n'.format("base_url", base_url)
         dumper.dump_code_file(code_content + apend_content)  # 写入debugtalk文件
 
         try:
