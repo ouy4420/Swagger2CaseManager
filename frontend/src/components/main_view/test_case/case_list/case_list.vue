@@ -22,17 +22,20 @@
       </div>
     </el-dialog>
     <div style="padding: 10px; text-align: right;">
-      <el-select
-        style="width: 344px"
-        v-model="base_url"
-        placeholder="请选择测试环境"
-        v-for="url in url_list">
-        <el-option :label="url.name + '-> ' + url.value" :value="url.value"></el-option>
+      <el-select style="width: 343px" v-model="base_url" placeholder="选择API调用">
+        <el-option
+          v-for="url in url_list"
+          :key="url.name"
+          :label="url.name + '-> ' + url.value"
+          :value="url.value">
+        </el-option>
       </el-select>
+
       <el-button
         icon="el-icon-caret-right"
         type="success"
-        round @click="runTest">Run</el-button>
+        round @click="runTest">Run
+      </el-button>
     </div>
     <div style="margin-left: 13px">
       <el-button type="primary" plain icon="el-icon-circle-plus" @click="DialogVisible=true">新增用例</el-button>
