@@ -10,7 +10,7 @@ from flask_restful import Resource, reqparse
 
 # ----------------------------------------------------------------------------------------------------------------------
 from backend.models.models import Project, TestCase, API, Report
-from backend.models.curd import ProjectCURD
+from backend.models.curd import ProjectCURD, Session
 
 curd = ProjectCURD()
 parser = reqparse.RequestParser()
@@ -24,19 +24,6 @@ parser.add_argument('responsible', type=str)
 from SwaggerToCase.run import execute
 
 # ----------------------------------------------------------------------------------------------------------------------
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
-                       encoding='utf-8',
-                       # echo=True,
-                       isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
-                       max_overflow=5,
-                       pool_size=4,
-                       pool_recycle=60 * 60 * 2,  # 设置pool_recycle参数在超时设定的时间(秒)后自动重新建立连接, 每过两小时建立一个新连接
-                       )
-
-Session = sessionmaker(bind=engine)
 session_in_pro = Session()
 
 
@@ -86,7 +73,6 @@ class ProjectList(Resource):
             parser = reqparse.RequestParser()
             parser.add_argument('owner', type=str)
             args = parser.parse_args()
-            print("args: ", args)
             owner = args["owner"]
             project_list = []
             projects_obj = session_in_pro.query(Project).filter_by(owner=owner).all()
@@ -100,8 +86,8 @@ class ProjectList(Resource):
                 session_in_pro.rollback()
             except Exception as error:
                 pass
-            mylogger.error("projectList获取失败！\n")
-            return make_response(jsonify({"success": False, "msg": "projectList获取失败！" + str(e)}))
+            mylogger.error("projectList获取失败！\n" + str(e))
+            return make_response(jsonify({"success": False, "msg": "projectList获取失败，请重新刷新页面！" + str(e)}))
 
     def post(self):
         args = parser.parse_args()
