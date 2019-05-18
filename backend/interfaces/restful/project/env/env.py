@@ -73,6 +73,6 @@ class VarEnv(Resource):
 
     def delete(self):
         args = parser.parse_args()
-        status, msg = curd.delete_variable_env(args["id"])
+        status, msg = curd.delete_variable_env(args["var_id"])
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
