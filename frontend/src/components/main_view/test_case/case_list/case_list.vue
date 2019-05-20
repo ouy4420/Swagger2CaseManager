@@ -192,7 +192,7 @@
           if (resp.success) {
             this.$store.commit("setCaseList", resp["caseList"]);
             this.getCaseItem(this.$store.state.caseList[0].id);
-            this.success(resp);       // 弹出成功提示消息
+            // this.success(resp);       // 弹出成功提示消息
           } else {
             // this.failure(resp);
             // window.location.reload();
@@ -200,7 +200,7 @@
               if (resp.success) {
                 this.$store.commit("setCaseList", resp["caseList"]);
                 this.getCaseItem(this.$store.state.caseList[0].id);
-                this.success(resp);       // 弹出成功提示消息
+                // this.success(resp);       // 弹出成功提示消息
               } else {
                 this.failure(resp);
               }

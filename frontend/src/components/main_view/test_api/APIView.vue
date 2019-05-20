@@ -80,7 +80,7 @@
               this.apiList = resp["apiList"];
               this.projectInfo = resp["projectInfo"];
               this.page = resp["page"];
-              this.success(resp);       // 弹出成功提示消息
+              // this.success(resp);       // 弹出成功提示消息
             } else {
               // window.location.reload();
               this.$api.getPagination_api({"id": project_id, "page": page}).then(resp => {
@@ -88,7 +88,7 @@
                   this.apiList = resp["apiList"];
                   this.projectInfo = resp["projectInfo"];
                   this.page = resp["page"];
-                  this.success(resp);       // 弹出成功提示消息
+                  // this.success(resp);       // 弹出成功提示消息
                 } else {
                   this.failure(resp);
                 }

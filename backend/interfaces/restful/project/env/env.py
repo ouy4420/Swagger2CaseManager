@@ -10,13 +10,14 @@ parser.add_argument('var_id', type=int)
 parser.add_argument('page', type=int)
 parser.add_argument('var_obj', type=dict)
 
-session = Session()
+session_in_env = Session()
+
 
 def get_page(page, project_id):
     try:
-        all_rets = session.query(VariablesEnv).filter_by(project_id=project_id).all()
+        all_rets = session_in_env.query(VariablesEnv).filter_by(project_id=project_id).all()
     except Exception as e:
-        session.rollback()
+        session_in_env.rollback()
         raise e
     length = len(all_rets)
     per_page = 10
@@ -24,7 +25,7 @@ def get_page(page, project_id):
     if length % per_page > 0:
         pages += 1
     offset = per_page * (page - 1)
-    page_rets = all_rets[offset:offset+per_page]
+    page_rets = all_rets[offset:offset + per_page]
     return all_rets, page_rets, pages
 
 
@@ -47,7 +48,7 @@ class VarEnv(Resource):
                 page_previous = page - 1
             if page + 1 <= pages:
                 page_next = page + 1
-            project = session.query(Project).filter_by(id=id).first()
+            project = session_in_env.query(Project).filter_by(id=id).first()
             rst = make_response(jsonify({
                 "success": True,
                 "var_envList": var_envList,
@@ -58,7 +59,7 @@ class VarEnv(Resource):
             return rst
         except Exception as e:
             try:
-                session.rollback()
+                session_in_env.rollback()
             except Exception as error:
                 pass
             rst = make_response(jsonify({"success": False, "msg": str(e)}))
