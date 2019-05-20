@@ -21,6 +21,7 @@ parser.add_argument('file', type=dict)
 parser.add_argument('desc', type=str)
 parser.add_argument('responsible', type=str)
 
+
 from SwaggerToCase.run import execute
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -67,22 +68,38 @@ class ProjectItem(Resource):
         return rst
 
 
+def get_page(page, owner):
+    all_rets = session_in_pro.query(Project).filter_by(owner=owner).all()
+    all_rets_reverse = all_rets[::-1]
+    length = len(all_rets)
+    per_page = 10
+    pages = length // per_page
+    if length % per_page > 0:
+        pages += 1
+    offset = per_page * (page - 1)
+    page_rets = all_rets_reverse[offset:offset + per_page]
+    return all_rets_reverse, page_rets, pages
+
+
 class ProjectList(Resource):
     def get(self):
         try:
             parser = reqparse.RequestParser()
             parser.add_argument('owner', type=str)
+            parser.add_argument('page', type=int)
             args = parser.parse_args()
-            owner = args["owner"]
+            owner, page = args["owner"], args["page"]
             project_list = []
-            projects_obj = session_in_pro.query(Project).filter_by(owner=owner).all()
-            for pro in projects_obj:
+            all_rets_reverse, page_rets, pages = get_page(page, owner)
+            for pro in page_rets:
                 test_apis = session_in_pro.query(API).filter_by(project_id=pro.id).all()
                 test_cases = session_in_pro.query(TestCase).filter_by(project_id=pro.id).all()
                 test_reports = session_in_pro.query(Report).filter_by(project_id=pro.id).all()
                 test_baseurls = session_in_pro.query(BaseURL).filter_by(project_id=pro.id).all()
+                index = all_rets_reverse.index(pro) + 1
                 project_list.append(
                     {"id": pro.id,
+                     "index": index,
                      "name": pro.name,
                      "desc": pro.desc,
                      "responsible": pro.owner,
@@ -92,7 +109,18 @@ class ProjectList(Resource):
                      "len_report": len(test_reports),
                      "len_baseurl": len(test_baseurls),
                      })
-            rst = make_response(jsonify({"success": True, "msg": "projectList获取成功！", "results": project_list}))
+            page_previous, page_next = None, None
+            if page > 1:
+                page_previous = page - 1
+            if page + 1 <= pages:
+                page_next = page + 1
+            rst = make_response(jsonify({"success": True,
+                                         "msg": "projectList获取成功！",
+                                         "results": project_list,
+                                         "page": {"page_now": page,
+                                                  "page_previous": page_previous,
+                                                  "page_next": page_next}
+                                         }))
             return rst
         except Exception as e:
             try:
