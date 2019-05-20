@@ -288,6 +288,8 @@ class TestCaseCURD:
                     if step_api_name not in names:
                         api_obj = session.query(API).filter(
                             API.api_func == step_api_name and project_id == project_id).first()
+                        if api_obj is None:
+                            raise ValueError("测试用例中引用的API已不存在，请删除新建")
                         api = json.loads(api_obj.body)  # api的主体信息
                         testapis.append(api)
 
