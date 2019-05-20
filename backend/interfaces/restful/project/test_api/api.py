@@ -160,6 +160,7 @@ class APILIst(Resource):
         args = parser.parse_args()
         apiForm = args["api_obj"]
         api_func, project_id = apiForm["def"], apiForm["project_id"]
+        headers, params = apiForm["headers"], apiForm["params"]
         try:
             obj = session_in_api.query(API).filter(API.api_func == api_func and API.project_id == project_id).first()
         except Exception as e:
@@ -169,13 +170,29 @@ class APILIst(Resource):
         if obj is not None:
             rst = make_response(jsonify({"success": False, "msg": "该项目中已存在同名API调用！！！"}))
             return rst
+        if isinstance(headers, list):
+            temp = {}
+            for item in headers:
+                temp.update({item["key"]: item["value"]})
+            apiForm["headers"] = temp
+        elif isinstance(headers, str):
+            apiForm["headers"] = json.loads(headers)
+
+        if isinstance(params, list):
+            temp = {}
+            for item in params:
+                if item["key"] and item["value"]:
+                    temp.update({item["key"]: item["value"]})
+            apiForm["params"] = temp
+        elif isinstance(params, str):
+            apiForm["params"] = json.loads(params)
 
         api = {
             "api":
                 {"request": {"method": apiForm["method"],
                              "url": apiForm["url"],
-                             "headers": json.loads(apiForm["headers"]),
-                             "params": json.loads(apiForm["params"]),
+                             "headers": apiForm["headers"],
+                             "params": apiForm["params"],
                              "json": "",
                              "data": ""},
                  "name": apiForm["name"],
