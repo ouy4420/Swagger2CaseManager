@@ -26,9 +26,9 @@
         data() {
             return {
                 side_menu: [
-                    {name: "项目概况", url: "ProjectDetail", code: "&#xe64a;"},
-                    {name: "API 接口", url: "APIView", code: "&#xe74a;"},
+                    // {name: "项目概况", url: "ProjectDetail", code: "&#xe64a;"},
                     {name: "测试用例", url: "AutoTest", code: "&#xe6da;"},
+                    {name: "API 接口", url: "APIView", code: "&#xe74a;"},
                     {name: "环境变量", url: "GlobalEnv", code: "&#xe692;"},
                     {name: "驱动代码", url: "DebugTalk", code: "&#xe7ca;"},
                     {name: "历史报告", url: "Reports", code: "&#xe66e;"}
