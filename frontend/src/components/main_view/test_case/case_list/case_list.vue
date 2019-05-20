@@ -194,7 +194,17 @@
             this.getCaseItem(this.$store.state.caseList[0].id);
             this.success(resp);       // 弹出成功提示消息
           } else {
-            this.failure(resp);
+            // this.failure(resp);
+            // window.location.reload();
+            this.$api.getCaseList({"id": project_id}).then(resp => {
+              if (resp.success) {
+                this.$store.commit("setCaseList", resp["caseList"]);
+                this.getCaseItem(this.$store.state.caseList[0].id);
+                this.success(resp);       // 弹出成功提示消息
+              } else {
+                this.failure(resp);
+              }
+            })
           }
         });
         this.$api.getBaseURLList({"project_id": project_id}).then(resp => {

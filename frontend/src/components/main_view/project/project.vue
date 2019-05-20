@@ -336,8 +336,21 @@
       },
       getProjectList() {
         this.$api.getProjectList({"owner": this.$store.state.user}).then(resp => {
-          console.log("project_list: ", resp)
-          this.projectData = resp;
+          if (resp["success"] === true) {
+            this.projectData = resp;
+            this.success(resp);       // 弹出成功提示消息
+          } else {
+            // window.location.reload();
+            this.$api.getProjectList({"owner": this.$store.state.user}).then(resp => {
+              if (resp["success"] === true) {
+                this.projectData = resp;
+                this.success(resp);       // 弹出成功提示消息
+              } else {
+                this.failure(resp)
+              }
+            })
+          }
+
         })
       },
       getPagination(url) {

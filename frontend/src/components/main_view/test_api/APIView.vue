@@ -10,31 +10,31 @@
 
       <div style="padding: 10px; text-align: right; margin-right: 60px">
         <el-button style="margin-left: 50px"
-                     type="info"
-                     round
-                     size="small"
-                     icon="el-icon-menu"
-                     @click="getPagination(1)"
-          >
-            首页
-          </el-button>
-        <el-button
                    type="info"
                    round
                    size="small"
-                   icon="el-icon-d-arrow-left"
-                   :disabled="page.page_previous === null "
-                   @click="getPagination(page.page_previous)"
+                   icon="el-icon-menu"
+                   @click="getPagination(1)"
+        >
+          首页
+        </el-button>
+        <el-button
+          type="info"
+          round
+          size="small"
+          icon="el-icon-d-arrow-left"
+          :disabled="page.page_previous === null "
+          @click="getPagination(page.page_previous)"
         >
           上一页
         </el-button>
 
         <el-button
-                   type="info"
-                   round
-                   size="small"
-                   :disabled="page.page_next === null"
-                   @click="getPagination(page.page_next)"
+          type="info"
+          round
+          size="small"
+          :disabled="page.page_next === null"
+          @click="getPagination(page.page_next)"
         >
           下一页
           <i class="el-icon-d-arrow-right"></i>
@@ -70,20 +70,30 @@
       }
     },
     methods: {
-      refresh_api_list(refresh){
+      refresh_api_list(refresh) {
         this.getPagination(1);
       },
       getPagination(page) {
         const project_id = this.$route.params.id;
         this.$api.getPagination_api({"id": project_id, "page": page}).then(resp => {
             if (resp.success) {
-                this.apiList = resp["apiList"];
-                this.projectInfo = resp["projectInfo"];
-                this.page = resp["page"];
-                // this.success(resp);       // 弹出成功提示消息
-              } else {
-                this.failure(resp);
-              }
+              this.apiList = resp["apiList"];
+              this.projectInfo = resp["projectInfo"];
+              this.page = resp["page"];
+              this.success(resp);       // 弹出成功提示消息
+            } else {
+              // window.location.reload();
+              this.$api.getPagination_api({"id": project_id, "page": page}).then(resp => {
+                if (resp.success) {
+                  this.apiList = resp["apiList"];
+                  this.projectInfo = resp["projectInfo"];
+                  this.page = resp["page"];
+                  this.success(resp);       // 弹出成功提示消息
+                } else {
+                  this.failure(resp);
+                }
+              })
+            }
           }
         )
       },

@@ -47,9 +47,24 @@
       getPagination(page) {
         const project_id = this.$route.params.id;
         this.$api.getPagination_varenv({"id": project_id, "page": page}).then(resp => {
-            this.var_envList = resp["var_envList"];
-            this.projectInfo = resp["projectInfo"];
-            this.page = resp["page"];
+            if (resp["success"] === true) {
+              this.var_envList = resp["var_envList"];
+              this.projectInfo = resp["projectInfo"];
+              this.page = resp["page"];
+              this.success(resp);       // 弹出成功提示消息
+            } else {
+              // window.location.reload();
+              this.$api.getPagination_varenv({"id": project_id, "page": page}).then(resp => {
+                if (resp["success"] === true) {
+                  this.var_envList = resp["var_envList"];
+                  this.projectInfo = resp["projectInfo"];
+                  this.page = resp["page"];
+                  this.success(resp);       // 弹出成功提示消息
+                } else {
+                  this.failure(resp);
+                }
+              })
+            }
           }
         );
         this.$api.getBaseURLList({"project_id": project_id}).then(resp => {
