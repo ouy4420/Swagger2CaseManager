@@ -57,6 +57,19 @@
           }
         );
       },
+      success(resp) {
+        this.$notify({
+          message: resp["msg"],
+          type: 'success',
+          duration: 2000
+        });
+      },
+      failure(resp) {
+        this.$notify.error({
+          message: resp["msg"],
+          duration: 5000
+        });
+      }
     },
     mounted() {
       this.getPagination(1);

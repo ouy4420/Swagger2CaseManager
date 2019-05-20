@@ -48,7 +48,7 @@
                 <el-input v-model="projectForm.desc" clearable></el-input>
               </el-form-item>
               <el-form-item v-if="fileVisible" label="文件上传" prop="file">
-                  <my-upload></my-upload>
+                <my-upload></my-upload>
               </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
@@ -196,6 +196,7 @@
 
 <script>
   import upload from "./upload/upload"
+
   export default {
     components: {
       "my-upload": upload
@@ -246,7 +247,7 @@
         this.projectForm.desc = row['desc'];
         this.projectForm.id = row['id'];
       },
-      close_dialog(){
+      close_dialog() {
         this.projectForm = {
           name: '',
           url: '',
@@ -344,6 +345,7 @@
           this.projectData = resp;
         })
       },
+
     },
     mounted() {
       this.getProjectList();
