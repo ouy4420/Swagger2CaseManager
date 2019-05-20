@@ -124,6 +124,10 @@
             </template>
           </el-table-column>
           <el-table-column
+            label="编号"
+            prop="index">
+          </el-table-column>
+          <el-table-column
             label="项目名称"
             prop="name">
           </el-table-column>
@@ -280,7 +284,7 @@
             this.loading_flag = false;
             if (resp['success']) {
               this.success(resp);
-              this.getProjectList();
+              this.getPagination(1);
             } else {
               this.failure(resp);
             }
@@ -305,7 +309,7 @@
             obj.then(resp => {
               if (resp.success) {
                 this.success(resp);
-                this.getProjectList();
+                this.getPagination(1);
               } else {
                 this.failure(resp);
               }
@@ -342,19 +346,18 @@
           duration: 30000
         });
       },
-      getProjectList() {
-        this.$api.getProjectList({"owner": this.$store.state.user}).then(resp => {
+      getPagination(page) {
+        this.$api.getProjectList({"owner": this.$store.state.user, "page": page}).then(resp => {
           if (resp["success"] === true) {
-            console.log("resp", resp)
             this.projectData = resp.results;
+            this.page = resp["page"];
             // this.success(resp);       // 弹出成功提示消息
           } else {
             // window.location.reload();
-            this.$api.getProjectList({"owner": this.$store.state.user}).then(resp => {
+            this.$api.getProjectList({"owner": this.$store.state.user, "page": page}).then(resp => {
               if (resp["success"] === true) {
-                console.log("resp", resp)
                 this.projectData = resp.results;
-
+                this.page = resp["page"];
                 // this.success(resp);       // 弹出成功提示消息
               } else {
                 this.failure(resp)
@@ -363,14 +366,10 @@
           }
 
         })
-      },
-      getPagination(url) {
-
-      },
-
+      }
     },
     mounted() {
-      this.getProjectList();
+      this.getPagination(1);
     },
     name: "ProjectList"
   }
