@@ -9,7 +9,7 @@ from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
 # ----------------------------------------------------------------------------------------------------------------------
-from backend.models.models import Project, TestCase, API, Report
+from backend.models.models import Project, TestCase, API, Report, BaseURL
 from backend.models.curd import ProjectCURD, Session
 
 curd = ProjectCURD()
@@ -77,8 +77,21 @@ class ProjectList(Resource):
             project_list = []
             projects_obj = session_in_pro.query(Project).filter_by(owner=owner).all()
             for pro in projects_obj:
+                test_apis = session_in_pro.query(API).filter_by(project_id=pro.id).all()
+                test_cases = session_in_pro.query(TestCase).filter_by(project_id=pro.id).all()
+                test_reports = session_in_pro.query(Report).filter_by(project_id=pro.id).all()
+                test_baseurls = session_in_pro.query(BaseURL).filter_by(project_id=pro.id).all()
                 project_list.append(
-                    {"id": pro.id, "name": pro.name, "desc": pro.desc, "responsible": pro.owner, "mode": pro.mode})
+                    {"id": pro.id,
+                     "name": pro.name,
+                     "desc": pro.desc,
+                     "responsible": pro.owner,
+                     "mode": pro.mode,
+                     "len_api": len(test_apis),
+                     "len_case": len(test_cases),
+                     "len_report": len(test_reports),
+                     "len_baseurl": len(test_baseurls),
+                     })
             rst = make_response(jsonify({"success": True, "msg": "projectList获取成功！", "results": project_list}))
             return rst
         except Exception as e:
