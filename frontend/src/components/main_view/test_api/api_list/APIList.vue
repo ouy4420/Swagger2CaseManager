@@ -2,11 +2,11 @@
 
   <div>
     <el-button
-               type="success"
-               icon="el-icon-circle-plus"
-               size="small"
-               style="margin-left: 20px"
-               @click="handleAdd">新增API
+      type="success"
+      icon="el-icon-circle-plus"
+      size="small"
+      style="margin-left: 20px"
+      @click="handleAdd">新增API
     </el-button>
     <el-dialog
       :title="DialogTitle"
@@ -15,6 +15,21 @@
       align="center"
       @close="reset_api_form"
     >
+      <el-dialog
+        width="46%"
+        title="编辑Header"
+        :visible.sync="innerVisible_headers"
+        append-to-body>
+        <headers :headers="apiForm.headers"  @set_header="get_header"></headers>
+      </el-dialog>
+
+      <el-dialog
+        width="46%"
+        title="编辑QueryString"
+        :visible.sync="innerVisible_params"
+        append-to-body>
+        <params :params="apiForm.params" @set_params="get_params"></params>
+      </el-dialog>
       <el-form :model="apiForm"
                :rules="rules"
                ref="apiForm"
@@ -38,12 +53,6 @@
             </el-select>
           </el-input>
         </el-form-item>
-        <el-form-item label="QuerString" prop="params">
-          <el-input placeholder="输入格式：json" type="textarea" v-model="apiForm.params"></el-input>
-        </el-form-item>
-        <el-form-item label="请求Headers" prop="headers">
-          <el-input placeholder="输入格式：json" type="textarea" v-model="apiForm.headers"></el-input>
-        </el-form-item>
         <el-form-item label="Body类型" prop="body_type">
           <el-input v-model="apiForm.body_type">
             <el-select v-model="apiForm.body_type" slot="prepend" placeholder="Body类型" style="width: 110px">
@@ -53,6 +62,16 @@
             </el-select>
           </el-input>
         </el-form-item>
+        <el-form-item label="QuerString" prop="params">
+          <!--<el-input :placeholder="quert_string_format" type="textarea" v-model="apiForm.params"></el-input>-->
+          <i class="el-icon-edit-outline" @click="innerVisible_params=true"></i>
+        </el-form-item>
+
+        <el-form-item label="请求Headers" prop="headers">
+          <!--<el-input placeholder="输入格式：json" type="textarea" v-model="apiForm.headers"></el-input>-->
+          <i class="el-icon-edit-outline" @click="innerVisible_headers=true"></i>
+        </el-form-item>
+
       </el-form>
       <span slot="footer" class="dialog-footer">
                         <el-button @click="DialogVisible = false">取消</el-button>
@@ -144,11 +163,19 @@
 </template>
 
 <script>
+  import Headers from "./headers/headers"
+  import Params from "./params/params"
   export default {
     name: "APIList",
     props: ["apiList"],
+    components: {
+      headers: Headers,
+      params: Params,
+    },
     data() {
       return {
+        innerVisible_headers: false,
+        innerVisible_params: false,
         DialogTitle: "",
         DialogVisible: false,
         APIListData: [],
@@ -158,10 +185,12 @@
           def: '',
           method: '',
           url: '',
-          params: '',
-          headers: '',
+          params: [{key: "", value: ""}],
+          // headers: JSON.stringify({"content-type": "application/json"}, null, 2),
+          headers: [{key: "content-type", value: "application/json"}],
           body_type: ''
         },
+        quert_string_format: "输入格式：json 如：\n" + JSON.stringify({"aa": "111", "bb": "222"}, null, 2),
         rules: {
           name: [
             {required: true, message: '请输入API名称', trigger: 'blur'},
@@ -175,14 +204,6 @@
             {required: true, message: '请输入url', trigger: 'blur'},
             {min: 1, max: 50, message: '最多不超过50个字符', trigger: 'blur'}
           ],
-          params: [
-            {required: true, message: '请输入query_string', trigger: 'blur'},
-            {min: 1, max: 50, message: '最多不超过50个字符', trigger: 'blur'}
-          ],
-          headers: [
-            {required: true, message: '请输入headers', trigger: 'blur'},
-            {min: 1, max: 50, message: '最多不超过50个字符', trigger: 'blur'}
-          ],
           body_type: [
             {required: true, message: '请输入body类型', trigger: 'blur'},
             {min: 1, max: 50, message: '最多不超过50个字符', trigger: 'blur'}
@@ -191,6 +212,15 @@
       }
     },
     methods: {
+      get_header(headers){
+        this.innerVisible_headers = false;
+        this.apiForm.headers = JSON.stringify(headers, null, 2);
+      },
+       get_params(params){
+        this.innerVisible_params = false;
+        this.apiForm.params = JSON.stringify(params, null, 2);
+        console.log(params)
+      },
       handleAdd() {
         this.DialogVisible = true;           // 弹出添加框
         this.DialogTitle = '添加API'     // 设置dialog title
@@ -235,45 +265,55 @@
           def: '',
           method: '',
           url: '',
-          params: '',
-          headers: '',
-          body_type: '',
-          project_id: ""
+          params: [{key: "", value: ""}],
+          // headers: JSON.stringify({"content-type": "application/json"}, null, 2),
+          headers: [{key: "content-type", value: "application/json"}],
+          body_type: ''
         };
       },
       handleConfirm() {
         this.$refs["apiForm"].validate((valid) => {
-          if (valid) {
-            this.DialogVisible = false;  // 新建或编辑框中的数据校验通过后，将弹框隐藏掉
-            let obj;
-            if (this.apiForm.id === '') {
-              // 没有就新建
-              this.apiForm.project_id = this.$route.params.id;
-              obj = this.$api.addAPI({"api_obj": this.apiForm});
-            } else {
-              // 有就更新
-              obj = this.$api.updateAPI({"api_obj": this.apiForm});
-            }
-            // 给http response挂载一个处理的钩子
-            obj.then(resp => {
-              if (resp.success) {
-                this.success(resp);       // 弹出成功提示消息
-                this.$emit('refresh', true);          // 重新刷新当前api数据
-              } else {
-                this.failure(resp);
+            if (valid) {
+              if (this.apiForm["def"].indexOf("$data") < 0 && this.apiForm["body_type"] !== "Null") {
+                this.$alert('请选择正确的Body类型！', '注意', {
+                  confirmButtonText: '确定',
+                  callback: action => {
+                  }
+                });
+                return
               }
-              this.reset_api_form()  // 重置表单数据
-            })
-          } else {
-            this.DialogVisible = true;
-            if (this.apiForm.id !== '') {
-              this.DialogTitle = "编辑API";  // 已经存在显示编辑框
+
+              this.DialogVisible = false;  // 新建或编辑框中的数据校验通过后，将弹框隐藏掉
+              let obj;
+              if (this.apiForm.id === '') {
+                // 没有就新建
+                this.apiForm.project_id = this.$route.params.id;
+                obj = this.$api.addAPI({"api_obj": this.apiForm});
+              } else {
+                // 有就更新
+                obj = this.$api.updateAPI({"api_obj": this.apiForm});
+              }
+              // 给http response挂载一个处理的钩子
+              obj.then(resp => {
+                if (resp.success) {
+                  this.success(resp);       // 弹出成功提示消息
+                  this.$emit('refresh', true);          // 重新刷新当前api数据
+                } else {
+                  this.failure(resp);
+                }
+                this.reset_api_form()  // 重置表单数据
+              })
             } else {
-              this.DialogTitle = "新增API";  // 不存在显示新建框
+              this.DialogVisible = true;
+              if (this.apiForm.id !== '') {
+                this.DialogTitle = "编辑API";  // 已经存在显示编辑框
+              } else {
+                this.DialogTitle = "新增API";  // 不存在显示新建框
+              }
+              return false;
             }
-            return false;
           }
-        });
+        );
 
       },
       success(resp) {
