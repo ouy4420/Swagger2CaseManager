@@ -7,25 +7,33 @@
     >
       <div>
         <div style="padding-top: 20px; margin-left: 10px; padding-bottom: 20px;">
-          <i class="el-icon-circle-plus"></i>
-          <span style="margin-right: 20px;">添加项目</span>
-          <el-button type="primary"
-                     size="small"
-                     @click="dialogVisible = true; urlVisible = true; fileVisible=false">
-            URL方式
-          </el-button>
-          <el-button type="primary"
-                     size="small"
-                     @click="dialogVisible = true; urlVisible = false; fileVisible=true">
-            文件方式
-          </el-button>
-          <el-button type="primary"
-                     size="small"
-                     @click="dialogVisible = true; urlVisible = false; fileVisible=false">
-            普通方式
+          <el-button
+            icon="el-icon-circle-plus"
+            size="small"
+            @click="dialogVisible = true; urlVisible = false; fileVisible=false">
+            添加项目
           </el-button>
 
-
+          <el-dropdown style="margin-left: 10px">
+            <span class="el-dropdown-link">
+              <i class="el-icon-s-promotion"></i>
+              Swagger导入<i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <span
+                  @click="dialogVisible = true; urlVisible = true; fileVisible=false">
+                  URL方式
+                </span>
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <span
+                  @click="dialogVisible = true; urlVisible = false; fileVisible=true">
+                  文件方式
+                </span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
           <el-dialog
             title="添加项目"
             :visible.sync="dialogVisible"
@@ -62,58 +70,75 @@
 
     <el-container>
       <el-main style="padding: 0;">
+        <div style="padding: 10px; text-align: right; margin-right: 60px">
+          <el-button style="margin-left: 50px"
+                     type="info"
+                     round
+                     size="small"
+                     icon="el-icon-menu"
+                     @click="getPagination(1)"
+          >
+            首页
+          </el-button>
+          <el-button
+            type="info"
+            round
+            size="small"
+            icon="el-icon-d-arrow-left"
+            :disabled="page.page_previous === null "
+            @click="getPagination(page.page_previous)"
+          >
+            上一页
+          </el-button>
+
+          <el-button
+            type="info"
+            round
+            size="small"
+            :disabled="page.page_next === null"
+            @click="getPagination(page.page_next)"
+          >
+            下一页
+            <i class="el-icon-d-arrow-right"></i>
+          </el-button>
+        </div>
         <el-table
-          highlight-current-row
-          :data="projectData.results"
-          border
-          stripe
-          :show-header="projectData.results.length > 0"
-          style="width: 100%;"
-        >
+          :data="projectData"
+          style="width: 100%">
+          <el-table-column type="expand">
+            <template slot-scope="props">
+              <el-form label-position="left" inline class="demo-table-expand">
+                <el-form-item label="接口总数: ">
+                  <span><strong>{{ props.row.len_api }}</strong> 个API</span>
+                </el-form-item>
+                <el-form-item label="用例总数: ">
+                  <span><strong>{{ props.row.len_case }}</strong> 个用例</span>
+                </el-form-item>
+                <el-form-item label="环境总数 :">
+                  <span><strong>{{ props.row.len_baseurl }}</strong> 个环境</span>
+                </el-form-item>
+                <el-form-item label="报告总数">
+                  <span><strong>{{ props.row.len_report }}</strong> 个报告</span>
+                </el-form-item>
+              </el-form>
+            </template>
+          </el-table-column>
           <el-table-column
             label="项目名称"
-            width="200"
-            align="center"
-          >
-            <template slot-scope="scope">
-                      <span
-                        style="font-size: 18px; font-weight: bold; cursor: pointer;"
-                        @click="handleCellClick(scope.row)"
-                      >{{ scope.row.name }}
-                            </span>
-            </template>
+            prop="name">
           </el-table-column>
-
           <el-table-column
             label="负责人"
-            width="200"
-            align="center"
-          >
-            <template slot-scope="scope">
-              <span>{{ scope.row.responsible }}</span>
-            </template>
+            prop="responsible">
           </el-table-column>
-
           <el-table-column
             label="创建方式"
-            width="200"
-            align="center"
-          >
-            <template slot-scope="scope">
-              <span>{{ scope.row.mode }}</span>
-            </template>
+            prop="mode">
           </el-table-column>
-
           <el-table-column
             label="项目描述"
-            width="400"
-            align="center"
-          >
-            <template slot-scope="scope">
-              <span>{{ scope.row.desc }}</span>
-            </template>
+            prop="desc">
           </el-table-column>
-
           <el-table-column
             label="操作"
             align="center"
@@ -121,7 +146,7 @@
             <template slot-scope="scope">
               <el-button
                 size="medium"
-                @click="handleCellClick(scope.row)">详情
+                @click="handleCellClick(scope.row)">管理
               </el-button>
 
               <el-button
@@ -149,9 +174,9 @@
                   </el-form-item>
                 </el-form>
                 <span slot="footer" class="dialog-footer">
-                        <el-button @click="editVisible = false">取 消</el-button>
-                        <el-button type="primary" @click="handleConfirm('projectForm')">确 定</el-button>
-                      </span>
+        <el-button @click="editVisible = false">取 消</el-button>
+        <el-button type="primary" @click="handleConfirm('projectForm')">确 定</el-button>
+        </span>
               </el-dialog>
 
 
@@ -162,33 +187,11 @@
               </el-button>
             </template>
           </el-table-column>
-
         </el-table>
-      </el-main>
-      <el-footer>
-        <div style="padding: 10px; text-align: right;">
-          <el-button style="margin-left: 50px"
-                     type="info"
-                     round
-                     size="small"
-                     icon="el-icon-d-arrow-left"
-                     :disabled="projectData.previous === null "
-                     @click="getPagination(projectData.previous)"
-          >
-            上一页
-          </el-button>
 
-          <el-button type="info"
-                     round
-                     size="small"
-                     :disabled="projectData.next === null"
-                     @click="getPagination(projectData.next)"
-          >
-            下一页
-            <i class="el-icon-d-arrow-right"></i>
-          </el-button>
-        </div>
-      </el-footer>
+      </el-main>
+
+
     </el-container>
 
   </el-container>
@@ -233,13 +236,18 @@
             {min: 1, max: 100, message: '最多不超过100个字符', trigger: 'blur'}
           ]
         },
+        page: {
+          page_now: 1,
+          page_previous: null,
+          page_next: 2
+        }
       }
     },
     methods: {
       handleCellClick(row) {
-        this.$store.commit('setRouterName', 'ProjectDetail');
-        this.setLocalValue("routerName", 'ProjectDetail');
-        this.$router.push({name: 'ProjectDetail', params: {id: row['id']}});
+        this.$store.commit('setRouterName', 'AutoTest');
+        this.setLocalValue("routerName", 'AutoTest');
+        this.$router.push({name: 'AutoTest', params: {id: row['id']}});
       },
       handleEdit(index, row) {
         this.editVisible = true;  // 弹出编辑框
@@ -337,13 +345,16 @@
       getProjectList() {
         this.$api.getProjectList({"owner": this.$store.state.user}).then(resp => {
           if (resp["success"] === true) {
-            this.projectData = resp;
+            console.log("resp", resp)
+            this.projectData = resp.results;
             // this.success(resp);       // 弹出成功提示消息
           } else {
             // window.location.reload();
             this.$api.getProjectList({"owner": this.$store.state.user}).then(resp => {
               if (resp["success"] === true) {
-                this.projectData = resp;
+                console.log("resp", resp)
+                this.projectData = resp.results;
+
                 // this.success(resp);       // 弹出成功提示消息
               } else {
                 this.failure(resp)
@@ -354,9 +365,7 @@
         })
       },
       getPagination(url) {
-        this.$api.getPagination(url).then(resp => {
-          this.projectData = resp;
-        })
+
       },
 
     },
@@ -368,5 +377,18 @@
 </script>
 
 <style scoped>
+  .demo-table-expand {
+    font-size: 0;
+  }
 
+  .demo-table-expand label {
+    width: 90px;
+    color: #99a9bf;
+  }
+
+  .demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 50%;
+  }
 </style>
