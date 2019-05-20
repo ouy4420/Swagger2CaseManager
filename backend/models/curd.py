@@ -365,6 +365,9 @@ class TestCaseCURD:
                 session.rollback()
             except Exception as error:
                 pass
+            error_decription = "用例详情获取失败！\n"
+            error_location = traceback.format_exc()
+            mylogger.error(error_decription + error_location)
             raise e
 
         return case_ids, testapis, testcases
