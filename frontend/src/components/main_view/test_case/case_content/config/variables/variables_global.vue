@@ -270,10 +270,16 @@
         });
       },
       failure(resp) {
-        this.$notify.error({
-          message: resp["msg"],
-          duration: 1000
+        this.$alert(resp["msg"], 'Error', {
+          confirmButtonText: '确定',
+          callback: action => {
+
+          }
         });
+        // this.$notify.error({
+        //   message: resp["msg"],
+        //   duration: 1000
+        // });
       },
       get_case() {
         // console.log("in get_case2", this.variableForm);

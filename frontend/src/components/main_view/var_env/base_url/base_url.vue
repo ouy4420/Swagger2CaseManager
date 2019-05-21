@@ -214,10 +214,16 @@
         });
       },
       failure(resp) {
-        this.$notify.error({
-          message: resp["msg"],
-          duration: 2000
+        this.$alert(resp["msg"], 'Error', {
+          confirmButtonText: '确定',
+          callback: action => {
+
+          }
         });
+        // this.$notify.error({
+        //   message: resp["msg"],
+        //   duration: 2000
+        // });
       }
     },
     mounted() {
