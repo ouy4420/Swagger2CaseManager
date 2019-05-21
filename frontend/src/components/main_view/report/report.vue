@@ -253,8 +253,8 @@
         this.$prompt('请输入报告描述信息', '编辑报告描述', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
-          inputPattern: /[^\u4e00-\u9fa5]+/,
-          inputErrorMessage: '请勿输入中文！！'
+          // inputPattern: /[^\u4e00-\u9fa5]+/,
+          // inputErrorMessage: '请勿输入中文！！'
         }).then(({value}) => {
           // 提示成功消息
           this.$message({

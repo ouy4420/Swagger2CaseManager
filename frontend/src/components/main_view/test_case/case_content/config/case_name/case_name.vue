@@ -16,8 +16,8 @@
           inputValue: this.$store.state.currentCase['config'].config.name,
           confirmButtonText: '确定',
           cancelButtonText: '取消',
-          inputPattern: /[^\u4e00-\u9fa5]+/,
-          inputErrorMessage: '请勿输入中文！！'
+          // inputPattern: /[^\u4e00-\u9fa5]+/,
+          // inputErrorMessage: '请勿输入中文！！'
         }).then(({value}) => {
           // 提示成功消息
           this.$message({

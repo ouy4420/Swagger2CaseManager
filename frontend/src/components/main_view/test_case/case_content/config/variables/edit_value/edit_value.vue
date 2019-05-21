@@ -72,8 +72,8 @@
         this.$prompt('请输入测试用例名称', '编辑用例名称', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
-          inputPattern: /[^\u4e00-\u9fa5]+/,
-          inputErrorMessage: '请勿输入中文！！'
+          // inputPattern: /[^\u4e00-\u9fa5]+/,
+          // inputErrorMessage: '请勿输入中文！！'
         }).then(({value}) => {
           // 提示成功消息
           this.$message({
