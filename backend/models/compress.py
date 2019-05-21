@@ -28,6 +28,20 @@ def uncompress_string(s):
     return ret
 
 
+def dump_report(value):
+    import base64
+    if value:
+        value = value.encode('utf8')
+        value = compress_string(value)
+        value = base64.b64encode(value).decode('utf8')
+    return value
+
+
+def load_report(value):
+    value = uncompress_string(value).decode('utf8')
+    return value
+
+
 class CompressField(types.TypeDecorator):
     impl = types.Unicode
 
@@ -49,3 +63,10 @@ class CompressField(types.TypeDecorator):
             return '[]'
 
 
+if __name__ == '__main__':
+    import json
+    a = json.dumps({"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": 12222222222222222222222222, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb": 23333333333333333333333333})
+    aa = dump_report(a)
+    print(aa)
+    aaa = load_report(aa)
+    print(aaa)
