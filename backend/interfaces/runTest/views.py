@@ -8,6 +8,7 @@ from SwaggerToCase.dumper import DumpFile
 from SwaggerToCase.inherit import run
 
 import os
+import json
 import shutil
 
 
@@ -79,17 +80,18 @@ def run_test():
             return jsonify({'success': False, 'msg': '用例执行失败！' + str(e)})
             # raise RunTestError('...')
         for report in report_list:
-            file_name, current_time, render_content = report
+            file_name, current_time, render_content, result_stastic = report
             report_dict = {
                 "project_id": project_id,
                 "name": file_name,
                 "current_time": current_time,
                 "tester": project_obj.owner,
                 "description": "",
-                "render_content": render_content
+                "render_content": render_content,
+                "result_stastic": json.dumps(result_stastic)
             }
             report_curd.add_report(report_dict)
-        file_name, current_time, render_content = report_list[0]
+        file_name, current_time, render_content, result_stastic = report_list[0]
         return jsonify({'success': True, 'msg': '用例执行成功！', "render_content": render_content})
     except Exception as e:
         return jsonify({'success': False, 'msg': '用例执行失败！' + str(e)})
