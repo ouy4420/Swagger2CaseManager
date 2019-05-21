@@ -174,14 +174,46 @@
           step_id: ''
         };
       },
+      check_value_type() {
+        // 参数校验之选择value_type --------------------------------------
+        if (this.validateForm["expected_type"] === "") {
+          this.$alert('请选择期望值的参数类型！', '注意', {
+            confirmButtonText: '确定',
+            callback: action => {
+
+            }
+          });
+
+          return false
+        }
+        // 参数校验之校验value_type对应的value --------------------------------------
+        if (this.validateForm.expected_type === "int") {
+          var value = Number(this.validateForm.expected);
+          if (window.isNaN(value)) {
+            this.reset_validate_form();
+            this.$alert('非Int类型格式数据，请校验后重新编辑！', '注意', {
+              confirmButtonText: '确定',
+              callback: action => {
+
+              }
+            });
+            return false
+          }
+        }
+        return true
+      },
       handleConfirm() {
         this.$refs["validateForm"].validate((valid) => {
           if (valid) {
+            var flag = this.check_value_type();
+            if (flag === false) {
+              return
+            }
+
             // 新建或编辑框中的数据校验通过后，将弹框隐藏掉
             this.DialogVisible = false;
             let obj;
             if (this.validateForm.id === '') {
-              console.log("this.stepItem: ", this.stepItem)
               this.validateForm.step_id = this.stepItem.step_id;
               obj = this.$api.addValidate({"validateForm": this.validateForm});     // 没有就新建
             } else {
