@@ -1,3 +1,5 @@
+import json
+
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import Report, Project
@@ -56,7 +58,7 @@ def get_page(page, project_id):
     if length % per_page > 0:
         pages += 1
     offset = per_page * (page - 1)
-    page_rets = all_rets[offset:offset+per_page]
+    page_rets = all_rets[offset:offset + per_page]
     return all_rets, page_rets, pages
 
 
@@ -70,13 +72,14 @@ class ReportList(Resource):
             all_rets, page_rets, pages = get_page(page, id)
             for report in page_rets:
                 index = all_rets.index(report) + 1
-                report_list.append(
-                    {"index": index,
-                     "id": report.id,
-                     "name": report.name,
-                     "current_time": report.current_time,
-                     "tester": report.tester,
-                     "description": report.description})
+                item = {"index": index,
+                        "id": report.id,
+                        "name": report.name,
+                        "current_time": report.current_time,
+                        "tester": report.tester,
+                        "description": report.description}
+                item.update(json.loads(report.result_stastic))
+                report_list.append(item)
             page_previous, page_next = None, None
             if page > 1:
                 page_previous = page - 1
