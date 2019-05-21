@@ -1,7 +1,7 @@
 import json
 import traceback
 import logging
-
+from backend.models.compress import dump_report
 mylogger = logging.getLogger("Swagger2CaseManager")
 
 from backend.models.models import Project, \
@@ -11,14 +11,20 @@ from backend.models.models import Project, \
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
+# engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
+#                        # echo=True,
+#                        isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
+#                        pool_size=8,
+#                        max_overflow=10,
+#                        pool_timeout=30,
+#                        pool_pre_ping=True)
+engine = create_engine("mysql+pymysql://root:ate.sqa@192.168.72.128:3306/swagger?charset=utf8",
                        # echo=True,
                        isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
                        pool_size=8,
                        max_overflow=10,
                        pool_timeout=30,
                        pool_pre_ping=True)
-
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -1019,9 +1025,10 @@ class ReportCURD:
     @staticmethod
     def add_report(report):
         try:
+            render_content = dump_report(report["render_content"])
             report_obj = Report(name=report['name'],
                                 current_time=report["current_time"],
-                                render_content=report["render_content"],
+                                render_content=render_content,
                                 tester=report["tester"],
                                 description=report["description"],
                                 project_id=report["project_id"])
