@@ -1029,6 +1029,7 @@ class ReportCURD:
             report_obj = Report(name=report['name'],
                                 current_time=report["current_time"],
                                 render_content=render_content,
+                                result_stastic=report["result_stastic"],
                                 tester=report["tester"],
                                 description=report["description"],
                                 project_id=report["project_id"])
