@@ -191,6 +191,7 @@ class Report(Base):
     render_content = Column(TEXT, nullable=False, comment="Html Code")
     tester = Column(VARCHAR(100), nullable=False, comment="测试人员")
     description = Column(VARCHAR(1000), nullable=False, comment="报告描述")
+    result_stastic = Column(VARCHAR(2000), nullable=False, comment="报告统计")
     project_id = Column(Integer, nullable=False, comment="project外键")
 
     __table_args__ = (
