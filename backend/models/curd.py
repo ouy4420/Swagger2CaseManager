@@ -12,13 +12,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
-                       encoding='utf-8',
                        # echo=True,
                        isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
-                       max_overflow=5,
                        pool_size=8,
-                       pool_recycle=60 * 60 * 2,  # 设置pool_recycle参数在超时设定的时间(秒)后自动重新建立连接, 每过两小时建立一个新连接
-                       )
+                       max_overflow=10,
+                       pool_timeout=30,
+                       pool_pre_ping=True)
 
 Session = sessionmaker(bind=engine)
 session = Session()
