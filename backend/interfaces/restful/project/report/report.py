@@ -2,6 +2,7 @@ from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import Report, Project
 from backend.models.curd import ReportCURD, session
+from backend.models.compress import load_report
 
 curd = ReportCURD()
 parser = reqparse.RequestParser()
@@ -17,9 +18,10 @@ class ReportItem(Resource):
     def get(self, report_id):
         try:
             report = session.query(Report).filter_by(id=report_id).first()
+            render_content = load_report(report.render_content)
             rst = make_response(jsonify({"success": True,
                                          "msg": "",
-                                         "render_content": report.render_content
+                                         "render_content": render_content
                                          }))
             return rst
         except Exception as e:
@@ -54,7 +56,6 @@ def get_page(page, project_id):
     if length % per_page > 0:
         pages += 1
     offset = per_page * (page - 1)
-    # page_rets = session.query(Report).filter_by(project_id=project_id).limit(per_page).offset(offset).all()
     page_rets = all_rets[offset:offset+per_page]
     return all_rets, page_rets, pages
 
