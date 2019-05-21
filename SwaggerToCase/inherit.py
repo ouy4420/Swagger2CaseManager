@@ -18,6 +18,12 @@ class MyHttpRunner(HttpRunner):
         """
         # 获取所需参数 -------------------------------------------------------------------------------------------------
         summary = self.summary
+        result_stastic= {
+            "testsRun": summary["stat"]["testsRun"],
+            "successes": summary["stat"]["successes"],
+            "errors": summary["stat"]["errors"],
+            "failures": summary["stat"]["failures"],
+            "skipped": summary["stat"]["skipped"]}
         report_name = kwargs.get("report_name", None)
         file_name = kwargs.get("file_name", None)
         dir_name = kwargs.get("dir_name", None)
@@ -72,7 +78,7 @@ class MyHttpRunner(HttpRunner):
                 fp_w.write(rendered_content)
                 logger.log_info("Generated Html report: {}".format(report_path))
 
-                return rendered_content
+                return rendered_content, result_stastic
 
 
 runner = MyHttpRunner()
@@ -97,11 +103,11 @@ def run(testcases_dir, testcases):
             report_name = case.rsplit(".", 1)[0]
             file_name = case
             current_time = datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H_%M_%S')
-            rendered_content = runner.gen_html_report(
+            rendered_content, result_stastic = runner.gen_html_report(
                 report_name=report_name,
                 file_name=file_name,
                 dir_name=dir_name,
                 html_report_template="default_report_template.html"
             )
-            report_list.append((report_name, current_time, rendered_content))
+            report_list.append((report_name, current_time, rendered_content, result_stastic))
     return report_list
