@@ -20,7 +20,7 @@
         title="编辑Header"
         :visible.sync="innerVisible_headers"
         append-to-body>
-        <headers :headers="apiForm.headers"  @set_header="get_header"></headers>
+        <headers :headers="apiForm.headers" @set_header="get_header"></headers>
       </el-dialog>
 
       <el-dialog
@@ -165,6 +165,7 @@
 <script>
   import Headers from "./headers/headers"
   import Params from "./params/params"
+
   export default {
     name: "APIList",
     props: ["apiList"],
@@ -212,18 +213,25 @@
       }
     },
     methods: {
-      get_header(headers){
+      get_header(headers) {
         this.innerVisible_headers = false;
-        this.apiForm.headers = JSON.stringify(headers, null, 2);
+        this.apiForm.headers = headers;
       },
-       get_params(params){
+      get_params(params) {
         this.innerVisible_params = false;
-        this.apiForm.params = JSON.stringify(params, null, 2);
+        this.apiForm.params = params;
         console.log(params)
       },
       handleAdd() {
         this.DialogVisible = true;           // 弹出添加框
         this.DialogTitle = '添加API'     // 设置dialog title
+      },
+      make_array(obj) {
+        let arr = [];
+        for (let key in obj) {
+          arr.push({key: key, value: obj[key]});
+        }
+        return arr
       },
       handleEdit(index, row) {
         this.DialogVisible = true;           // 弹出编辑框
@@ -234,8 +242,8 @@
         this.apiForm.def = row['defname'];
         this.apiForm.method = row['method'];
         this.apiForm.url = row["url"];
-        this.apiForm.params = JSON.stringify(row["params"], null, 2);
-        this.apiForm.headers = JSON.stringify(row["headers"], null, 2);
+        this.apiForm.params = this.make_array(row["params"]);
+        this.apiForm.headers = this.make_array(row["headers"]);
         this.apiForm.id = row['id'];
         this.apiForm.body_type = row['body_type'];
       },
@@ -275,7 +283,7 @@
         this.$refs["apiForm"].validate((valid) => {
             if (valid) {
               if (this.apiForm["def"].indexOf("$data") < 0 && this.apiForm["body_type"] !== "Null") {
-                this.$alert('请选择正确的Body类型！', '注意', {
+                this.$alert('API调用与Body类型不匹配！', '注意', {
                   confirmButtonText: '确定',
                   callback: action => {
                   }
