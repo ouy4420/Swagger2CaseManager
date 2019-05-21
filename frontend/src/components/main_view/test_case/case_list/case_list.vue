@@ -280,11 +280,7 @@
             var newWin = window.open("", "_blank");
             newWin.document.write(render_content)
           } else {
-            this.$notify.error({
-              position: "top-left",
-              message: resp["msg"],
-              duration: 6000
-            });
+            this.failure(resp)
           }
         });
         this.base_url = ""
