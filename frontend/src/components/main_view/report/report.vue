@@ -20,7 +20,7 @@
         >
           <el-table-column
             label="编号"
-            width="200"
+            width="50"
             align="center"
           >
             <template slot-scope="scope">
@@ -48,7 +48,7 @@
 
           <el-table-column
             label="生成时间"
-            width="200"
+            width="160"
             align="center"
           >
             <template slot-scope="scope">
@@ -57,12 +57,39 @@
           </el-table-column>
           <el-table-column
             label="测试人员"
-            width="200"
+            width="100"
             align="center"
           >
             <template slot-scope="scope">
               <span>{{ scope.row.tester }}</span>
             </template>
+          </el-table-column>
+          <el-table-column label="报告统计">
+            <el-table-column
+              prop="testsRun"
+              label="testsRun"
+              width="85">
+            </el-table-column>
+            <el-table-column
+              prop="successes"
+              label="successes"
+              width="95">
+            </el-table-column>
+            <el-table-column
+              prop="failures"
+              label="failures"
+              width="75">
+            </el-table-column>
+            <el-table-column
+              prop="skipped"
+              label="skipped"
+              width="75">
+            </el-table-column>
+            <el-table-column
+              prop="errors"
+              label="errors"
+              width="62">
+            </el-table-column>
           </el-table-column>
           <el-table-column
             label="报告描述"
@@ -113,12 +140,12 @@
             首页
           </el-button>
           <el-button
-                     type="info"
-                     round
-                     size="small"
-                     icon="el-icon-d-arrow-left"
-                     :disabled="page.page_previous === null "
-                     @click="getPagination(page.page_previous)"
+            type="info"
+            round
+            size="small"
+            icon="el-icon-d-arrow-left"
+            :disabled="page.page_previous === null "
+            @click="getPagination(page.page_previous)"
           >
             上一页
           </el-button>
@@ -223,26 +250,26 @@
         })
       },
       editDescription(index, row) {
-      this.$prompt('请输入报告描述信息', '编辑报告描述', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputPattern: /[^\u4e00-\u9fa5]+/,
-        inputErrorMessage: '请勿输入中文！！'
-      }).then(({value}) => {
-        // 提示成功消息
-        this.$message({
-          type: 'success',
-          message: '报告描述信息是: ' + value
+        this.$prompt('请输入报告描述信息', '编辑报告描述', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /[^\u4e00-\u9fa5]+/,
+          inputErrorMessage: '请勿输入中文！！'
+        }).then(({value}) => {
+          // 提示成功消息
+          this.$message({
+            type: 'success',
+            message: '报告描述信息是: ' + value
+          });
+          // 更新测试用例名称
+          this.updateReport(row.id, value);
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '取消输入'
+          });
         });
-        // 更新测试用例名称
-        this.updateReport(row.id, value);
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '取消输入'
-        });
-      });
-    }
+      }
     },
     mounted() {
       this.getPagination(1);
