@@ -227,6 +227,9 @@
         this.DialogTitle = '添加API'     // 设置dialog title
       },
       make_array(obj) {
+        if (Object.keys(obj).length === 0){
+          return [{key: "", value: ""}]
+        }
         let arr = [];
         for (let key in obj) {
           arr.push({key: key, value: obj[key]});
@@ -236,7 +239,8 @@
       handleEdit(index, row) {
         this.DialogVisible = true;           // 弹出编辑框
         this.DialogTitle = '编辑API';  // 设置dialog title
-        console.log("row: ", row)
+        console.log("handleEdit: row", row)
+        console.log("handleEdit: this.apiForm.params", row["params"])
         // 显示要编辑的数据 ---------------------------------------
         this.apiForm.name = row['name'];
         this.apiForm.def = row['defname'];
@@ -282,6 +286,7 @@
       handleConfirm() {
         this.$refs["apiForm"].validate((valid) => {
             if (valid) {
+
               if (this.apiForm["def"].indexOf("$data") < 0 && this.apiForm["body_type"] !== "Null") {
                 this.$alert('API调用与Body类型不匹配！', '注意', {
                   confirmButtonText: '确定',
