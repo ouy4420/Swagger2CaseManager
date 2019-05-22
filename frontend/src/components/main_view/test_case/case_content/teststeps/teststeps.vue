@@ -6,8 +6,8 @@
         <el-button type="danger"
                    icon="el-icon-delete"
                    circle @click="delete_step(item.step_id)"
-                   v-if="index !== 0"
         >
+         <!--v-if="index !== 0"-->
         </el-button>
         <span style="font-size: 25px">TestStep{{index + 1}}: {{item.test.api}}</span>
       </div>
