@@ -3,7 +3,7 @@ from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 import re
 # ----------------------------------------------------------------------------------------------------------------------
-from backend.models.models import API, Project
+from backend.models.models import API, Project, StepCase
 from backend.models.curd import APICURD, Session
 
 curd = APICURD()
@@ -168,7 +168,19 @@ class APILIst(Resource):
 
     def delete(self):
         args = parser.parse_args()
-        status, msg = curd.delete_api(args["api_id"])  # 这句会涉及数据库操作，但session是curd中的，对应出错时在那边进行回滚
+        api_id = args["api_id"]
+        session = Session()
+        try:
+            api = session.query(API).filter_by(id=api_id).first()
+            step = session.query(StepCase).filter_by(api_name=api.api_func).first()
+            if step:
+                rst = make_response(jsonify({"success": False, "msg": "此API已被TestStep所引用，不能被删除"}))
+                return rst
+        except Exception as e:
+            session.rollback()
+        finally:
+            session.close()
+        status, msg = curd.delete_api(api_id)  # 这句会涉及数据库操作，但session是curd中的，对应出错时在那边进行回滚
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
 
