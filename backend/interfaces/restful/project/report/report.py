@@ -6,6 +6,9 @@ from backend.models.models import Report, Project
 from backend.models.curd import ReportCURD, session
 from backend.models.compress import load_report
 
+from .send_mail import MailSend
+from .mail_check import check_waykichain_mail
+
 curd = ReportCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=int)
@@ -14,6 +17,7 @@ parser.add_argument('current_time', type=str)
 parser.add_argument('name', type=str)
 parser.add_argument('tester', type=str)
 parser.add_argument('description', type=str)
+parser.add_argument('mail', type=dict)
 
 
 class ReportItem(Resource):
@@ -43,11 +47,42 @@ class ReportItem(Resource):
             rst = make_response(jsonify({"success": status, "msg": msg}))
             return rst
         except Exception as e:
-            rst = make_response(jsonify({"success": False, "msg": e}))
+            rst = make_response(jsonify({"success": False, "msg": str(e)}))
             return rst
 
     def post(self, report_id):
-        pass
+        """作为邮件发送"""
+        try:
+            args = parser.parse_args()
+            mailForm = args["mail"]
+            mail_to = mailForm["to"]
+            if not check_waykichain_mail(mail_to):
+                rst = make_response(jsonify({"success": False, "msg": "发送方邮件格式不正确，请重新编辑！"}))
+                return rst
+            if mailForm["more"]:
+                mail_more = mailForm["more"].split(";")
+                for item in mail_more:
+                    if not check_waykichain_mail(item):
+                        rst = make_response(jsonify({"success": False, "msg": "抄送方存在邮件格式不正确，请重新编辑！"}))
+                        return rst
+                mail_list = [mail_to] + mail_more
+            else:
+                mail_list = [mail_to]
+            report_obj = session.query(Report).filter(Report.id == mailForm["report_id"]).first()
+            config = {
+                "mail_from": mailForm["from"],
+                "password": mailForm["password"],
+                "mail_to": mail_list,
+                "render_content": load_report(report_obj.render_content),
+                "report_name": "{}_{}.html".format(report_obj.name, report_obj.current_time),
+                "description": mailForm["description"]
+            }
+            mail = MailSend(config)
+            mail.send()
+            make_response(jsonify({"success": True, "msg": "邮件发送成功！"}))
+        except Exception as e:
+            rst = make_response(jsonify({"success": False, "msg": "邮件发送失败！" + str(e)}))
+            return rst
 
 
 def get_page(page, project_id):
