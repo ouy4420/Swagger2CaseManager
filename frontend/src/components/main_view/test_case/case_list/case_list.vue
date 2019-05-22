@@ -22,7 +22,7 @@
       </div>
     </el-dialog>
     <div style="padding: 10px; text-align: right;">
-      <el-select style="width: 343px" v-model="base_url" placeholder="选择API调用">
+      <el-select style="width: 343px" v-model="base_url" placeholder="选择测试环境">
         <el-option
           v-for="url in url_list"
           :key="url.name"
