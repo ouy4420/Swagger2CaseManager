@@ -1,7 +1,7 @@
 import json
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
-
+import re
 # ----------------------------------------------------------------------------------------------------------------------
 from backend.models.models import API, Project
 from backend.models.curd import APICURD, Session
@@ -184,6 +184,9 @@ class APILIst(Resource):
         args = parser.parse_args()
         apiForm = args["api_obj"]
         api_func, project_id = apiForm["def"], apiForm["project_id"]
+        if re.match(r'^\w+(?:\(\)|\(\$data\))$', api_func) is None:
+            rst = make_response(jsonify({"success": False, "msg": "API调用格式不正确，请重新编辑"}))
+            return rst
         session = Session()
         try:
             obj = session.query(API).filter(API.api_func == api_func and API.project_id == project_id).first()
