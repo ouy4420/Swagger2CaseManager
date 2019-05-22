@@ -2,7 +2,7 @@ from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
 from backend.models.models import Validate
-from backend.models.curd import ValidateCURD, session
+from backend.models.curd import ValidateCURD, Session
 
 curd = ValidateCURD()
 parser = reqparse.RequestParser()
@@ -14,6 +14,7 @@ class ValidateItem(Resource):
     def get(self):
         args = parser.parse_args()
         validate_id = int(args["id"])
+        session = Session()
         try:
             validate = session.query(Validate).filter_by(id=validate_id).first()
             rst = make_response(jsonify({"success": True,
@@ -26,6 +27,8 @@ class ValidateItem(Resource):
         except Exception as e:
             session.rollback()
             return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!" + str(e)}))
+        finally:
+            session.close()
 
     def delete(self):
         args = parser.parse_args()

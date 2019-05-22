@@ -2,7 +2,7 @@ from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
 from backend.models.models import Parameters
-from backend.models.curd import ParametersCURD, session
+from backend.models.curd import ParametersCURD, Session
 
 import json
 
@@ -19,6 +19,7 @@ class ParameterItem(Resource):
     def get(self):
         args = parser.parse_args()
         parameter_id = int(args["id"])
+        session = Session()
         try:
             parameter = session.query(Parameters).filter_by(id=parameter_id).first()
             rst = make_response(jsonify({"success": True,
@@ -32,6 +33,8 @@ class ParameterItem(Resource):
         except Exception as e:
             session.rollback()
             return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!" + str(e)}))
+        finally:
+            session.close()
 
     def delete(self):
         args = parser.parse_args()

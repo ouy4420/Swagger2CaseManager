@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.interfaces.restful.project.debugtalk.execute_code import DebugCode
-from backend.models.curd import DebugTalkCURD, session
+from backend.models.curd import DebugTalkCURD
 
 curd = DebugTalkCURD
 parser = reqparse.RequestParser()

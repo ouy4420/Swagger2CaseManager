@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from . import run_test
 from backend.interfaces.auth.auth_decrator import login_require
-from backend.models.curd import ReportCURD, TestCaseCURD, session
+from backend.models.curd import ReportCURD, TestCaseCURD, Session
 from backend.models.models import Project, VariablesEnv, DebugTalk
 
 from SwaggerToCase.dumper import DumpFile
@@ -19,6 +19,7 @@ class RunTestError(ValueError):
 @run_test.route('/api/waykichain/run_test/', methods=['POST'])
 @login_require
 def run_test():
+    session = Session()
     try:
         # 解析参数
         case_list = request.json.get('case_list')
@@ -95,3 +96,5 @@ def run_test():
         return jsonify({'success': True, 'msg': '用例执行成功！', "render_content": render_content})
     except Exception as e:
         return jsonify({'success': False, 'msg': '用例执行失败！' + str(e)})
+    finally:
+        session.close()

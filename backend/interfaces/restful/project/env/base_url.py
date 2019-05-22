@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import BaseURL
-from backend.models.curd import BaseURLCURD, session
+from backend.models.curd import BaseURLCURD, Session
 
 curd = BaseURLCURD()
 parser = reqparse.RequestParser()
@@ -12,6 +12,7 @@ parser.add_argument('obj', type=dict)
 
 class BaseUrl(Resource):
     def get(self):
+        session = Session()
         try:
             args = parser.parse_args()
             project_id = args["project_id"]
@@ -35,6 +36,8 @@ class BaseUrl(Resource):
                 pass
             rst = make_response(jsonify({"success": False, "msg": str(e)}))
             return rst
+        finally:
+            session.close()
 
     def post(self):
         args = parser.parse_args()

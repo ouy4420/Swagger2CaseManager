@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import VariablesGlobal
-from backend.models.curd import VarGlobalCURD, session
+from backend.models.curd import VarGlobalCURD, Session
 
 curd = VarGlobalCURD()
 parser = reqparse.RequestParser()
@@ -16,6 +16,7 @@ class VariableItem(Resource):
     def get(self):
         args = parser.parse_args()
         variable_id = int(args["id"])
+        session = Session()
         try:
             variable = session.query(VariablesGlobal).filter_by(id=variable_id).first()
             rst = make_response(jsonify({"success": True,
@@ -28,6 +29,8 @@ class VariableItem(Resource):
         except Exception as e:
             session.rollback()
             return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!" + str(e)}))
+        finally:
+            session.close()
 
     def delete(self):
         args = parser.parse_args()

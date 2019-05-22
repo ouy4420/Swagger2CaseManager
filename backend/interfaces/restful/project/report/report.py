@@ -3,7 +3,7 @@ import json
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import Report, Project
-from backend.models.curd import ReportCURD, session
+from backend.models.curd import ReportCURD, Session
 from backend.models.compress import load_report
 
 from .send_mail import MailSend
@@ -22,6 +22,7 @@ parser.add_argument('mail', type=dict)
 
 class ReportItem(Resource):
     def get(self, report_id):
+        session = Session()
         try:
             report = session.query(Report).filter_by(id=report_id).first()
             render_content = load_report(report.render_content)
@@ -33,6 +34,8 @@ class ReportItem(Resource):
         except Exception as e:
             session.rollback()
             return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!" + str(e)}))
+        finally:
+            session.close()
 
     def delete(self, report_id):
         status, msg = curd.delete_report(report_id)
@@ -52,6 +55,7 @@ class ReportItem(Resource):
 
     def post(self, report_id):
         """作为邮件发送"""
+        session = Session()
         try:
             args = parser.parse_args()
             mailForm = args["mail"]
@@ -83,9 +87,11 @@ class ReportItem(Resource):
         except Exception as e:
             rst = make_response(jsonify({"success": False, "msg": "邮件发送失败！" + str(e)}))
             return rst
+        finally:
+            session.close()
 
 
-def get_page(page, project_id):
+def get_page(page, project_id, session):
     all_rets = session.query(Report).filter_by(project_id=project_id).all()
     length = len(all_rets)
     per_page = 10
@@ -99,12 +105,13 @@ def get_page(page, project_id):
 
 class ReportList(Resource):
     def get(self):
+        session = Session()
         try:
             args = parser.parse_args()
             print("args: ", args)
             id, page = args["id"], args["page"]
             report_list = []
-            all_rets, page_rets, pages = get_page(page, id)
+            all_rets, page_rets, pages = get_page(page, id, session)
             for report in page_rets:
                 index = all_rets.index(report) + 1
                 item = {"index": index,
@@ -132,3 +139,5 @@ class ReportList(Resource):
         except Exception as e:
             rst = make_response(jsonify({"success": False, "msg": e}))
             return rst
+        finally:
+            session.close()

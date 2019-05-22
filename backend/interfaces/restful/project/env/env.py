@@ -10,14 +10,12 @@ parser.add_argument('var_id', type=int)
 parser.add_argument('page', type=int)
 parser.add_argument('var_obj', type=dict)
 
-session_in_env = Session()
 
-
-def get_page(page, project_id):
+def get_page(page, project_id, session):
     try:
-        all_rets = session_in_env.query(VariablesEnv).filter_by(project_id=project_id).all()
+        all_rets = session.query(VariablesEnv).filter_by(project_id=project_id).all()
     except Exception as e:
-        session_in_env.rollback()
+        session.rollback()
         raise e
     length = len(all_rets)
     per_page = 10
@@ -31,11 +29,12 @@ def get_page(page, project_id):
 
 class VarEnv(Resource):
     def get(self):
+        session = Session()
         try:
             args = parser.parse_args()
             id, page = args["id"], args["page"]
             var_envList = []
-            all_rets, page_rets, pages = get_page(page, id)
+            all_rets, page_rets, pages = get_page(page, id, session)
             for var_env in page_rets:
                 index = all_rets.index(var_env) + 1
                 var_envList.append(
@@ -48,7 +47,7 @@ class VarEnv(Resource):
                 page_previous = page - 1
             if page + 1 <= pages:
                 page_next = page + 1
-            project = session_in_env.query(Project).filter_by(id=id).first()
+            project = session.query(Project).filter_by(id=id).first()
             rst = make_response(jsonify({
                 "success": True,
                 "var_envList": var_envList,
@@ -59,11 +58,13 @@ class VarEnv(Resource):
             return rst
         except Exception as e:
             try:
-                session_in_env.rollback()
+                session.rollback()
             except Exception as error:
                 pass
             rst = make_response(jsonify({"success": False, "msg": str(e)}))
             return rst
+        finally:
+            session.close()
 
     def post(self):
         args = parser.parse_args()

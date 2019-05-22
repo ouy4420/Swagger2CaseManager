@@ -25,16 +25,15 @@ parser.add_argument('responsible', type=str)
 from SwaggerToCase.run import execute
 
 # ----------------------------------------------------------------------------------------------------------------------
-session_in_pro = Session()
-
 
 class ProjectItem(Resource):
     def get(self, project_id):
+        session = Session()
         try:
-            project = session_in_pro.query(Project).filter_by(id=project_id).first()
-            test_apis = session_in_pro.query(API).filter_by(project_id=project_id).all()
-            test_cases = session_in_pro.query(TestCase).filter_by(project_id=project_id).all()
-            test_reports = session_in_pro.query(Report).filter_by(project_id=project_id).all()
+            project = session.query(Project).filter_by(id=project_id).first()
+            test_apis = session.query(API).filter_by(project_id=project_id).all()
+            test_cases = session.query(TestCase).filter_by(project_id=project_id).all()
+            test_reports = session.query(Report).filter_by(project_id=project_id).all()
             detail = [
                 {"length": "{}个接口".format(len(test_apis)), "desc": "接口总数", "routerName": "APIView"},
                 {"length": "{}个用例".format(len(test_cases)), "desc": "用例总数", "routerName": "AutoTest"},
@@ -50,10 +49,12 @@ class ProjectItem(Resource):
             return rst
         except Exception as e:
             try:
-                session_in_pro.rollback()
+                session.rollback()
             except Exception as error:
                 pass
             return make_response(jsonify({"success": False, "msg": "获取项目详情失败!"}))
+        finally:
+            session.close()
 
     def delete(self, project_id):
         status, msg = curd.delete_project(project_id)
@@ -68,8 +69,8 @@ class ProjectItem(Resource):
         return rst
 
 
-def get_page(page, owner):
-    all_rets = session_in_pro.query(Project).filter_by(owner=owner).all()
+def get_page(page, owner, session):
+    all_rets = session.query(Project).filter_by(owner=owner).all()
     all_rets_reverse = all_rets[::-1]
     length = len(all_rets)
     per_page = 10
@@ -83,6 +84,7 @@ def get_page(page, owner):
 
 class ProjectList(Resource):
     def get(self):
+        session = Session()
         try:
             parser = reqparse.RequestParser()
             parser.add_argument('owner', type=str)
@@ -90,12 +92,12 @@ class ProjectList(Resource):
             args = parser.parse_args()
             owner, page = args["owner"], args["page"]
             project_list = []
-            all_rets_reverse, page_rets, pages = get_page(page, owner)
+            all_rets_reverse, page_rets, pages = get_page(page, owner, session)
             for pro in page_rets:
-                test_apis = session_in_pro.query(API).filter_by(project_id=pro.id).all()
-                test_cases = session_in_pro.query(TestCase).filter_by(project_id=pro.id).all()
-                test_reports = session_in_pro.query(Report).filter_by(project_id=pro.id).all()
-                test_baseurls = session_in_pro.query(BaseURL).filter_by(project_id=pro.id).all()
+                test_apis = session.query(API).filter_by(project_id=pro.id).all()
+                test_cases = session.query(TestCase).filter_by(project_id=pro.id).all()
+                test_reports = session.query(Report).filter_by(project_id=pro.id).all()
+                test_baseurls = session.query(BaseURL).filter_by(project_id=pro.id).all()
                 index = all_rets_reverse.index(pro) + 1
                 project_list.append(
                     {"id": pro.id,
@@ -124,21 +126,26 @@ class ProjectList(Resource):
             return rst
         except Exception as e:
             try:
-                session_in_pro.rollback()
+                session.rollback()
             except Exception as error:
                 pass
             mylogger.error("projectList获取失败！\n" + str(e))
             return make_response(jsonify({"success": False, "msg": "projectList获取失败，请重新刷新页面！" + str(e)}))
+        finally:
+            session.close()
 
     def post(self):
         args = parser.parse_args()
         args["owner"] = args["responsible"]
+        session = Session()
         try:
-            obj = session_in_pro.query(Project).filter_by(name=args["name"]).first()
+            obj = session.query(Project).filter_by(name=args["name"]).first()
         except Exception as e:
-            session_in_pro.rollback()
+            session.rollback()
             rst = make_response(jsonify({"success": False, "msg": "项目新增失败！"}))
             return rst
+        finally:
+            session.close()
         if obj is not None:
             rst = make_response(jsonify({"success": False, "msg": "项目名称已存在，请重新编辑！"}))
             return rst

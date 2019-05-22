@@ -2,7 +2,7 @@ from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 
 from backend.models.models import Extract
-from backend.models.curd import ExtractCURD, session
+from backend.models.curd import ExtractCURD, Session
 
 
 curd = ExtractCURD()
@@ -17,6 +17,7 @@ class ExtractItem(Resource):
     def get(self):
         args = parser.parse_args()
         extract_id = int(args["id"])
+        session = Session()
         try:
             extract = session.query(Extract).filter_by(id=extract_id).first()
             rst = make_response(jsonify({"success": True,
@@ -27,8 +28,13 @@ class ExtractItem(Resource):
                                          }))
             return rst
         except Exception as e:
-            session.rollback()
-            return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!" + str(e)}))
+            try:
+                session.rollback()
+            except Exception as error:
+                pass
+            return make_response(jsonify({"success": False, "msg": str(e)}))
+        finally:
+            session.close()
 
     def delete(self):
         args = parser.parse_args()

@@ -26,7 +26,7 @@ engine = create_engine("mysql+pymysql://root:ate.sqa@192.168.72.128:3306/swagger
                        pool_timeout=30,
                        pool_pre_ping=True)
 Session = sessionmaker(bind=engine)
-session = Session()
+
 
 
 class ProjectCURD:
@@ -39,6 +39,7 @@ class ProjectCURD:
         self.base_url = BaseURLCURD
 
     def add_project(self, project):
+        session = Session()
         try:
             name = project['name']
             desc = project["desc"]
@@ -54,6 +55,8 @@ class ProjectCURD:
         except Exception as e:
             session.rollback()
             return False, "Project创建失败！" + str(e)
+        finally:
+            session.close()
 
     def add_project_by_url(self):
         pass
@@ -62,6 +65,7 @@ class ProjectCURD:
         pass
 
     def delete_project(self, project_id):
+        session = Session()
         try:
             testcases_obj = session.query(TestCase).filter(TestCase.project_id == project_id).join(Project).all()
             [self.case.delete_case(test_case.id) for test_case in testcases_obj]
@@ -87,9 +91,12 @@ class ProjectCURD:
         except Exception as e:
             session.rollback()
             return False, "Project删除失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def update_project(project_id, project):
+        session = Session()
         try:
             project_obj = session.query(Project).filter(Project.id == project_id).first()
             project_obj.name = project['name']
@@ -100,6 +107,8 @@ class ProjectCURD:
         except Exception as e:
             session.rollback()
             return False, "Project更新失败！" + str(e)
+        finally:
+            session.close()
 
     def retrieve_project(self):
         pass
@@ -111,6 +120,7 @@ class TestCaseCURD:
         self.step = StepCURD()
 
     def add_case(self, args):
+        session = Session()
         try:
             try:
                 case_obj = TestCase(name=args["case_name"], project_id=args["project_id"])
@@ -152,12 +162,15 @@ class TestCaseCURD:
             session.rollback()
             mylogger.error("TestCase创建过程：失败！")
             return False, "TestCase创建过程：失败！" + str(e)
+        finally:
+            session.close()
 
     def delete_case(self, case_id):
         # session.query(TestCase).filter_by(id=case_id).delete()  # 只是这样，删不了，因为有config和stepcase通过外键引用
         # 要想删除testcase, 先删除config和teststep
         # 同理，要想删除config，先删除parameters和variables
         # 要想删除teststep，先删除api(这个不合适)、validate和extract
+        session = Session()
         try:
             try:
                 config_obj = session.query(Config).filter(Config.testcase_id == case_id).join(TestCase).first()
@@ -191,6 +204,8 @@ class TestCaseCURD:
             session.rollback()
             mylogger.error("TestCase删除过程：失败！")
             return False, "TestCase删除过程：失败！" + str(e)
+        finally:
+            session.close()
 
     def retrieve_part_cases(self, case_ids, flag=None):
         '''
@@ -199,7 +214,7 @@ class TestCaseCURD:
         :param case_ids:
         :return:
         '''
-
+        session = Session()
         try:
             test_cases = session.query(TestCase).filter(TestCase.id.in_(case_ids)).all()
             testcases = []  # 要执行的测试用例
@@ -376,6 +391,8 @@ class TestCaseCURD:
             error_location = traceback.format_exc()
             mylogger.error(error_decription + error_location)
             raise e
+        finally:
+            session.close()
 
         return case_ids, testapis, testcases
 
@@ -389,6 +406,7 @@ class ConfigCURD:
         pass
 
     def delete_config(self, config_id):
+        session = Session()
         try:
             config_obj = session.query(Config).filter(Config.id == config_id).first()
             parameters_obj = session.query(Parameters). \
@@ -401,9 +419,12 @@ class ConfigCURD:
             session.commit()
         except Exception as e:
             session.rollback()
+        finally:
+            session.close()
 
     @staticmethod
     def update_config(config):
+        session = Session()
         try:
             id = config['id']
             name = config['name']
@@ -418,6 +439,8 @@ class ConfigCURD:
         except Exception as e:
             session.rollback()
             return False, "用例名称更新失败！" + str(e)
+        finally:
+            session.close()
 
     def retrieve_config(self, config_id):
         pass
@@ -429,6 +452,7 @@ class ParametersCURD:
 
     @staticmethod
     def add_parameter(config_id, parameter):
+        session = Session()
         try:
             parameter_obj = Parameters(key=parameter['key'],
                                        value=parameter["value"],
@@ -440,9 +464,12 @@ class ParametersCURD:
         except Exception as e:
             session.rollback()
             return False, "Parameter添加失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def delete_parameter(parameter_id):
+        session = Session()
         try:
             session.query(Parameters).filter_by(id=parameter_id).delete()
             session.commit()
@@ -450,9 +477,12 @@ class ParametersCURD:
         except Exception as e:
             session.rollback()
             return False, "Parameter删除成功！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def update_parameter(parameter):
+        session = Session()
         try:
             parameter_obj = session.query(Parameters).filter(Parameters.id == parameter['id']).first()
             parameter_obj.key = parameter['key']
@@ -464,18 +494,26 @@ class ParametersCURD:
         except Exception as e:
             session.rollback()
             return False, "更新parameter失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def retrieve_parameter(parameter_id):
-        parameter = session.query(Parameters).filter_by(id=parameter_id).first()
-        element = {
-            "id": parameter.id,
-            "key": parameter.key,
-            "value": parameter.value,
-            "value_type": parameter.value_type,
-            "config_id": parameter.config_id
-        }
-        return element
+        session = Session()
+        try:
+            parameter = session.query(Parameters).filter_by(id=parameter_id).first()
+            element = {
+                "id": parameter.id,
+                "key": parameter.key,
+                "value": parameter.value,
+                "value_type": parameter.value_type,
+                "config_id": parameter.config_id
+            }
+            return element
+        except Exception as e:
+            session.rollback()
+        finally:
+            session.close()
 
 
 class VarGlobalCURD:
@@ -484,6 +522,7 @@ class VarGlobalCURD:
 
     @staticmethod
     def add_variable_global(config_id, variable):
+        session = Session()
         # 前端根据value_type做好类型校验
         try:
             variable_obj = VariablesGlobal(key=variable['key'],
@@ -496,9 +535,12 @@ class VarGlobalCURD:
         except Exception as e:
             session.rollback()
             return False, "全局变量添加失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def delete_variable_global(variable_id):
+        session = Session()
         try:
             session.query(VariablesGlobal).filter_by(id=variable_id).delete()
             session.commit()
@@ -506,9 +548,12 @@ class VarGlobalCURD:
         except Exception as e:
             session.rollback()
             return False, "全局变量删除失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def update_variable_global(variable):
+        session = Session()
         try:
             variable_obj = session.query(VariablesGlobal).filter(VariablesGlobal.id == variable['id']).first()
             variable_obj.key = variable['key']
@@ -520,23 +565,31 @@ class VarGlobalCURD:
         except Exception as e:
             session.rollback()
             return False, "全局变量更新失败" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def retrieve_variable_global(variable_id):
-        variable = session.query(VariablesGlobal).filter_by(id=variable_id).first()
+        session = Session()
         try:
-            value = json.loads(variable.value)
-        except Exception as e:
-            value = variable.value
+            variable = session.query(VariablesGlobal).filter_by(id=variable_id).first()
+            try:
+                value = json.loads(variable.value)
+            except Exception as e:
+                value = variable.value
 
-        element = {
-            "id": variable.id,
-            "key": variable.key,
-            "value": value,
-            "value_type": variable.value_type,
-            "config_id": variable.config_id
-        }
-        return element
+            element = {
+                "id": variable.id,
+                "key": variable.key,
+                "value": value,
+                "value_type": variable.value_type,
+                "config_id": variable.config_id
+            }
+            return element
+        except Exception as e:
+            session.rollback()
+        finally:
+            session.close()
 
 
 class StepCURD:
@@ -546,6 +599,7 @@ class StepCURD:
         self.extract = ExtractCURD()
 
     def add_step(self, args):
+        session = Session()
         try:
             try:
                 new_step_obj = StepCase(name=args["name"],
@@ -616,8 +670,11 @@ class StepCURD:
             session.rollback()
             mylogger.error("TestStep创建过程：失败！")
             return False, "TestStep创建过程：失败！" + str(e)
+        finally:
+            session.close()
 
     def delete_setp(self, step_id):
+        session = Session()
         try:
             step_obj = session.query(StepCase).filter(StepCase.id == step_id).first()
 
@@ -668,9 +725,12 @@ class StepCURD:
             session.rollback()
             mylogger.error("TestStep删除过程失败！")
             return False, "TestStep删除过程失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def update_step(step):
+        session = Session()
         try:
             step_obj = session.query(StepCase).filter(StepCase.id == step['id']).first()
             step_obj.name = step['step_name']
@@ -680,6 +740,8 @@ class StepCURD:
         except Exception as e:
             session.rollback()
             return False, "Step名称更新失败！" + str(e)
+        finally:
+            session.close()
 
     def retrieve_step(self, step_id):
         pass
@@ -691,6 +753,7 @@ class VarLocalCURD:
 
     @staticmethod
     def add_variable_local(stepcase_id, variable):
+        session = Session()
         try:
             # 注意：这里variable是字符串（传进来需要json转换）
             variable_obj = VariablesLocal(key=variable['key'],
@@ -703,9 +766,12 @@ class VarLocalCURD:
         except Exception as e:
             session.rollback()
             return False, "局部变量添加失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def delete_variable_local(variable_id):
+        session = Session()
         try:
             session.query(VariablesLocal).filter_by(id=variable_id).delete()
             session.commit()
@@ -713,9 +779,12 @@ class VarLocalCURD:
         except Exception as e:
             session.rollback()
             return False, "局部变量删除失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def update_variable_local(variable):
+        session = Session()
         try:
             variable_obj = session.query(VariablesLocal).filter(VariablesLocal.id == variable['id']).first()
             variable_obj.key = variable['key']
@@ -727,6 +796,8 @@ class VarLocalCURD:
         except Exception as e:
             session.rollback()
             return False, "局部变量更新失败" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def retrieve_variable_local(variable_id):
@@ -735,15 +806,21 @@ class VarLocalCURD:
         :param variable_id:
         :return:
         """
-        variable = session.query(VariablesLocal).filter_by(id=variable_id).first()
-        element = {
-            "id": variable.id,
-            "key": variable.key,
-            "value": json.loads(variable.value),
-            "value_type": json.loads(variable.value),
-            "stepcase_id": variable.stepcase_id
-        }
-        return element
+        session = Session()
+        try:
+            variable = session.query(VariablesLocal).filter_by(id=variable_id).first()
+            element = {
+                "id": variable.id,
+                "key": variable.key,
+                "value": json.loads(variable.value),
+                "value_type": json.loads(variable.value),
+                "stepcase_id": variable.stepcase_id
+            }
+            return element
+        except Exception as e:
+            session.rollback()
+        finally:
+            session.close()
 
 
 class ValidateCURD:
@@ -752,6 +829,7 @@ class ValidateCURD:
 
     @staticmethod
     def add_validate(step_id, validate):
+        session = Session()
         try:
             validate_obj = Validate(comparator=validate['comparator'],
                                     check=validate["check"],
@@ -764,9 +842,12 @@ class ValidateCURD:
         except Exception as e:
             session.rollback()
             return False, "Validate添加失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def delete_validate(validate_id):
+        session = Session()
         try:
             session.query(Validate).filter_by(id=validate_id).delete()
             session.commit()
@@ -774,9 +855,12 @@ class ValidateCURD:
         except Exception as e:
             session.rollback()
             return False, "Validate删除失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def update_validate(validate):
+        session = Session()
         try:
             validate_obj = session.query(Validate).filter(Validate.id == validate['id']).first()
             validate_obj.comparator = validate['comparator']
@@ -789,19 +873,27 @@ class ValidateCURD:
         except Exception as e:
             session.rollback()
             return False, "Validate更新失败" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def retrieve_validate(validate_id):
-        validate = session.query(Validate).filter_by(id=validate_id).first()
-        element = {
-            "id": validate.id,
-            "comparator": validate.comparator,
-            "check": validate.check,
-            "expected": validate.expected,
-            "expected_type": validate.expected_type,
-            "stepcase_id": validate.stepcase_id
-        }
-        return element
+        session = Session()
+        try:
+            validate = session.query(Validate).filter_by(id=validate_id).first()
+            element = {
+                "id": validate.id,
+                "comparator": validate.comparator,
+                "check": validate.check,
+                "expected": validate.expected,
+                "expected_type": validate.expected_type,
+                "stepcase_id": validate.stepcase_id
+            }
+            return element
+        except Exception as e:
+            session.rollback()
+        finally:
+            session.close()
 
 
 class ExtractCURD:
@@ -810,6 +902,7 @@ class ExtractCURD:
 
     @staticmethod
     def add_extract(step_id, extract):
+        session = Session()
         try:
             extract_obj = Extract(key=extract['key'],
                                   value=extract["value"],
@@ -820,9 +913,12 @@ class ExtractCURD:
         except Exception as e:
             session.rollback()
             return False, "Extract添加失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def delete_extract(extract_id):
+        session = Session()
         try:
             session.query(Extract).filter_by(id=extract_id).delete()
             session.commit()
@@ -830,9 +926,12 @@ class ExtractCURD:
         except Exception as e:
             session.rollback()
             return False, "Extract删除失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def update_extract(extract):
+        session = Session()
         try:
             extract_obj = session.query(Extract).filter(Extract.id == extract['id']).first()
             extract_obj.key = extract['key']
@@ -843,17 +942,25 @@ class ExtractCURD:
         except Exception as e:
             session.rollback()
             return False, "Extract更新失败" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def retrieve_extract(extract_id):
-        extract = session.query(Extract).filter_by(id=extract_id).first()
-        element = {
-            "id": extract.id,
-            "key": extract.key,
-            "value": extract.value,
-            "stepcase_id": extract.stepcase_id
-        }
-        return element
+        session = Session()
+        try:
+            extract = session.query(Extract).filter_by(id=extract_id).first()
+            element = {
+                "id": extract.id,
+                "key": extract.key,
+                "value": extract.value,
+                "stepcase_id": extract.stepcase_id
+            }
+            return element
+        except Exception as e:
+            session.rollback()
+        finally:
+            session.close()
 
 
 class APICURD:
@@ -861,6 +968,7 @@ class APICURD:
         pass
 
     def add_api(self, project_id, api):
+        session = Session()
         try:
             test_api = api["api"]
             api_func = test_api["def"]
@@ -879,8 +987,11 @@ class APICURD:
         except Exception as e:
             session.rollback()
             return False, "API新增失败！" + str(e)
+        finally:
+            session.close()
 
     def delete_api(self, api_id):
+        session = Session()
         try:
             session.query(API).filter_by(id=api_id).delete()
             session.commit()
@@ -888,8 +999,11 @@ class APICURD:
         except Exception as e:
             session.rollback()
             return False, "API删除失败！" + str(e)
+        finally:
+            session.close()
 
     def update_api(self, api_id, api):
+        session = Session()
         try:
             api_obj = session.query(API).filter(API.id == api_id).first()
             test_api = api["api"]
@@ -904,6 +1018,8 @@ class APICURD:
         except Exception as e:
             session.rollback()
             return False, "API更新失败！" + str(e)
+        finally:
+            session.close()
 
 
 class DebugTalkCURD:
@@ -911,6 +1027,7 @@ class DebugTalkCURD:
         pass
 
     def add_debugtalk(self, project_id):
+        session = Session()
         try:
             debugtalk_obj = DebugTalk(
                 code="# drive code for your project",
@@ -922,9 +1039,12 @@ class DebugTalkCURD:
         except Exception as e:
             session.rollback()
             return False, "debugtalk新增失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def update_debugtalk(project_id, code):
+        session = Session()
         try:
             obj = session.query(DebugTalk).filter_by(project_id=project_id).first()
             if obj:
@@ -937,9 +1057,12 @@ class DebugTalkCURD:
         except Exception as e:
             session.rollback()
             return False, "DebugTalk保存失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def delete_debugtalk(debugtalk_id):
+        session = Session()
         try:
             session.query(DebugTalk).filter_by(id=debugtalk_id).delete()
             session.commit()
@@ -947,17 +1070,23 @@ class DebugTalkCURD:
         except Exception as e:
             session.rollback()
             return False, "debugtalk删除失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def retrieve_debugtalk(project_id):
+        session = Session()
         try:
             obj = session.query(DebugTalk).filter_by(project_id=project_id).first()
             return obj.id, obj.code
         except Exception as e:
+            session.rollback()
             error_decription = "获取debugtalk代码失败！\n"
             error_location = traceback.format_exc()
             mylogger.error(error_decription + error_location)
             raise e
+        finally:
+            session.close()
 
 
 class VarEnvCURD:
@@ -966,6 +1095,7 @@ class VarEnvCURD:
 
     @staticmethod
     def add_variable_env(project_id, variable):
+        session = Session()
         try:
             # 注意：这里variable是字符串（传进来需要json转换）
             variable_obj = VariablesEnv(key=variable['key'],
@@ -977,9 +1107,12 @@ class VarEnvCURD:
         except Exception as e:
             session.rollback()
             return False, "环境变量添加失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def delete_variable_env(variable_id):
+        session = Session()
         try:
             session.query(VariablesEnv).filter_by(id=variable_id).delete()
             session.commit()
@@ -987,9 +1120,12 @@ class VarEnvCURD:
         except Exception as e:
             session.rollback()
             return False, "环境变量删除失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def update_variable_env(variable):
+        session = Session()
         try:
             variable_obj = session.query(VariablesEnv).filter(VariablesEnv.id == variable['id']).first()
             variable_obj.key = variable['key']
@@ -1000,6 +1136,8 @@ class VarEnvCURD:
         except Exception as e:
             session.rollback()
             return False, "环境变量更新失败" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def retrieve_variable_env(variable_id):
@@ -1008,14 +1146,20 @@ class VarEnvCURD:
         :param variable_id:
         :return:
         '''
-        variable = session.query(VariablesEnv).filter_by(id=variable_id).first()
-        element = {
-            "id": variable.id,
-            "key": variable.key,
-            "value": json.loads(variable.value),
-            "project_id": variable.project_id
-        }
-        return element
+        session = Session()
+        try:
+            variable = session.query(VariablesEnv).filter_by(id=variable_id).first()
+            element = {
+                "id": variable.id,
+                "key": variable.key,
+                "value": json.loads(variable.value),
+                "project_id": variable.project_id
+            }
+            return element
+        except Exception as e:
+            session.rollback()
+        finally:
+            session.close()
 
 
 class ReportCURD:
@@ -1024,6 +1168,7 @@ class ReportCURD:
 
     @staticmethod
     def add_report(report):
+        session = Session()
         try:
             render_content = dump_report(report["render_content"])
             report_obj = Report(name=report['name'],
@@ -1039,9 +1184,12 @@ class ReportCURD:
         except Exception as e:
             session.rollback()
             return False, "Report创建失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def delete_report(report_id):
+        session = Session()
         try:
             session.query(Report).filter_by(id=report_id).delete()
             session.commit()
@@ -1049,9 +1197,12 @@ class ReportCURD:
         except Exception as e:
             session.rollback()
             return False, "Report删除失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def update_report(report):
+        session = Session()
         try:
             id = report['id']
             description = report['description']
@@ -1063,6 +1214,8 @@ class ReportCURD:
         except Exception as e:
             session.rollback()
             return False, "报告更新失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def retrieve_variable_env(variable_id):
@@ -1071,14 +1224,20 @@ class ReportCURD:
         :param variable_id:
         :return:
         '''
-        variable = session.query(VariablesEnv).filter_by(id=variable_id).first()
-        element = {
-            "id": variable.id,
-            "key": variable.key,
-            "value": json.loads(variable.value),
-            "project_id": variable.project_id
-        }
-        return element
+        session = Session()
+        try:
+            variable = session.query(VariablesEnv).filter_by(id=variable_id).first()
+            element = {
+                "id": variable.id,
+                "key": variable.key,
+                "value": json.loads(variable.value),
+                "project_id": variable.project_id
+            }
+            return element
+        except Exception as e:
+            session.rollback()
+        finally:
+            session.close()
 
 
 class BaseURLCURD:
@@ -1087,6 +1246,7 @@ class BaseURLCURD:
 
     @staticmethod
     def add_base_url(project_id, env_config):
+        session = Session()
         try:
             base_url_obj = BaseURL(name=env_config['name'],
                                    value=env_config["value"],
@@ -1097,9 +1257,12 @@ class BaseURLCURD:
         except Exception as e:
             session.rollback()
             return False, "环境添加失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def delete_base_url(url_id):
+        session = Session()
         try:
             session.query(BaseURL).filter_by(id=url_id).delete()
             session.commit()
@@ -1107,9 +1270,12 @@ class BaseURLCURD:
         except Exception as e:
             session.rollback()
             return False, "环境删除失败！" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def update_base_url(env_config):
+        session = Session()
         try:
             base_url_obj = session.query(BaseURL).filter(BaseURL.id == env_config['id']).first()
             base_url_obj.name = env_config['name']
@@ -1120,6 +1286,8 @@ class BaseURLCURD:
         except Exception as e:
             session.rollback()
             return False, "环境更新失败" + str(e)
+        finally:
+            session.close()
 
     @staticmethod
     def retrieve_base_url(url_id):
@@ -1128,11 +1296,17 @@ class BaseURLCURD:
         :param variable_id:
         :return:
         '''
-        base_url_obj = session.query(BaseURL).filter_by(id=url_id).first()
-        element = {
-            "id": base_url_obj.id,
-            "name": base_url_obj.name,
-            "value": json.loads(base_url_obj.value),
-            "project_id": base_url_obj.project_id
-        }
-        return element
+        session = Session()
+        try:
+            base_url_obj = session.query(BaseURL).filter_by(id=url_id).first()
+            element = {
+                "id": base_url_obj.id,
+                "name": base_url_obj.name,
+                "value": json.loads(base_url_obj.value),
+                "project_id": base_url_obj.project_id
+            }
+            return element
+        except Exception as e:
+            session.rollback()
+        finally:
+            session.close()

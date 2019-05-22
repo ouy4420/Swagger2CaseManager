@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
 from backend.models.models import VariablesLocal
-from backend.models.curd import VarLocalCURD, session
+from backend.models.curd import VarLocalCURD, Session
 
 curd = VarLocalCURD()
 parser = reqparse.RequestParser()
@@ -11,10 +11,12 @@ parser.add_argument('key', type=str)
 parser.add_argument('value', type=str)
 parser.add_argument('value_type', type=str)
 
+
 class VariableLocalItem(Resource):
     def get(self):
         args = parser.parse_args()
         variable_id = int(args["id"])
+        session = Session()
         try:
             variable = session.query(VariablesLocal).filter_by(id=variable_id).first()
             rst = make_response(jsonify({"success": True,
@@ -27,6 +29,8 @@ class VariableLocalItem(Resource):
         except Exception as e:
             session.rollback()
             return make_response(jsonify({"success": False, "msg": "sql error ==> rollback!" + str(e)}))
+        finally:
+            session.close()
 
     def delete(self):
         args = parser.parse_args()

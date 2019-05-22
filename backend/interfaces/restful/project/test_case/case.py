@@ -20,46 +20,46 @@ parser.add_argument('case_name', type=str)
 parser.add_argument('case_id', type=str)
 
 # ----------------------------------------------------------------------------------------------------------------------
-session_in_case = Session()
 
 
-def parse_case_body(case):
-    config = session_in_case.query(Config).filter_by(testcase_id=case.id).first()
+def parse_case_body(case, session):
+    config = session.query(Config).filter_by(testcase_id=case.id).first()
     parsed_case = {
         "name": config.name,
     }
     return parsed_case
 
 
-def get_page(page):
-    all_rets = session_in_case.query(TestCase).filter_by(project_id=1).all()
+def get_page(page, session):
+    all_rets = session.query(TestCase).filter_by(project_id=1).all()
     length = len(all_rets)
     per_page = 10
     pages = length // per_page
     if length % per_page > 0:
         pages += 1
     offset = per_page * (page - 1)
-    page_rets = session_in_case.query(TestCase).filter_by(project_id=1).limit(per_page).offset(offset).all()
+    page_rets = session.query(TestCase).filter_by(project_id=1).limit(per_page).offset(offset).all()
     return all_rets, page_rets, pages
 
 
 class CaseListPage(Resource):
     def get(self):
+        session = Session()
         try:
             args = parser.parse_args()
             id, page = args["id"], args["page"]
             case_list = []
 
             try:
-                all_rets, page_rets, pages = get_page(page)
+                all_rets, page_rets, pages = get_page(page, session)
                 for case in page_rets:
-                    parsed_case = parse_case_body(case)
+                    parsed_case = parse_case_body(case, session)
                     parsed_case["index"] = all_rets.index(case) + 1
                     parsed_case["id"] = case.id
                     case_list.append(parsed_case)
             except Exception as e:
                 try:
-                    session_in_case.rollback()
+                    session.rollback()
                 except Exception as e:
                     pass
                 error_decription = "获取case数据失败！\n"
@@ -71,7 +71,7 @@ class CaseListPage(Resource):
                 page_previous = page - 1
             if page + 1 <= pages:
                 page_next = page + 1
-            project = session_in_case.query(Project).filter_by(id=id).first()
+            project = session.query(Project).filter_by(id=id).first()
             rst = make_response(jsonify({"success": True, "msg": "", "caseList": case_list,
                                          "projectInfo": {"name": project.name, "desc": project.desc},
                                          "page": {"page_now": page,
@@ -80,12 +80,14 @@ class CaseListPage(Resource):
             return rst
         except Exception as e:
             try:
-                session_in_case.rollback()
+                session.rollback()
             except Exception as error:
                 pass
             mylogger.error("获取CASE分页数据失败！\n")
             rst = make_response(jsonify({"success": False, "msg": "获取CASE分页数据失败！" + str(e)}))
             return rst
+        finally:
+            session.close()
 
     def delete(self):
         pass
@@ -102,33 +104,36 @@ class CaseList(Resource):
         args = parser.parse_args()
         id = args["id"]
         case_list = []
+        session = Session()
         try:
             try:
-                all_rets = session_in_case.query(TestCase).filter_by(project_id=id).all()
+                all_rets = session.query(TestCase).filter_by(project_id=id).all()
             except Exception as e:
                 error_decription = "获取case_list数据失败！\n"
                 error_location = traceback.format_exc()
                 mylogger.error(error_decription + error_location)
                 raise e
             for case in all_rets:
-                parsed_case = parse_case_body(case)
+                parsed_case = parse_case_body(case, session)
                 parsed_case["index"] = all_rets.index(case) + 1
                 parsed_case["id"] = case.id
                 case_list.append(parsed_case)
 
-            project = session_in_case.query(Project).filter_by(id=id).first()
+            project = session.query(Project).filter_by(id=id).first()
             rst = make_response(jsonify({"success": True, "msg": "", "caseList": case_list,
                                          "projectInfo": {"name": project.name, "desc": project.desc}
                                          }))
             return rst
         except Exception as e:
             try:
-                session_in_case.rollback()
+                session.rollback()
             except Exception as error:
                 pass
             mylogger.error("获取CASEList失败！\n")
-            rst = make_response(jsonify({"success": False, "msg": "获取CASEList失败！" + str(e)}))
+            rst = make_response(jsonify({"success": False, "msg": "操作过于频繁，请稍后重试！" + str(e)}))
             return rst
+        finally:
+            session.close()
 
     def delete(self):
         args = parser.parse_args()
@@ -172,10 +177,6 @@ class CaseItem(Resource):
                                           "config": config,
                                           "case_id": case_id}))
         except Exception as e:
-            try:
-                session_in_case.rollback()
-            except Exception as error:
-                pass
             mylogger.error("获取CaseItem失败！\n")
             rst = make_response(jsonify({"success": False, "msg": "操作过于频繁，请稍后重试！！"}))
             return rst

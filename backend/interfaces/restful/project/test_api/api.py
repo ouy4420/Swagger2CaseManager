@@ -14,9 +14,6 @@ parser.add_argument('api_obj', type=dict)
 parser.add_argument('api_id', type=str)
 
 # ----------------------------------------------------------------------------------------------------------------------
-session_in_api = Session()
-
-# ----------------------------------------------------------------------------------------------------------------------
 import traceback
 import logging
 
@@ -37,8 +34,8 @@ def parse_api_body(api):
     return parsed_api
 
 
-def get_page(page, project_id):
-    all_rets = session_in_api.query(API).filter_by(project_id=project_id).all()
+def get_page(page, project_id, session):
+    all_rets = session.query(API).filter_by(project_id=project_id).all()
     all_rets_reverse = all_rets[::-1]
     length = len(all_rets)
     per_page = 10
@@ -92,13 +89,14 @@ def make_format(apiForm):
 
 class APILIst(Resource):
     def get(self):
+        session = Session()
         try:
             args = parser.parse_args()
             if args["page"] is not None:
                 id, page = args["id"], args["page"]
                 api_list = []
                 try:
-                    all_rets_reverse, page_rets, pages = get_page(page, id)
+                    all_rets_reverse, page_rets, pages = get_page(page, id, session)
                 except Exception as e:
                     # 需要中间记录一下错误，可以按照下列做法
                     error_decription = "获取API分页数据失败！\n"
@@ -132,7 +130,7 @@ class APILIst(Resource):
                     page_previous = page - 1
                 if page + 1 <= pages:
                     page_next = page + 1
-                project = session_in_api.query(Project).filter_by(id=id).first()
+                project = session.query(Project).filter_by(id=id).first()
                 rst = make_response(jsonify({"success": True, "msg": "",
                                              "apiList": api_list,
                                              "projectInfo": {"name": project.name, "desc": project.desc},
@@ -143,7 +141,7 @@ class APILIst(Resource):
             else:
                 project_id = args["id"]
                 try:
-                    apis_obj = session_in_api.query(API).filter_by(project_id=project_id).all()
+                    apis_obj = session.query(API).filter_by(project_id=project_id).all()
                 except Exception as e:
                     # 需要中间记录一下错误，可以按照下列做法
                     error_decription = "获取APIL所有数据失败！\n"
@@ -159,12 +157,14 @@ class APILIst(Resource):
             # 捕捉上面出错继续上抛的异常（做好log记录，便于异常时候排查）和其它可能的异常
             # 出错时，及时回滚数据库
             try:
-                session_in_api.rollback()  # 这里的Exception不一定时数据库错误，盲目执行会报错
+                session.rollback()  # 这里的Exception不一定时数据库错误，盲目执行会报错
             except Exception as error:
                 pass
             mylogger.error("获取APIList失败！\n")
             rst = make_response(jsonify({"success": False, "msg": "获取APIList失败！" + str(e)}))
             return rst
+        finally:
+            session.close()
 
     def delete(self):
         args = parser.parse_args()
@@ -184,12 +184,15 @@ class APILIst(Resource):
         args = parser.parse_args()
         apiForm = args["api_obj"]
         api_func, project_id = apiForm["def"], apiForm["project_id"]
+        session = Session()
         try:
-            obj = session_in_api.query(API).filter(API.api_func == api_func and API.project_id == project_id).first()
+            obj = session.query(API).filter(API.api_func == api_func and API.project_id == project_id).first()
         except Exception as e:
-            session_in_api.rollback()
+            session.rollback()
             rst = make_response(jsonify({"success": False, "msg": "API新增失败！"}))
             return rst
+        finally:
+            session.close()
         if obj is not None:
             rst = make_response(jsonify({"success": False, "msg": "该项目中已存在同名API调用！！！"}))
             return rst
