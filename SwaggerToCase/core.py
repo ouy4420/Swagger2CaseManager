@@ -2,6 +2,10 @@ from SwaggerToCase.loader import LoadSwagger
 from SwaggerToCase.parser import ParseSwagger
 from SwaggerToCase.maker import MakeAPI, MakeTestcase
 from SwaggerToCase.dumper import DumpFile, DumpDB
+from backend.models.curd import Session
+import traceback
+import logging
+mylogger = logging.getLogger("Swagger2CaseManager")
 
 
 class Swagger2Case(object):
@@ -46,7 +50,18 @@ class Swagger2Case(object):
         # dumper_file.dump_to_file()
         if self.config["project"] is not None:
             print("in dump config:", self.config)
-            dumper_db = DumpDB(self.apis, self.testcases)
-            dumper_db.dump_to_db(self.config)
-
-
+            session = Session()
+            try:
+                dumper_db = DumpDB(self.apis, self.testcases, session)
+                dumper_db.dump_to_db(self.config)
+            except Exception as e:
+                try:
+                    session.rollback()
+                except Exception as error:
+                    pass
+                error_decription = "Dump Project To DB失败！\n"
+                error_location = traceback.format_exc()
+                mylogger.error(error_decription + error_location)
+                raise e
+            finally:
+                session.close()
