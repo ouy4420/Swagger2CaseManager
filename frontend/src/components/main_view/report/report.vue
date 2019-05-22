@@ -338,10 +338,11 @@
       },
       getPagination(page) {
         const project_id = this.$route.params.id;
-        this.$api.getPagination_report({"id": project_id, "page": page}).then(resp => {
+        this.$api.getPagination_report({"id": project_id, "page": page, "owner": this.$store.state.user}).then(resp => {
             this.reportList = resp["reportList"];
             this.projectInfo = resp["projectInfo"];
             this.page = resp["page"];
+            this.mailForm.from = resp["owner_email"]
           }
         )
       },

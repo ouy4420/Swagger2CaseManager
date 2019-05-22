@@ -2,7 +2,7 @@ import json
 
 from flask import make_response, jsonify
 from flask_restful import Resource, reqparse
-from backend.models.models import Report, Project
+from backend.models.models import Report, Project, Auth
 from backend.models.curd import ReportCURD, Session
 from backend.models.compress import load_report
 
@@ -12,6 +12,7 @@ from .mail_check import check_waykichain_mail
 curd = ReportCURD()
 parser = reqparse.RequestParser()
 parser.add_argument('id', type=int)
+parser.add_argument('owner', type=str)
 parser.add_argument('page', type=int)
 parser.add_argument('current_time', type=str)
 parser.add_argument('name', type=str)
@@ -109,7 +110,7 @@ class ReportList(Resource):
         try:
             args = parser.parse_args()
             print("args: ", args)
-            id, page = args["id"], args["page"]
+            id, page, owner = args["id"], args["page"], args["owner"]
             report_list = []
             all_rets, page_rets, pages = get_page(page, id, session)
             for report in page_rets:
@@ -128,9 +129,11 @@ class ReportList(Resource):
             if page + 1 <= pages:
                 page_next = page + 1
             project = session.query(Project).filter_by(id=id).first()
+            auth = session.query(Auth).filter_by(username=owner).first()
             rst = make_response(jsonify({
                 "success": True,
                 "reportList": report_list,
+                "owner_email": auth.email,
                 "projectInfo": {"name": project.name, "desc": project.desc},
                 "page": {"page_now": page,
                          "page_previous": page_previous,
