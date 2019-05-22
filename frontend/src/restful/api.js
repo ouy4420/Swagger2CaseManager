@@ -273,6 +273,9 @@ export const updateReport = body => {
   return axios.patch('/api/waykichain/report/' + body.id + '/', body).then(res => res.data)
 };
 
+export const mailReport = body => {
+  return axios.post('/api/waykichain/report/' + body.id + '/', body).then(res => res.data)
+};
 // ------------------------------------------------------------------------------------------------------------- report
 
 
