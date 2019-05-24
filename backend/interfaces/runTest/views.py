@@ -28,7 +28,7 @@ def run_test():
 
         cwd = os.getcwd()
 
-        testproject_dir = os.path.join(cwd, r"SwaggerToCase\TestProject")
+        testproject_dir = os.path.join(os.path.join(cwd, r"SwaggerToCase"), 'TestProject')
         testcases_dir = os.path.join(testproject_dir, r"testcases")
         testapi_dir = os.path.join(testproject_dir, r"api")
         # 清空testcases_dir和testapi_dir
