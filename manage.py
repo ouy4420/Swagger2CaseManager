@@ -65,4 +65,4 @@ api.add_resource(DriverCode, '/api/waykichain/debugtalk/')
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='192.168.161.1')
+    app.run(host='0.0.0.0')
