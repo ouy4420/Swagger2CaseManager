@@ -223,7 +223,7 @@ class DumpDB(object):
             self.insert_parameters(config, config_obj)
             for step in test_case[1:]:
                 step_obj = self.insert_stepcase(step, case_obj)
-                self.insert_variables_local(step, case_obj)
+                self.insert_variables_local(step, step_obj)
                 self.insert_validate(step, step_obj)
                 # insert_parameters没什么意义，初始extract为空列表
                 self.insert_extract(step, step_obj)
