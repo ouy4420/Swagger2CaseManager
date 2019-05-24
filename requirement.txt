@@ -1,0 +1,11 @@
+httprunner==1.5.15
+passlib
+PyMySQL
+SQLAlchemy
+requests
+PyYAML
+jsonschema
+jsonpickle
+Flask
+Flask-Cors
+Flask-RESTful
