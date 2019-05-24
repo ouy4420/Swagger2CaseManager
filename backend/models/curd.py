@@ -11,14 +11,7 @@ from backend.models.models import Project, \
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# engine = create_engine("mysql+pymysql://root:ate.sqa@127.0.0.1:3306/swagger?charset=utf8",
-#                        # echo=True,
-#                        isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
-#                        pool_size=8,
-#                        max_overflow=10,
-#                        pool_timeout=30,
-#                        pool_pre_ping=True)
-engine = create_engine("mysql+pymysql://root:ate.sqa@192.168.72.128:3306/swagger?charset=utf8",
+engine = create_engine("mysql+pymysql://root:ate.sqa@localhost:3306/swagger?charset=utf8",
                        # echo=True,
                        isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
                        pool_size=8,
