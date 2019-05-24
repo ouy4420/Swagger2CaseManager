@@ -30,7 +30,7 @@ class DriverCode(Resource):
         args = parser.parse_args()
         code = args["code"].strip()
         cwd = os.getcwd()
-        testproject_dir = os.path.join(cwd, r"SwaggerToCase\TestProject")
+        testproject_dir = os.path.join(os.path.join(cwd, "SwaggerToCase"), "TestProject")
         debugtalk_file = os.path.join(testproject_dir, r'debugtalk.py')
         try:
             debug = DebugCode(code=code, file_path=debugtalk_file)
