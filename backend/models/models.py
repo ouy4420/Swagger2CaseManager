@@ -30,10 +30,10 @@ class Project(Base):
     __tablename__ = 'project'
 
     id = Column(Integer, nullable=False, autoincrement=True)
-    name = Column(VARCHAR(20), nullable=False, comment="项目名称")
+    name = Column(VARCHAR(200), nullable=False, comment="项目名称")
     mode = Column(VARCHAR(20), nullable=False, comment="创建方式")
-    desc = Column(VARCHAR(100), nullable=False, comment="简要介绍")
-    owner = Column(VARCHAR(20), nullable=False, comment="创建人")
+    desc = Column(VARCHAR(200), nullable=False, comment="简要介绍")
+    owner = Column(VARCHAR(200), nullable=False, comment="创建人")
 
     __table_args__ = (
         PrimaryKeyConstraint("id"),  # primary key(id)
