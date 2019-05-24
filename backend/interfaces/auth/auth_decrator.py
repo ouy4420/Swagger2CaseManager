@@ -12,7 +12,7 @@ def login_require(func):
             res = certify_token(username, token)
             if token is None or res is False:
                 return jsonify({'success': False, 'msg': 'token不存在或已失效！请先登录', "code": -1})
-        print('call %s():' % func.__name__)
+        # print('call %s():' % func.__name__)
         return func(*args, **kw)
 
     return wrapper

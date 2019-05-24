@@ -11,6 +11,6 @@ def check_all_mail(mail):
 
 if __name__ == '__main__':
     ret = check_waykichain_mail("linxin.jiang@waykichainhk.com")
-    print(ret)
-    ret = check_all_mail("linxin.jiang@waykichainhk.com")
-    print(ret)
+    # print(ret)
+    check_all_mail("linxin.jiang@waykichainhk.com")
+    # print(ret)

@@ -46,7 +46,7 @@ class ReportItem(Resource):
     def patch(self, report_id):
         try:
             args = parser.parse_args()
-            print(args)
+            # print(args)
             status, msg = curd.update_report(args)
             rst = make_response(jsonify({"success": status, "msg": msg}))
             return rst
@@ -109,7 +109,7 @@ class ReportList(Resource):
         session = Session()
         try:
             args = parser.parse_args()
-            print("args: ", args)
+            # print("args: ", args)
             id, page, owner = args["id"], args["page"], args["owner"]
             report_list = []
             all_rets, page_rets, pages = get_page(page, id, session)

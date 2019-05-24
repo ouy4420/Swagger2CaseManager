@@ -23,7 +23,7 @@ def uncompress_string(s):
         ret = zfile.read()
         zfile.close()
     except Exception as e:
-        print(e)
+        # print(e)
         ret = s
     return ret
 
@@ -67,6 +67,6 @@ if __name__ == '__main__':
     import json
     a = json.dumps({"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": 12222222222222222222222222, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb": 23333333333333333333333333})
     aa = dump_report(a)
-    print(aa)
+    # print(aa)
     aaa = load_report(aa)
-    print(aaa)
+    # print(aaa)

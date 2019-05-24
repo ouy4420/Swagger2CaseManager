@@ -84,4 +84,4 @@ from SwaggerToCase.inherit import run
 
 ret = run(r"C:\Users\Administrator\PycharmProjects\Swagger2Case\SwaggerToCase\TestProject",
           ["aaa\\signDayGoldUsingGET.yml"])
-print(ret)
+# print(ret)
