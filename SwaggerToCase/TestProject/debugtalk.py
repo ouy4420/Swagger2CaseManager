@@ -1,1 +1,33 @@
-from requests_toolbelt import MultipartEncoderimport osfrom jsonschema import validatefrom jsonschema.exceptions import ValidationErrordef formdata_encoder(urlencoded_data):    fields = {}    for key, value in urlencoded_data.items():        if isinstance(value, list):            file_path, file_type = value            if not os.path.isabs(file_path):                file_path = os.path.join(os.getcwd(), file_path)            filename = os.path.basename(file_path)            with open(file_path, 'rb') as f:                fields.update({key: (filename, f.read(), file_type)})        else:            fields.update({key: value})    return MultipartEncoder(fields)username = os.environ["username"]password = os.environ["password"]base_url = os.environ["base_url"]def validate_schema(content, schema):    print('1-------------------------', type(content), type(schema))    print('2-------------------------', content, schema)    try:        validate(content, schema)    except ValidationError:        assert False    else:        assert True
+# drive code for your project
+def get_fee_params():
+    return [
+        { "fee": 1},
+        { "fee": 2},
+        { "fee": 3},
+    ]
+    
+print(get_fee_params())
+
+def get_fee_publickey_params1():
+    return [
+        { "fee": 1, "publickey": "11" },
+        { "fee": 2, "publickey": "22" },
+        { "fee": 3, "publickey": "33" },
+    ]
+print(get_fee_publickey_params1())
+
+
+def get_fee_publickey_params2():
+    return [
+        {"data": { "fee": 1, "publickey": "11" }},
+        {"data": { "fee": 1, "publickey": "11" }},
+        {"data": { "fee": 1, "publickey": "11" }},
+    ]
+print(get_fee_publickey_params2())
+
+
+def validate_str_in_msg(check, expect):
+    assert expect in check
+
+
+base_url = "https://baas-test.wiccdev.org/v2/api"
