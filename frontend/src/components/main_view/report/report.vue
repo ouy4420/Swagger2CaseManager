@@ -143,7 +143,7 @@
           </el-table-column>
           <el-table-column
             label="报告描述"
-            width="400"
+            width="250"
             align="center"
           >
             <template slot-scope="scope">
