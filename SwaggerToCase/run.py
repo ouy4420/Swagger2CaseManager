@@ -19,9 +19,9 @@ def main(swagger_name, file_type, url_or_file, project, specified_cases):
 
     cwd = os.getcwd()
     # test_pro_path = os.path.join(cwd, 'TestProject')
-    test_pro_path = os.path.join(cwd, 'SwaggerToCase\\TestProject')
+    test_pro_path = os.path.join(os.path.join(cwd, 'SwaggerToCase'), 'TestProject')
     apifilepath = os.path.join(test_pro_path, 'api')
-    testcase_dir = os.path.join(test_pro_path, 'testcases\\{}'.format(swagger_name))
+    testcase_dir = os.path.join(os.path.join(test_pro_path, 'testcases'), swagger_name)
     api_file = r"{}\{}".format(apifilepath, swagger_name)
     config = {
         "file_or_url": url_or_file,
@@ -45,9 +45,6 @@ def execute(project=None):
             url_or_file = project["url"]
         else:
             url_or_file = project["file"]
-        # url_or_file = r'C:\Users\Administrator\PycharmProjects\Swagger2Case\json_files\aa.json'
-        # url_or_file = 'https://baas-test.wiccdev.org/v2/api/v2/api-docs'
-        # specified_cases = ["aa\\getBlockHashUsingPOST.yml"]
         specified_cases = [swagger_name]
         main(swagger_name, file_type, url_or_file, project, specified_cases)
         return True, "Project创建成功！"
