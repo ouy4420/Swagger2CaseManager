@@ -174,7 +174,7 @@ class APILIst(Resource):
             api = session.query(API).filter_by(id=api_id).first()
             step = session.query(StepCase).filter_by(api_name=api.api_func).first()
             if step:
-                rst = make_response(jsonify({"success": False, "msg": "此API已被TestStep所引用，不能被删除"}))
+                rst = make_response(jsonify({"success": False, "msg": "此API已被TestStep所引用，不能被删除。\n删除前请先删除引用此API的TestStep"}))
                 return rst
         except Exception as e:
             session.rollback()
@@ -187,8 +187,21 @@ class APILIst(Resource):
     def patch(self):
         args = parser.parse_args()
         apiForm = args["api_obj"]
+        api_id = apiForm["id"]
+        session = Session()
+        try:
+            api = session.query(API).filter_by(id=api_id).first()
+            step = session.query(StepCase).filter_by(api_name=api.api_func).first()
+            if step:
+                rst = make_response(
+                    jsonify({"success": False, "msg": "此API已被TestStep所引用，不能被编辑。\n编辑前请先删除引用此API的TestStep"}))
+                return rst
+        except Exception as e:
+            session.rollback()
+        finally:
+            session.close()
         api = make_format(apiForm)
-        status, msg = curd.update_api(apiForm["id"], api)
+        status, msg = curd.update_api(api_id, api)
         rst = make_response(jsonify({"success": status, "msg": msg}))
         return rst
 
