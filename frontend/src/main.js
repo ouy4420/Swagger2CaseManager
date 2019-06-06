@@ -27,6 +27,15 @@ Vue.prototype.getLocalValue = function (name) {
   }
 };
 
+Vue.prototype.fail_notify = function (resp) {
+  this.$alert(resp["msg"], '温馨提示：', {
+    confirmButtonText: '确定',
+    callback: action => {
+
+    }
+  });
+};
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

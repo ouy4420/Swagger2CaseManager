@@ -153,7 +153,7 @@
               this.success(resp);       // 弹出成功提示消息
               this.get_case();          // 重新刷新当前case数据
             } else {
-              this.failure(resp);
+              this.fail_notify(resp)
             }
             this.reset_parameter_form()  // 重置表单数据
           })
@@ -215,7 +215,7 @@
                 this.success(resp);       // 弹出成功提示消息
                 this.get_case();          // 重新刷新当前case数据
               } else {
-                this.failure(resp);
+                this.fail_notify(resp)
               }
               this.reset_parameter_form()  // 重置表单数据
             })
@@ -237,18 +237,6 @@
           type: 'success',
           duration: 2000
         });
-      },
-      failure(resp) {
-        this.$alert(resp["msg"], 'Error', {
-          confirmButtonText: '确定',
-          callback: action => {
-
-          }
-        });
-        // this.$notify.error({
-        //   message: resp["msg"],
-        //   duration: 3000
-        // });
       },
       get_case() {
         // console.log("in get_case2", this.parameterForm);

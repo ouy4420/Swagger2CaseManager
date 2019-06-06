@@ -286,7 +286,7 @@
               this.success(resp);
               this.getPagination(1);
             } else {
-              this.failure(resp);
+              this.fail_notify(resp)
             }
           })
         })
@@ -311,7 +311,7 @@
                 this.success(resp);
                 this.getPagination(1);
               } else {
-                this.failure(resp);
+                this.fail_notify(resp)
               }
               this.loading_flag = false;
               this.projectForm.name = '';
@@ -340,18 +340,6 @@
           duration: 1000
         });
       },
-      failure(resp) {
-        this.$alert(resp["msg"], 'Error', {
-          confirmButtonText: '确定',
-          callback: action => {
-
-          }
-        });
-        // this.$notify.error({
-        //   message: resp["msg"],
-        //   duration: 30000
-        // });
-      },
       getPagination(page) {
         this.$api.getProjectList({"owner": this.$store.state.user, "page": page}).then(resp => {
           if (resp["success"] === true) {
@@ -366,7 +354,7 @@
                 this.page = resp["page"];
                 // this.success(resp);       // 弹出成功提示消息
               } else {
-                this.failure(resp)
+                this.fail_notify(resp)
               }
             })
           }

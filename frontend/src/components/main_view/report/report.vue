@@ -284,7 +284,7 @@
           if (resp['success']) {
             this.success(resp);
           } else {
-            this.failure(resp);
+            this.fail_notify(resp)
           }
         });
         this.reset_mail_form();
@@ -312,7 +312,7 @@
               this.success(resp);
               this.getPagination(1);
             } else {
-              this.failure(resp);
+              this.fail_notify(resp)
             }
           })
         })
@@ -323,18 +323,6 @@
           type: 'success',
           duration: 2000
         });
-      },
-      failure(resp) {
-        this.$alert(resp["msg"], 'Error', {
-          confirmButtonText: '确定',
-          callback: action => {
-
-          }
-        });
-        // this.$notify.error({
-        //   message: resp["msg"],
-        //   duration: 2000
-        // });
       },
       getPagination(page) {
         const project_id = this.$route.params.id;
@@ -360,7 +348,7 @@
             this.success(resp);
             this.getPagination(1);
           } else {
-            this.failure(resp);
+            this.fail_notify(resp)
           }
         })
       },

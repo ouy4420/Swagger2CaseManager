@@ -129,7 +129,7 @@
               this.success(resp);       // 弹出成功提示消息
               this.getCaseList();       // 重新刷新CaseList
             } else {
-              this.failure(resp);
+              this.fail_notify(resp)
             }
           }
         );
@@ -194,7 +194,6 @@
             this.getCaseItem(this.$store.state.caseList[0].id);
             // this.success(resp);       // 弹出成功提示消息
           } else {
-            // this.failure(resp);
             // window.location.reload();
             this.$api.getCaseList({"id": project_id}).then(resp => {
               if (resp.success) {
@@ -202,7 +201,7 @@
                 this.getCaseItem(this.$store.state.caseList[0].id);
                 // this.success(resp);       // 弹出成功提示消息
               } else {
-                this.failure(resp);
+                this.fail_notify(resp)
               }
             })
           }
@@ -240,7 +239,7 @@
               this.success(resp);       // 弹出成功提示消息
               this.getCaseList();       // 重新刷新CaseList
             } else {
-              this.failure(resp);
+              this.fail_notify(resp)
             }
           });
         });
@@ -280,7 +279,7 @@
             var newWin = window.open("", "_blank");
             newWin.document.write(render_content)
           } else {
-            this.failure(resp)
+            this.fail_notify(resp)
           }
         });
         this.base_url = ""
@@ -291,18 +290,6 @@
           type: 'success',
           duration: 2000
         });
-      },
-      failure(resp) {
-        this.$alert(resp["msg"], 'Error', {
-          confirmButtonText: '确定',
-          callback: action => {
-
-          }
-        });
-        // this.$notify.error({
-        //   message: resp["msg"],
-        //   duration: 5000
-        // });
       }
     },
     mounted() {

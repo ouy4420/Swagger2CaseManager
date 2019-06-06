@@ -90,7 +90,7 @@
                   this.page = resp["page"];
                   // this.success(resp);       // 弹出成功提示消息
                 } else {
-                  this.failure(resp);
+                  this.fail_notify(resp)
                 }
               })
             }
@@ -103,18 +103,6 @@
           type: 'success',
           duration: 2000
         });
-      },
-      failure(resp) {
-        this.$alert(resp["msg"], 'Error', {
-          confirmButtonText: '确定',
-          callback: action => {
-
-          }
-        });
-        // this.$notify.error({
-        //   message: resp["msg"],
-        //   duration: 5000
-        // });
       }
     },
     mounted() {
