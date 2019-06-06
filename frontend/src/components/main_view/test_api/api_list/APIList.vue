@@ -286,9 +286,25 @@
       handleConfirm() {
         this.$refs["apiForm"].validate((valid) => {
             if (valid) {
-
               if (this.apiForm["def"].indexOf("$data") < 0 && this.apiForm["body_type"] !== "Null") {
                 this.$alert('API调用与Body类型不匹配！', '注意', {
+                  confirmButtonText: '确定',
+                  callback: action => {
+                  }
+                });
+                return
+              }
+
+              if (this.apiForm["method"] === "") {
+                this.$alert('请选择请求方法！', '注意', {
+                  confirmButtonText: '确定',
+                  callback: action => {
+                  }
+                });
+                return
+              }
+              if (this.apiForm["url"] === "") {
+                this.$alert('URL不允许为空！', '注意', {
                   confirmButtonText: '确定',
                   callback: action => {
                   }
