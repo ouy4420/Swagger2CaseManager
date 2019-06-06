@@ -2,16 +2,14 @@ import json
 import traceback
 import logging
 from backend.models.compress import dump_report
-mylogger = logging.getLogger("Swagger2CaseManager")
-
 from backend.models.models import Project, \
     TestCase, Config, StepCase, API, Validate, Extract, \
     Parameters, VariablesGlobal, Report, VariablesLocal, VariablesEnv, DebugTalk, BaseURL
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from backend.config import DBConfig
 
-engine = create_engine("mysql+pymysql://root:ate.sqa@localhost:3306/swagger?charset=utf8",
+engine = create_engine(DBConfig.Connection,
                        # echo=True,
                        isolation_level='AUTOCOMMIT',  # 加上这句解决查询数据库不更新的情况
                        pool_size=8,
@@ -20,6 +18,7 @@ engine = create_engine("mysql+pymysql://root:ate.sqa@localhost:3306/swagger?char
                        pool_pre_ping=True)
 Session = sessionmaker(bind=engine)
 
+mylogger = logging.getLogger("Swagger2CaseManager")
 
 
 class ProjectCURD:
