@@ -1,14 +1,14 @@
-import requests
-
 from flask import Flask, render_template
 from flask_cors import CORS
+
 app = Flask(__name__,
-            static_folder="./dist/static",
-            template_folder="./dist")
+            static_folder="./frontend/dist/static",
+            template_folder="./frontend/dist")
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 import logging
 from log_record.mylog import log_config
+
 log_config("log_record\\my_log", "Swagger2CaseManager", level=logging.DEBUG)
 
 from backend.interfaces.auth import auth as auth_blueprint
@@ -34,6 +34,7 @@ from backend.interfaces.restful.project.env.base_url import BaseUrl
 from backend.interfaces.restful.project.debugtalk.driver_code import DriverCode
 
 from flask_restful import Api
+
 api = Api(app, decorators=[login_require])
 api.add_resource(ProjectList, '/api/waykichain/project/')
 api.add_resource(ProjectItem, '/api/waykichain/project/<int:project_id>/')
@@ -54,14 +55,14 @@ api.add_resource(BaseUrl, '/api/waykichain/base_url/')
 api.add_resource(DriverCode, '/api/waykichain/debugtalk/')
 
 
-# @app.route('/', defaults={'path': ''})
-# @app.route('/<path:path>')
-# @login_require
-# def catch_all(path):
-#     if app.debug:
-#         return requests.get('http://127.0.0.1:8081/waykichain{}'.format(path)).text
-#         # return 'token ok'
-#     return render_template("index.html")
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+@login_require
+def catch_all(path):
+    # if app.debug:
+    #     return requests.get('http://127.0.0.1:8081/waykichain{}'.format(path)).text
+    #     # return 'token ok'
+    return render_template("index.html")
 
 
 if __name__ == '__main__':
