@@ -5,7 +5,7 @@ import hmac
 
 # 生成token 入参：用户id
 
-def generate_token(key, expire=3600):
+def generate_token(key, expire=3600 * 4):
     ts_str = str(time.time() + expire)
     ts_byte = ts_str.encode("utf-8")
     sha1_tshexstr = hmac.new(key.encode("utf-8"), ts_byte, 'sha1').hexdigest()
