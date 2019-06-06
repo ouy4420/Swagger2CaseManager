@@ -28,7 +28,7 @@ const router = new Router({
       }
     },
     {
-      path: '/waykichain/login/',
+      path: '/',
       name: 'Login',
       component: Login,
       meta: {
