@@ -32,7 +32,9 @@
           {name: "API 接口", url: "APIView", code: "&#xe74a;"},
           {name: "环境变量", url: "GlobalEnv", code: "&#xe692;"},
           {name: "驱动代码", url: "DebugTalk", code: "&#xe7ca;"},
-          {name: "历史报告", url: "Reports", code: "&#xe66e;"}
+          {name: "历史报告", url: "Reports", code: "&#xe66e;"},
+          {name: "定时任务", url: "TimerTask", code: "&#xe66e;"},
+          {name: "CI/CD", url: "CICD", code: "&#xe66e;"}
         ],
       }
     },

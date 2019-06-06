@@ -9,6 +9,8 @@ import ProjectDetail from '../components/main_view/project/ProjectDetail'
 import APIView from '../components/main_view/test_api/APIView'
 import AutoTest from '../components/main_view/test_case/AutoTest'
 import ReportList from '../components/main_view/report/report'
+import TimerTask from '../components/main_view/timer_task/timer_task'
+import CICD from '../components/main_view/ci_cd/ci_cd'
 import GlobalEnv from '../components/main_view/var_env/var_env'
 import DebugTalk from '../components/main_view/drive_code/drive_code'
 
@@ -109,6 +111,26 @@ const router = new Router({
           }
 
         },
+        {
+          name: 'TimerTask',
+          path: 'timer_task/:id',
+          component: TimerTask,
+          meta: {
+            title: '定时任务',
+            requireAuth: true
+          }
+
+        },
+        {
+          name: 'CICD',
+          path: 'ci_cd/:id',
+          component: CICD,
+          meta: {
+            title: 'CI/CD',
+            requireAuth: true
+          }
+
+        },
         // {
         //   name: 'RecordConfig',
         //   path: 'record_config/:id',
@@ -163,7 +185,9 @@ router.beforeEach((to, from, next) => {
               "测试用例": 'AutoTest',
               "历史报告": 'Reports',
               "环境变量": 'GlobalEnv',
-              "驱动代码": 'DebugTalk'
+              "驱动代码": 'DebugTalk',
+              "定时任务": 'TimerTask',
+              "CI/CD": 'CICD',
             };
             store.state.routerName = routerNameObject[to.meta.title];
             // this.setLocalValue("routerName",routerNameObject[to.meta.title]);
