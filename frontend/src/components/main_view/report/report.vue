@@ -247,6 +247,7 @@
         },
         reportList: [],
         mail_list: [
+          {"value": "xiaodong.chen@waykichainhk.com"},
           {"value": "zhixiang.liu@waykichainhk.com"},
           {"value": "ning.shen@waykichainhk.com"},
           {"value": "shenshan.wang@waykichainhk.com"},
