@@ -54,10 +54,10 @@ class ParseParameters(object):
         self.body_param = []
         self.formdata_param = []
         self.type_default_values = {
-            "integer": 123,
-            "string": '123',
+            "integer": 0,
+            "string": 'string',
             "array": [1, 2, 3],
-            "number": 123,
+            "number": 0,
             "boolean": True
         }
 
