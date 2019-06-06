@@ -1,8 +1,7 @@
-from httprunner import HttpRunner, report
-import io
+from Myhttprunner import HttpRunner, report
 import os
 from datetime import datetime
-from httprunner import logger
+from Myhttprunner import logger
 from jinja2 import Template
 import time
 
@@ -72,13 +71,13 @@ class MyHttpRunner(HttpRunner):
         # 模板渲染 -----------------------------------------------------------------------------------------------------
         with open(html_report_template, "r", encoding='utf-8') as fp_r:
             template_content = fp_r.read()
-            report_path = os.path.join(report_dir_path, file_name)  # 报告完整路径
-            with open(report_path, 'w', encoding='utf-8') as fp_w:
-                rendered_content = Template(template_content).render(summary)  # 模板渲染
-                fp_w.write(rendered_content)
-                logger.log_info("Generated Html report: {}".format(report_path))
-
-                return rendered_content, result_stastic
+            # report_path = os.path.join(report_dir_path, file_name)  # 报告完整路径
+            rendered_content = Template(template_content).render(summary)
+            # with open(report_path, 'w', encoding='utf-8') as fp_w:
+            #     rendered_content = Template(template_content).render(summary)  # 模板渲染
+            #     fp_w.write(rendered_content)
+            #     logger.log_info("Generated Html report: {}".format(report_path))
+            return rendered_content, result_stastic
 
 
 runner = MyHttpRunner()
